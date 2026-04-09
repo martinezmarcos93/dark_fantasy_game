@@ -18,130 +18,132 @@ class Level6:
 
         return texto
 
+class Level6:
+
     def jugar(self, player, engine):
-        print("\nNo hay puerta.\n")
-        print("No hay sala.\n")
 
-        print("Solo estás vos.\n")
+        texto = """
+No hay más puertas.
 
-        print("Y algo más.\n")
+No hay más caminos.
 
-        print("No frente a vos.\n")
-        print("No detrás.\n")
+No hay cueva.
 
-        print("Sino… coincidiendo.\n")
+No hay voz.
 
-        print("No podés verlo.")
-        print("Porque no está separado.\n")
+Solo vos.
 
-        print("La voz final no habla.\n")
+O lo que queda.
 
-        print("Pensás algo…\n")
-        print("y responde.\n")
+Frente a vos…
 
-        psique = player.psique
+hay algo.
 
-        # Construcción del “yo reflejado”
-        print("Eso que sos… se manifiesta.\n")
+Tiene tu forma.
 
-        rasgos = []
-        for clave, valor in psique.items():
-            if valor > 20:
-                rasgos.append(clave)
+Pero no te copia.
 
-        if not rasgos:
-            rasgos.append("vacío")
+Respira con vos.
 
-        descripcion = "Te enfrentás a: " + ", ".join(rasgos)
-        descripcion = self.distorsionar_texto(descripcion, player)
+Piensa con vos.
 
-        print(descripcion + "\n")
+Sabe todo lo que hiciste.
 
-        print("No hay opciones correctas.\n")
+Y no te juzga.
 
-        print("¿Qué hacés?\n")
-        print("1. Aceptarlo")
-        print("2. Negarlo")
-        print("3. Destruirlo")
+Solo espera.
 
-        eleccion = input("\nElegí una opción (1-3): ")
+¿Qué hacés?
+
+1. Aceptarlo
+2. Negarlo
+3. Destruirlo
+"""
+
+        eleccion = engine.mostrar_nivel("assets/lvl6.jpg", texto)
 
         # -------------------------
-        # ACEPTACIÓN
+        # DECISION FINAL
         # -------------------------
+
         if eleccion == "1":
-            print("\nNo luchás.\n")
+            player.psique["lucidez"] += 20
 
-            print("No escapás.\n")
+            texto_resultado = """
+No resistís.
 
-            print("Permitís.\n")
+No luchás.
 
-            print("Todo lo que viste…")
-            print("todo lo que hiciste…")
-            print("todo lo que sos…\n")
+Lo mirás.
 
-            print("permanece.\n")
+Y lo aceptás.
 
-            print("Pero ya no te define.\n")
+No desaparece.
 
-            player.modificar_psique({
-                "lucidez": 30
-            })
+Se integra.
 
+Por primera vez…
+
+no hay conflicto.
+
+Solo totalidad.
+"""
+
+            engine.mostrar_nivel("assets/lvl6.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # NEGACIÓN
-        # -------------------------
         elif eleccion == "2":
-            print("\nRetrocedés.\n")
+            player.psique["miedo"] += 20
+            player.psique["culpa"] += 10
 
-            print("Intentás separarte.\n")
+            texto_resultado = """
+Negás.
 
-            print("Pero no hay distancia.\n")
+Intentás separarte.
 
-            print("Nunca la hubo.\n")
+Decir que eso no sos vos.
 
-            print("Cuanto más negás…")
-            print("más fuerte se vuelve.\n")
+Pero no se va.
 
-            player.modificar_psique({
-                "miedo": 20,
-                "culpa": 10
-            })
+Se distorsiona.
 
-            if player.psique["miedo"] > 60:
-                print("\nTe perdés en tu propia evasión.\n")
-                return "muerte"
+Se vuelve más presente.
 
+Más inevitable.
+
+Porque no podés negar lo que sos.
+"""
+
+            engine.mostrar_nivel("assets/lvl6.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # DESTRUCCIÓN
-        # -------------------------
         elif eleccion == "3":
-            print("\nIntentás eliminarlo.\n")
+            player.psique["violencia"] += 20
+            player.psique["corrupcion"] += 15
 
-            print("Pero eso implica eliminarte.\n")
+            texto_resultado = """
+Atacás.
 
-            print("Sentís cómo todo se desgarra.\n")
+Sin dudar.
 
-            print("La identidad colapsa.\n")
+Con todo.
 
-            player.modificar_psique({
-                "violencia": 30,
-                "corrupcion": 20
-            })
+Pero no hay impacto.
 
-            if player.psique["corrupcion"] > 70:
-                print("\nAlgo nuevo ocupa tu lugar.\n")
-                return "continuar"
+Porque no hay distancia.
 
-            return "muerte"
+Cada golpe…
 
-        # -------------------------
-        # INPUT INVÁLIDO
-        # -------------------------
-        else:
-            print("\nNo actuar… también es una forma de desaparecer.\n")
-            return "muerte"
+es interno.
+
+Y algo empieza a romperse.
+
+Pero no es eso.
+
+Sos vos.
+"""
+
+            engine.mostrar_nivel("assets/lvl6.jpg", texto_resultado)
+            return "continuar"
+
+        return "muerte"

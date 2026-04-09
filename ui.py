@@ -56,12 +56,12 @@ class UI:
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_1:
+
+                    if event.unicode == "1":
                         return "1"
-                    if event.key == pygame.K_2:
+                    if event.unicode == "2":
                         return "2"
-                    if event.key == pygame.K_3:
+                    if event.unicode == "3":
                         return "3"
 
-            # 🔥 REDIBUJAR SIEMPRE (CLAVE)
             self.render(imagen, texto)

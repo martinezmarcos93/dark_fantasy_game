@@ -2,121 +2,97 @@ class Level1:
     def __init__(self):
         self.nombre = "La Cueva del Origen"
 
+class Level1:
+
     def jugar(self, player, engine):
-        print("\nTe adentras en la cueva.")
-        print("No hay antorchas. No hay sonido.")
-        print("Solo oscuridad.\n")
-
-        print("Algo… respira en la profundidad.")
-        print("No lo ves, pero lo sentís.\n")
-
-        print("Una voz, o tal vez un pensamiento que no es tuyo, susurra:")
-        print("\n\"Antes de la luz… ya estabas aquí.\"")
-
-        print("\n¿Qué hacés?\n")
-        print("1. Avanzar hacia la oscuridad")
-        print("2. Encender una antorcha")
-        print("3. Llamar para saber quién está ahí")
 
         texto = """
-        Te adentras en la cueva.
+Te adentras en la cueva.
 
-        No hay luz.
-        Solo oscuridad.
+No hay antorchas. No hay sonido.
+Solo oscuridad.
 
-        1. Avanzar
-        2. Encender antorcha
-        3. Llamar
-        """
+Algo… respira en la profundidad.
+No lo ves, pero lo sentís.
 
-        eleccion = engine.mostrar_nivel(
-            "assets/lvl 1 v1.jpg",
-            texto
-        )
+Una voz, o tal vez un pensamiento que no es tuyo, susurra:
+
+"Antes de la luz… ya estabas aquí."
+
+¿Qué hacés?
+
+1. Avanzar hacia la oscuridad
+2. Encender una antorcha
+3. Llamar para saber quién está ahí
+"""
+
+        eleccion = engine.mostrar_nivel("assets/lvl1.jpg", texto)
 
         # -------------------------
-        # OPCIÓN 1
+        # DECISIONES
         # -------------------------
+
         if eleccion == "1":
-            print("\nCaminás sin ver.")
-            print("Cada paso se siente… correcto.")
-            print("Como si ya hubieras estado ahí antes.\n")
+            player.psique["corrupcion"] += 10
 
-            print("La oscuridad no te rechaza.")
-            print("Te envuelve.\n")
+            texto_resultado = """
+Caminás sin ver.
 
-            print("La voz vuelve:")
-            print("\"Recordar es descender.\"")
+Cada paso se siente… correcto.
+Como si ya hubieras estado ahí antes.
 
-            player.modificar_psique({
-                "lucidez": 10,
-                "corrupcion": 5
-            })
+La oscuridad no te rechaza.
+Te envuelve.
 
+La voz vuelve:
+"Recordar es descender."
+"""
+
+            engine.mostrar_nivel("assets/lvl1.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # OPCIÓN 2
-        # -------------------------
         elif eleccion == "2":
-            print("\nEncendés una antorcha.")
-            print("La llama tiembla violentamente.\n")
+            player.psique["lucidez"] += 10
 
-            print("Por un instante, ves las paredes…")
-            print("Están cubiertas de marcas.")
-            print("No… no son marcas.\n")
+            texto_resultado = """
+La antorcha enciende.
 
-            print("Son manos.")
-            print("Miles de manos intentando salir.\n")
+La luz revela paredes húmedas…
+y marcas.
 
-            print("La llama se apaga sola.")
+No son naturales.
 
-            print("\nLa voz susurra, ahora más cerca:")
-            print("\"La luz no revela… interrumpe.\"")
+Son manos.
 
-            player.modificar_psique({
-                "miedo": 10,
-                "culpa": 5
-            })
+Cientos de ellas.
 
+Marcadas desde adentro.
+
+La voz susurra:
+"La luz no revela. Delata."
+"""
+
+            engine.mostrar_nivel("assets/lvl1.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # OPCIÓN 3 (PELIGROSA)
-        # -------------------------
         elif eleccion == "3":
-            print("\nTu voz rompe el silencio.")
+            player.psique["miedo"] += 15
 
-            print("Error.\n")
+            texto_resultado = """
+Tu voz se pierde.
 
-            print("Algo responde.\n")
+Pero algo responde.
 
-            print("No con palabras…")
-            print("sino con presencia.\n")
+No con sonido.
 
-            print("Sentís que algo te escucha desde adentro.")
-            print("No desde la cueva… desde vos.\n")
+Con presencia.
 
-            print("La voz ya no susurra:")
-            print("\"Ahora sabe que estás aquí.\"")
+Ahora sabés que no estás solo.
 
-            player.modificar_psique({
-                "corrupcion": 15,
-                "miedo": 15
-            })
+Y nunca lo estuviste.
+"""
 
-            # pequeña chance de muerte inmediata (para generar tensión)
-            if player.psique["miedo"] > 10:
-                print("\nTu mente no soporta lo que acaba de percibir.")
-                return "muerte"
-
+            engine.mostrar_nivel("assets/lvl1.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # INPUT INVÁLIDO
-        # -------------------------
-        else:
-            print("\nDudás demasiado.")
-            print("La cueva no espera.\n")
-
-            return "muerte"
+        return "muerte"

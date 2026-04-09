@@ -2,127 +2,112 @@ class Level3:
     def __init__(self):
         self.nombre = "El Ritual de la Entrega"
 
+class Level3:
+
     def jugar(self, player, engine):
-        print("\nEl túnel desemboca en una sala amplia.")
-        print("Las paredes están cubiertas de símbolos.\n")
 
-        print("En el centro hay un altar de piedra.")
-        print("Sobre él… un libro abierto.\n")
+        texto = """
+La cueva se abre en una sala amplia.
 
-        print("Las páginas no están escritas.")
-        print("Esperan.\n")
+El aire es pesado.
+Antiguo.
 
-        print("La voz regresa, pero ya no parece externa:")
-        print("\"Todo conocimiento exige un precio.\"")
+En el centro hay un altar de piedra.
 
-        print("\nSentís que el altar… te reconoce.\n")
+Encima… un libro.
 
-        print("¿Qué ofrecés?\n")
-        print("1. Tu sangre (sacrificio físico)")
-        print("2. Un recuerdo (sacrificio mental)")
-        print("3. Nada (rechazar el ritual)")
+Sus páginas están en blanco.
 
-        eleccion = input("\nElegí una opción (1-3): ")
+Pero algo se escribe lentamente.
+
+No con tinta.
+
+Con algo más denso.
+
+La voz susurra:
+"Para comprender… tenés que entregar."
+
+¿Qué hacés?
+
+1. Leer el libro
+2. Ofrecer tu sangre
+3. Ignorar el altar y seguir
+"""
+
+        eleccion = engine.mostrar_nivel("assets/lvl3.jpg", texto)
 
         # -------------------------
-        # OPCIÓN 1 — SANGRE
+        # DECISIONES
         # -------------------------
+
         if eleccion == "1":
-            print("\nCortás tu mano y dejás caer la sangre sobre el libro.\n")
+            player.psique["lucidez"] += 15
+            player.psique["corrupcion"] += 5
 
-            print("Las páginas se llenan solas.")
-            print("Símbolos que no entendés… pero sentís.\n")
+            texto_resultado = """
+Leés.
 
-            print("Algo en vos se fortalece.")
-            print("Algo en vos se rompe.\n")
+Las palabras no están escritas.
 
-            print("La voz susurra:")
-            print("\"El cuerpo es la primera puerta.\"")
+Se forman mientras las mirás.
 
-            player.modificar_psique({
-                "violencia": 10,
-                "corrupcion": 15
-            })
+Y hablan de vos.
 
-            player.modificar_stats({
-                "fuerza": 2
-            })
+De cosas que no recordabas…
+pero que son ciertas.
 
+Cada línea te revela.
+
+Pero también te cambia.
+"""
+
+            engine.mostrar_nivel("assets/lvl3.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # OPCIÓN 2 — RECUERDO
-        # -------------------------
         elif eleccion == "2":
-            print("\nCerrás los ojos.\n")
+            player.psique["corrupcion"] += 20
 
-            print("Un recuerdo emerge…")
-            print("algo importante… algo tuyo.\n")
+            texto_resultado = """
+Apoyás tu mano.
 
-            print("El altar lo toma.\n")
+La piedra está tibia.
 
-            print("Intentás recordarlo otra vez…")
-            print("pero ya no está.\n")
+La sangre fluye.
 
-            print("Sentís un vacío.\n")
+El libro responde.
 
-            print("La voz habla con calma:")
-            print("\"La mente también sangra.\"")
+Las páginas se llenan.
 
-            player.modificar_psique({
-                "lucidez": 15,
-                "culpa": 10
-            })
+Pero no con conocimiento.
 
-            player.modificar_stats({
-                "mente": 2
-            })
+Con aceptación.
 
-            # riesgo si ya viene cargado emocionalmente
-            if player.psique["culpa"] > 25:
-                print("\nIntentás aferrarte a lo que perdiste…")
-                print("pero ya no existe.\n")
+Algo en vos… ya eligió.
+"""
 
-                print("Algo en tu identidad colapsa.")
-                return "muerte"
-
+            engine.mostrar_nivel("assets/lvl3.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # OPCIÓN 3 — RECHAZO
-        # -------------------------
         elif eleccion == "3":
-            print("\nRetrocedés.\n")
+            player.psique["miedo"] += 10
 
-            print("El altar permanece en silencio.\n")
+            texto_resultado = """
+Te alejás.
 
-            print("Pero el entorno cambia.\n")
+Pero el altar no desaparece.
 
-            print("Las paredes laten.")
-            print("El aire se vuelve espeso.\n")
+Lo sentís.
 
-            print("La voz ya no es amable:")
-            print("\"Rechazar también es elegir.\"")
+Como una decisión no tomada.
 
-            player.modificar_psique({
-                "miedo": 15
-            })
+Como algo pendiente.
 
-            # castigo: el juego empieza a volverse hostil
-            if player.psique["miedo"] > 20:
-                print("\nEl espacio se distorsiona.")
-                print("No encontrás la salida.\n")
+Y sabés…
 
-                print("El dungeon no acepta tu negativa.")
-                return "muerte"
+que lo vas a volver a ver.
+"""
 
+            engine.mostrar_nivel("assets/lvl3.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # INPUT INVÁLIDO
-        # -------------------------
-        else:
-            print("\nEl libro se cierra de golpe.\n")
-            print("Elegir tarde… es no elegir.\n")
-
-            return "muerte"
+        return "muerte"

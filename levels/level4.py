@@ -2,143 +2,128 @@ class Level4:
     def __init__(self):
         self.nombre = "El Rey de las Sombras"
 
+class Level4:
+
     def jugar(self, player, engine):
-        print("\nEl pasaje se abre hacia una cámara inmensa.")
-        print("No hay techo. No hay fondo.\n")
 
-        print("En el centro… una figura sentada en un trono.\n")
+        texto = """
+El camino se estrecha.
 
-        print("No podés verla claramente.")
-        print("Pero sabés que te está mirando.\n")
+Las paredes ya no son piedra.
 
-        print("No habla con voz…")
-        print("sino con comprensión.\n")
+Son… carne.
 
-        print("Sentís que algo en vos está siendo leído.\n")
+Respiran.
 
-        # -------------------------
-        # INTERPRETACIÓN DEL JUGADOR
-        # -------------------------
-        psique = player.psique
+Late algo dentro.
 
-        rasgo_dominante = max(psique, key=psique.get)
+Avanzás igual.
 
-        print("La entidad inclina levemente la cabeza.\n")
+Llegás a una grieta.
 
-        if rasgo_dominante == "violencia":
-            print("\"Elegís romper antes que entender.\"")
-        elif rasgo_dominante == "miedo":
-            print("\"Retrocedés incluso cuando no hay peligro.\"")
-        elif rasgo_dominante == "culpa":
-            print("\"Te castigás incluso cuando nadie te acusa.\"")
-        elif rasgo_dominante == "lucidez":
-            print("\"Ves… pero aún no aceptás.\"")
-        elif rasgo_dominante == "corrupcion":
-            print("\"Ya empezaste a disfrutarlo.\"")
+Y ahí… los ves.
 
-        print("\nEl Rey extiende una mano.\n")
+Versiones tuyas.
 
-        print("\"Puedo mostrarte lo que buscás…")
-        print("pero no sin darte algo a cambio.\"")
+Distintas.
 
-        print("\n¿Qué hacés?\n")
-        print("1. Aceptar el trato")
-        print("2. Rechazar y resistir")
-        print("3. Atacar a la entidad")
+Una llora.
+Otra sonríe.
+Otra te observa con desprecio.
 
-        eleccion = input("\nElegí una opción (1-3): ")
+La voz dice:
+"No sos uno. Elegí."
+
+¿Qué hacés?
+
+1. Aceptar todas las versiones
+2. Rechazar las versiones
+3. Atacar a las versiones
+"""
+
+        eleccion = engine.mostrar_nivel("assets/lvl4.jpg", texto)
 
         # -------------------------
-        # OPCIÓN 1 — ACEPTAR
+        # DECISIONES
         # -------------------------
+
         if eleccion == "1":
-            print("\nTomás su mano.\n")
+            player.psique["lucidez"] += 20
 
-            print("No sentís contacto…")
-            print("sentís exposición.\n")
+            texto_resultado = """
+No elegís.
 
-            print("El entorno desaparece.\n")
+Las aceptás.
 
-            print("Ves algo.\n")
+Todas.
 
-            print("No es una visión…")
-            print("es un recuerdo que no querías ver.\n")
+Las que duelen.
+Las que avergüenzan.
+Las que ocultabas.
 
-            print("La voz del Rey:")
-            print("\"El conocimiento siempre revela demasiado.\"")
+No desaparecen.
 
-            player.modificar_psique({
-                "lucidez": 20,
-                "corrupcion": 10,
-                "culpa": 5
-            })
+Se alinean.
 
-            if player.psique["lucidez"] > 40:
-                print("\nAhora entendés algo que no podés olvidar.")
-                print("Ni ignorar.\n")
+Y por un instante…
 
+sos completo.
+"""
+
+            engine.mostrar_nivel("assets/lvl4.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # OPCIÓN 2 — RESISTIR
-        # -------------------------
         elif eleccion == "2":
-            print("\nDás un paso atrás.\n")
+            player.psique["culpa"] += 15
+            player.psique["miedo"] += 10
 
-            print("La figura no se mueve.\n")
+            texto_resultado = """
+Negás.
 
-            print("Pero el espacio se cierra.\n")
+Una por una.
 
-            print("Sentís presión en el pecho.\n")
+Intentás borrar lo que no te gusta.
 
-            print("La voz, firme:")
-            print("\"Negar no es escapar.\"")
+Pero no se van.
 
-            player.modificar_psique({
-                "miedo": 15,
-                "culpa": 5
-            })
+Se deforman.
 
-            if player.psique["miedo"] > 35:
-                print("\nTu mente entra en pánico.")
-                print("No podés sostener la realidad.\n")
-                return "muerte"
+Se vuelven más intensas.
 
+Más presentes.
+
+La voz susurra:
+"Negar es alimentar."
+"""
+
+            engine.mostrar_nivel("assets/lvl4.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # OPCIÓN 3 — ATACAR
-        # -------------------------
         elif eleccion == "3":
-            print("\nAvanzás con intención de atacar.\n")
+            player.psique["violencia"] += 20
+            player.psique["corrupcion"] += 10
 
-            print("Pero no hay distancia.\n")
+            texto_resultado = """
+Atacás.
 
-            print("Nunca la hubo.\n")
+Golpeás.
 
-            print("Tu acción se pliega sobre vos mismo.\n")
+Destruís.
 
-            print("Sentís el impacto… desde adentro.\n")
+Pero cada versión rota…
 
-            print("La entidad habla por última vez:")
-            print("\"No podés destruir lo que te contiene.\"")
+se multiplica.
 
-            player.modificar_psique({
-                "violencia": 20,
-                "corrupcion": 15
-            })
+Ahora son más.
 
-            if player.psique["violencia"] > 40:
-                print("\nTu propia agresión te desgarra.\n")
-                return "muerte"
+Más agresivas.
 
+Más reales.
+
+Y ya no esperan.
+"""
+
+            engine.mostrar_nivel("assets/lvl4.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # INPUT INVÁLIDO
-        # -------------------------
-        else:
-            print("\nEl Rey cierra los ojos.\n")
-            print("Dejar que el tiempo decida… también es rendirse.\n")
-
-            return "muerte"
+        return "muerte"

@@ -20,117 +20,125 @@ class Level5:
 
         return texto
 
+class Level5:
+
     def jugar(self, player, engine):
-        print("\nCruzás un umbral.\n")
 
-        print("Ya no hay cueva.")
-        print("Ya no hay camino.\n")
+        texto = """
+El espacio se abre.
 
-        print("Solo puertas.\n")
+Pero no es una sala.
 
-        print("Muchas.\n")
+Es… algo indefinido.
 
-        print("Demasiadas.\n")
+No hay suelo.
+No hay techo.
 
-        print("Cada una… conduce a algo distinto.\n")
+Solo puertas.
 
-        print("Pero sabés algo.\n")
-        print("No todas son para vos.\n")
+Decenas.
 
-        psique = player.psique
+Cada una distinta.
 
-        # -------------------------
-        # DETERMINAR MORADA
-        # -------------------------
-        if psique["violencia"] > 30:
-            destino = "guerra"
-        elif psique["miedo"] > 30:
-            destino = "vacío"
-        elif psique["corrupcion"] > 40:
-            destino = "abismo"
-        elif psique["lucidez"] > 40:
-            destino = "verdad"
-        else:
-            destino = "olvido"
+Algunas rotas.
+Otras selladas.
+Algunas… respiran.
 
-        # -------------------------
-        # DESCRIPCIONES
-        # -------------------------
-        descripciones = {
-            "guerra": "Escuchás acero. Gritos. Un campo infinito donde la lucha nunca termina.",
-            "vacío": "No hay sonido. No hay forma. Solo una extensión sin límites.",
-            "abismo": "Algo te observa desde la oscuridad. Y sonríe.",
-            "verdad": "Una luz inmóvil. No cálida. No fría. Solo… real.",
-            "olvido": "Nada te espera. Ni siquiera vos mismo."
-        }
+Sentís que cada una lleva a algo distinto.
 
-        descripcion = descripciones[destino]
-        descripcion = self.distorsionar_texto(descripcion, player)
+Pero también sabés algo más:
 
-        print("Una puerta se abre frente a vos.\n")
-        print(descripcion + "\n")
+No estás eligiendo libremente.
 
-        print("¿Entrás?\n")
-        print("1. Sí")
-        print("2. No")
+Algo en vos ya decidió.
 
-        eleccion = input("\nElegí una opción (1-2): ")
+La voz, por última vez:
+"No elegís la puerta. La reconocés."
+
+¿Qué hacés?
+
+1. Elegir una puerta al azar
+2. Intentar analizar las puertas
+3. No elegir ninguna
+"""
+
+        eleccion = engine.mostrar_nivel("assets/lvl5.jpg", texto)
 
         # -------------------------
-        # ENTRAR
+        # DECISIONES
         # -------------------------
+
         if eleccion == "1":
-            print("\nCruzás el umbral.\n")
+            player.psique["corrupcion"] += 10
 
-            if destino == "guerra":
-                print("La lucha te consume.\n")
-                return "muerte"
+            texto_resultado = """
+Elegís.
 
-            elif destino == "vacío":
-                print("Te disolvés lentamente.\n")
-                return "muerte"
+Sin pensar.
 
-            elif destino == "abismo":
-                print("Algo en vos despierta.\n")
-                player.modificar_psique({"corrupcion": 20})
-                return "continuar"
+La puerta cede.
 
-            elif destino == "verdad":
-                print("Entendés.\n")
-                player.modificar_psique({"lucidez": 20})
-                return "continuar"
+Pero al cruzar…
 
-            elif destino == "olvido":
-                print("Desaparecés.\n")
-                return "muerte"
+no sentís cambio.
 
-        # -------------------------
-        # RECHAZAR
-        # -------------------------
-        elif eleccion == "2":
-            print("\nIntentás retroceder.\n")
+Porque no cruzaste.
 
-            print("Pero ya cruzaste algo.\n")
+Siempre estuviste ahí.
+"""
 
-            print("La voz final dice:")
-            print("\"Nadie sale igual.\"")
-
-            player.modificar_psique({
-                "miedo": 10,
-                "culpa": 5
-            })
-
-            if player.psique["miedo"] > 40:
-                print("\nTu mente colapsa.")
-                return "muerte"
-
+            engine.mostrar_nivel("assets/lvl5.jpg", texto_resultado)
             return "continuar"
 
-        # -------------------------
-        # INPUT INVÁLIDO
-        # -------------------------
-        else:
-            print("\nLas puertas se cierran.\n")
-            print("No decidir… también es un destino.\n")
+        elif eleccion == "2":
+            player.psique["lucidez"] += 10
+            player.psique["culpa"] += 5
 
-            return "muerte"
+            texto_resultado = """
+Observás.
+
+Comparás.
+
+Intentás entender.
+
+Pero las puertas cambian.
+
+Se reconfiguran.
+
+No hay lógica estable.
+
+Entonces entendés:
+
+No es el entorno.
+
+Sos vos.
+"""
+
+            engine.mostrar_nivel("assets/lvl5.jpg", texto_resultado)
+            return "continuar"
+
+        elif eleccion == "3":
+            player.psique["miedo"] += 15
+
+            texto_resultado = """
+No elegís.
+
+Te quedás.
+
+El tiempo no pasa.
+
+O pasa demasiado.
+
+Las puertas siguen ahí.
+
+Esperando.
+
+Como si supieran…
+
+que eventualmente vas a ceder.
+"""
+
+            engine.mostrar_nivel("assets/lvl5.jpg", texto_resultado)
+            return "continuar"
+
+        return "muerte"
