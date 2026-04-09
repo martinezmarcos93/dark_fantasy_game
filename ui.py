@@ -16,11 +16,11 @@ class UI:
         pygame.display.set_caption("Descenso al Umbral")
 
         # Fuente
-        self.font = pygame.font.SysFont("consolas", 20)
+        self.font = pygame.font.Font("fonts/Deutsch.ttf", 22)
 
         # Colores
-        self.bg_color = (10, 10, 10)
-        self.text_color = (200, 200, 200)
+        self.text_color = (180, 180, 180)
+        self.bg_color = (5, 5, 5)
 
         # Música
         self.reproducir_musica()
@@ -69,27 +69,34 @@ class UI:
     # -------------------------
     # RENDER NORMAL (SIN EFECTOS)
     # -------------------------
-    def render(self, imagen, texto):
+    def render(self, imagen, texto, opciones_lista=None):
         self.screen.fill(self.bg_color)
         self.screen.blit(imagen, (0, 0))
+
         self.dibujar_texto(texto)
+
+        botones = []
+        if opciones_lista:
+            botones = self.dibujar_opciones(opciones_lista)
+
         pygame.display.flip()
+        return botones
 
     # -------------------------
     # INPUT DEL USUARIO
     # -------------------------
-    def esperar_input(self, imagen, texto, opciones=True):
+    def esperar_input(self, imagen, texto, opciones=True, opciones_lista=None):
         clock = pygame.time.Clock()
 
-        # 🔥 Fade SOLO UNA VEZ al entrar
         self.fade_in(imagen, texto)
 
         while True:
             clock.tick(60)
 
-            # 🔊 Control de música
             if not pygame.mixer.music.get_busy():
                 self.reproducir_musica()
+
+            botones = self.render(imagen, texto, opciones_lista)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -97,23 +104,20 @@ class UI:
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN:
-
-    # 🔥 Pantallas sin opciones → SOLO espacio
                     if not opciones:
                         if event.key == pygame.K_SPACE:
                             return "continuar"
-
-                    # 🔥 Opciones normales
                     else:
-                        if event.unicode == "1":
-                            return "1"
-                        if event.unicode == "2":
-                            return "2"
-                        if event.unicode == "3":
-                            return "3"
+                        if event.unicode in ["1", "2", "3"]:
+                            return event.unicode
 
-            # Render estable (sin fade)
-            self.render(imagen, texto)
+                # 🖱️ CLICK DEL MOUSE
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    for rect, valor in botones:
+                        if rect.collidepoint(mouse_pos):
+                            return valor
 
     # -------------------------
     # FADE IN CORRECTO (SIN BUG)
@@ -162,3 +166,22 @@ class UI:
 
         pygame.mixer.music.load(ruta)
         pygame.mixer.music.play()
+
+    def dibujar_opciones(self, opciones):
+        botones = []
+
+        x = 520
+        y = 400
+
+        for i, opcion in enumerate(opciones):
+            texto = f"{i+1}. {opcion}"
+
+            render = self.font.render(texto, True, (255, 255, 255))
+            rect = render.get_rect(topleft=(x, y))
+
+            self.screen.blit(render, rect)
+            botones.append((rect, str(i+1)))
+
+            y += 40
+
+        return botones
