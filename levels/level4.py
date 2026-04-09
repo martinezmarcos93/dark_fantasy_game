@@ -2,7 +2,7 @@ class Level4:
     def __init__(self):
         self.nombre = "El Rey de las Sombras"
 
-    def jugar(self, player):
+    def jugar(self, player, engine):
         print("\nEl pasaje se abre hacia una cámara inmensa.")
         print("No hay techo. No hay fondo.\n")
 

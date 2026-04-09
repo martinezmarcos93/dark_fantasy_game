@@ -18,7 +18,7 @@ class Level6:
 
         return texto
 
-    def jugar(self, player):
+    def jugar(self, player, engine):
         print("\nNo hay puerta.\n")
         print("No hay sala.\n")
 

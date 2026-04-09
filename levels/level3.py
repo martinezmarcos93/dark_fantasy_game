@@ -2,7 +2,7 @@ class Level3:
     def __init__(self):
         self.nombre = "El Ritual de la Entrega"
 
-    def jugar(self, player):
+    def jugar(self, player, engine):
         print("\nEl túnel desemboca en una sala amplia.")
         print("Las paredes están cubiertas de símbolos.\n")
 

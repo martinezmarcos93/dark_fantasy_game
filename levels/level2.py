@@ -2,7 +2,7 @@ class Level2:
     def __init__(self):
         self.nombre = "El Espejo de las Formas"
 
-    def jugar(self, player):
+    def jugar(self, player, engine):
         print("\nAvanzás más profundo en la cueva.")
         print("El aire cambia. Es más denso.\n")
 

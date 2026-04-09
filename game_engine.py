@@ -1,3 +1,4 @@
+from ui import UI
 from player import Player
 
 class GameEngine:
@@ -5,6 +6,7 @@ class GameEngine:
         self.player = None
         self.current_level_index = 0
         self.levels = []
+        self.ui = UI()
 
     # -------------------------
     # CREAR JUGADOR
@@ -54,6 +56,10 @@ class GameEngine:
             Level6()
         ]
 
+
+    def mostrar_nivel(self, imagen_path, texto):
+        imagen = self.ui.cargar_imagen(imagen_path)
+        return self.ui.esperar_input(imagen, texto)
     # -------------------------
     # LOOP PRINCIPAL
     # -------------------------
@@ -68,7 +74,7 @@ class GameEngine:
 
             print(f"\n=== NIVEL {self.current_level_index + 1} ===")
 
-            resultado = nivel.jugar(self.player)
+            resultado = nivel.jugar(self.player, self)
 
             if resultado == "muerte":
                 self.player.morir("Fallaste en la prueba.")

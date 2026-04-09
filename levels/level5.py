@@ -20,7 +20,7 @@ class Level5:
 
         return texto
 
-    def jugar(self, player):
+    def jugar(self, player, engine):
         print("\nCruzás un umbral.\n")
 
         print("Ya no hay cueva.")

@@ -2,7 +2,7 @@ class Level1:
     def __init__(self):
         self.nombre = "La Cueva del Origen"
 
-    def jugar(self, player):
+    def jugar(self, player, engine):
         print("\nTe adentras en la cueva.")
         print("No hay antorchas. No hay sonido.")
         print("Solo oscuridad.\n")
@@ -18,7 +18,21 @@ class Level1:
         print("2. Encender una antorcha")
         print("3. Llamar para saber quién está ahí")
 
-        eleccion = input("\nElegí una opción (1-3): ")
+        texto = """
+        Te adentras en la cueva.
+
+        No hay luz.
+        Solo oscuridad.
+
+        1. Avanzar
+        2. Encender antorcha
+        3. Llamar
+        """
+
+        eleccion = engine.mostrar_nivel(
+            "assets/lvl 1 v1.jpg",
+            texto
+        )
 
         # -------------------------
         # OPCIÓN 1
