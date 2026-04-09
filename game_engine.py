@@ -70,12 +70,10 @@ class GameEngine:
         self.crear_personaje()
         self.cargar_niveles()
 
-        print("\n--- COMIENZA LA DESCENSIÓN ---")
 
         while self.player.alive and self.current_level_index < len(self.levels):
             nivel = self.levels[self.current_level_index]
 
-            print(f"\n=== NIVEL {self.current_level_index + 1} ===")
 
             resultado = nivel.jugar(self.player, self)
 
@@ -96,16 +94,12 @@ class GameEngine:
     # FINAL DEL JUEGO
     # -------------------------
     def final_juego(self):
-        print("\n=== FIN DEL VIAJE ===")
 
         if not self.player.alive:
-            print("Tu historia termina en la oscuridad.")
             return
 
         ending = self.determinar_final()
 
-        print("\nTu destino final es:")
-        print(f">>> {ending.upper()} <<<")
 
     # -------------------------
     # SISTEMA DE FINALES
