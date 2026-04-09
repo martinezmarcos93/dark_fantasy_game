@@ -96,9 +96,29 @@ class GameEngine:
     def final_juego(self):
 
         if not self.player.alive:
+            texto = """
+    Tu historia termina en la oscuridad.
+    """
+            self.ui.esperar_input(
+                self.ui.cargar_imagen("assets/lvl6.jpg"),
+                texto,
+                opciones=False
+            )
             return
 
         ending = self.determinar_final()
+
+        texto = f"""
+    Tu destino final es:
+
+    {ending}
+    """
+
+        self.ui.esperar_input(
+            self.ui.cargar_imagen("assets/lvl6.jpg"),
+            texto,
+            opciones=False
+        )
 
 
     # -------------------------
