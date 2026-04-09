@@ -400,19 +400,56 @@ El juego ahora incluye:
 ### Opción D — Audio
 - Música ambiental
 - efectos sonoros dinámicos
-
 ---
-
 ## 🧠 Nota de diseño (crítica)
-
 A partir de esta fase, el proyecto deja de ser:
-
 “un juego de aventura”
-
 y pasa a ser:
-
 “una experiencia psicológica interactiva”
-
 Esto debe guiar todas las decisiones futuras.
+---
+---
+
+## 🗓️ Fase 3 — Implementación de Interfaz Gráfica (Pygame)
 
 ---
+
+### 🔹 Introducción de sistema visual
+Se inicia la transición del juego desde consola a una interfaz gráfica utilizando **pygame**.
+Se implementa una estructura de pantalla dividida:
+| Imagen (izquierda) | Texto (derecha |
+|-------------------|----------------|
+
+**Objetivo:**
+- Representar visualmente cada nivel
+- Integrar narrativa e imagen en simultáneo
+- Mejorar la inmersión del jugador
+
+---
+### 🔹 Nuevo módulo: ui.py
+Se crea un sistema independiente para la interfaz gráfica.
+**Responsabilidades:**
+- Inicializar pygame
+- Renderizar imágenes
+- Renderizar texto
+- Capturar input del usuario
+- Mantener loop activo de renderizado
+
+---
+### 🔹 Sistema de renderizado
+Se implementa:
+
+- Carga de imágenes desde `assets/`
+- Escalado automático a mitad de pantalla
+- Renderizado de texto en bloque (lado derecho)
+- Actualización constante de la pantalla (60 FPS)
+
+**Nota técnica importante:**
+Se corrige un problema crítico donde la pantalla quedaba congelada al no redibujar dentro del loop de eventos.
+
+---
+### 🔹 Integración con game_engine.py
+Se introduce el método:
+
+```python
+def mostrar_nivel(self, imagen_path, texto)

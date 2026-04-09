@@ -8,20 +8,22 @@ class GameEngine:
         self.levels = []
         self.ui = UI()
 
-    # -------------------------
-    # CREAR JUGADOR
-    # -------------------------
+# -------------------------
+# CREAR JUGADOR (PYGAME)
+# -------------------------
     def crear_personaje(self):
-        print("=== CREACIÓN DE PERSONAJE ===")
 
-        nombre = input("Nombre del personaje: ")
+        texto = """
+        === CREACIÓN DE PERSONAJE ===
 
-        print("\nClases disponibles:")
-        print("1. Guerrero")
-        print("2. Hechicero")
-        print("3. Ladrón")
+        Elegí tu clase:
 
-        clase_opcion = input("Elegí una clase (1-3): ")
+        1. Guerrero
+        2. Hechicero
+        3. Ladrón
+        """
+
+        eleccion = self.mostrar_nivel("assets/lvl1.jpg", texto)
 
         clases = {
             "1": "Guerrero",
@@ -29,11 +31,12 @@ class GameEngine:
             "3": "Ladrón"
         }
 
-        clase = clases.get(clase_opcion, "Errante")
+        clase = clases.get(eleccion, "Errante")
+
+        # Nombre temporal automático (luego lo hacemos interactivo)
+        nombre = "Viajero"
 
         self.player = Player(nombre, clase)
-
-        print(f"\nBienvenido, {self.player.name} el {self.player.clase}.")
 
     # -------------------------
     # CARGAR NIVELES
