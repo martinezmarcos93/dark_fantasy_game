@@ -65,7 +65,7 @@ level6.py
 ---
 ## ▶️ Cómo Ejecutar
 1. Clonar el repositorio:
-git clone https://github.com/tu-usuario/tu-repo.git
+git clone [https://github.com/tu-usuario/tu-repo.git](https://github.com/martinezmarcos93/dark_fantasy_game.git)
 cd tu-repo
 
 2.Ejecutar el juego:
