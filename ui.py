@@ -40,27 +40,31 @@ class UI:
         x_offset = 520
         y_offset = 40
         max_width = 400
+        line_height = 28
 
-        palabras = texto.split(" ")
-        lineas = []
-        linea_actual = ""
+        # 🔥 respetar saltos de línea originales
+        lineas_originales = texto.split("\n")
 
-        for palabra in palabras:
-            test_line = linea_actual + palabra + " "
-            ancho, _ = self.font.size(test_line)
+        for linea in lineas_originales:
+            palabras = linea.split(" ")
+            linea_actual = ""
 
-            if ancho < max_width:
-                linea_actual = test_line
-            else:
-                lineas.append(linea_actual)
-                linea_actual = palabra + " "
+            for palabra in palabras:
+                test_line = linea_actual + palabra + " "
+                ancho, _ = self.font.size(test_line)
 
-        lineas.append(linea_actual)
+                if ancho < max_width:
+                    linea_actual = test_line
+                else:
+                    render = self.font.render(linea_actual, True, self.text_color)
+                    self.screen.blit(render, (x_offset, y_offset))
+                    y_offset += line_height
+                    linea_actual = palabra + " "
 
-        for linea in lineas:
-            render = self.font.render(linea, True, self.text_color)
+            # dibujar última parte de la línea
+            render = self.font.render(linea_actual, True, self.text_color)
             self.screen.blit(render, (x_offset, y_offset))
-            y_offset += 28
+            y_offset += line_height
 
     # -------------------------
     # RENDER NORMAL (SIN EFECTOS)
