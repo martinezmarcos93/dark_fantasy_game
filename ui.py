@@ -97,15 +97,20 @@ class UI:
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN:
-                    if not opciones:
-                        return "continuar"
 
-                    if event.unicode == "1":
-                        return "1"
-                    if event.unicode == "2":
-                        return "2"
-                    if event.unicode == "3":
-                        return "3"
+    # 🔥 Pantallas sin opciones → SOLO espacio
+                    if not opciones:
+                        if event.key == pygame.K_SPACE:
+                            return "continuar"
+
+                    # 🔥 Opciones normales
+                    else:
+                        if event.unicode == "1":
+                            return "1"
+                        if event.unicode == "2":
+                            return "2"
+                        if event.unicode == "3":
+                            return "3"
 
             # Render estable (sin fade)
             self.render(imagen, texto)
