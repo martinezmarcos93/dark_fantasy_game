@@ -60,9 +60,9 @@ class GameEngine:
         ]
 
 
-    def mostrar_nivel(self, imagen_path, texto):
+    def mostrar_nivel(self, imagen_path, texto, opciones=True):
         imagen = self.ui.cargar_imagen(imagen_path)
-        return self.ui.esperar_input(imagen, texto)
+        return self.ui.esperar_input(imagen, texto, opciones)
     # -------------------------
     # LOOP PRINCIPAL
     # -------------------------
