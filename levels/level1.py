@@ -26,16 +26,7 @@ Una voz, o tal vez un pensamiento que no es tuyo, susurra:
 3. Llamar para saber quién está ahí
 """
 
-        eleccion = engine.mostrar_nivel(
-            "assets/lvl1.jpg",
-            texto,
-            opciones=True,
-            opciones_lista=[
-                "Avanzar hacia la oscuridad",
-                "Encender una antorcha",
-                "Llamar para saber quién está ahí"
-            ]
-        )
+        eleccion = engine.mostrar_nivel("assets/lvl1.jpg", texto)
 
         # -------------------------
         # DECISIONES
