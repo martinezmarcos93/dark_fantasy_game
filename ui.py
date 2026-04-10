@@ -36,13 +36,12 @@ class UI:
     # -------------------------
     # DIBUJAR TEXTO (CON WRAP)
     # -------------------------
-    def dibujar_texto(self, texto):
+    def dibujar_texto(self, texto, scroll_y=0):
         x_offset = 520
-        y_offset = 40
+        y_offset = 40 + scroll_y
         max_width = 400
         line_height = 28
 
-        # 🔥 respetar saltos de línea originales
         lineas_originales = texto.split("\n")
 
         for linea in lineas_originales:
@@ -61,7 +60,6 @@ class UI:
                     y_offset += line_height
                     linea_actual = palabra + " "
 
-            # dibujar última parte de la línea
             render = self.font.render(linea_actual, True, self.text_color)
             self.screen.blit(render, (x_offset, y_offset))
             y_offset += line_height
@@ -69,24 +67,45 @@ class UI:
     # -------------------------
     # RENDER NORMAL (SIN EFECTOS)
     # -------------------------
-    def render(self, imagen, texto, opciones_lista=None):
+    def render(self, imagen, texto, scroll_y=0, opciones=None):
         self.screen.fill(self.bg_color)
         self.screen.blit(imagen, (0, 0))
 
-        self.dibujar_texto(texto)
+        self.dibujar_texto(texto, scroll_y)
 
         botones = []
-        if opciones_lista:
-            botones = self.dibujar_opciones(opciones_lista)
+
+        if opciones:
+            x = 520
+            y = 420
+
+            mouse_pos = pygame.mouse.get_pos()
+
+            for i, opcion in enumerate(opciones):
+                txt = f"{i+1}. {opcion}"
+
+                # 🔥 detectar hover
+                render = self.font.render(txt, True, self.text_color)
+                rect = render.get_rect(topleft=(x, y))
+
+                if rect.collidepoint(mouse_pos):
+                    render = self.font.render(txt, True, (255, 100, 100))  # hover rojo
+
+                self.screen.blit(render, rect)
+                botones.append((rect, str(i+1)))
+
+                y += 40
 
         pygame.display.flip()
         return botones
+
 
     # -------------------------
     # INPUT DEL USUARIO
     # -------------------------
     def esperar_input(self, imagen, texto, opciones=True, opciones_lista=None):
         clock = pygame.time.Clock()
+        scroll_y = 0
 
         self.fade_in(imagen, texto)
 
@@ -96,28 +115,44 @@ class UI:
             if not pygame.mixer.music.get_busy():
                 self.reproducir_musica()
 
-            botones = self.render(imagen, texto, opciones_lista)
+            botones = self.render(imagen, texto, scroll_y, opciones_lista)
 
             for event in pygame.event.get():
+
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN:
+
+                    # scroll
+                    if event.key == pygame.K_DOWN:
+                        scroll_y -= 20
+                    if event.key == pygame.K_UP:
+                        scroll_y += 20
+
+                    # sin opciones → SPACE
                     if not opciones:
                         if event.key == pygame.K_SPACE:
                             return "continuar"
+
+                    # con opciones → teclado
                     else:
-                        if event.unicode in ["1", "2", "3"]:
-                            return event.unicode
+                        if event.key == pygame.K_1:
+                            return "1"
+                        if event.key == pygame.K_2:
+                            return "2"
+                        if event.key == pygame.K_3:
+                            return "3"
 
-                # 🖱️ CLICK DEL MOUSE
+                # 🖱️ CLICK (AHORA SEGURO)
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_pos = pygame.mouse.get_pos()
+                    if opciones_lista:  # 🔥 SOLO si hay botones
+                        mouse_pos = pygame.mouse.get_pos()
 
-                    for rect, valor in botones:
-                        if rect.collidepoint(mouse_pos):
-                            return valor
+                        for rect, valor in botones:
+                            if rect.collidepoint(mouse_pos):
+                                return valor
 
     # -------------------------
     # FADE IN CORRECTO (SIN BUG)

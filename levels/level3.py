@@ -1,8 +1,7 @@
 class Level3:
+
     def __init__(self):
         self.nombre = "El Ritual de la Entrega"
-
-class Level3:
 
     def jugar(self, player, engine):
 
@@ -21,13 +20,18 @@ La voz susurra:
 "Para comprender… tenés que entregar."
 
 ¿Qué hacés?
-
-1. Leer el libro
-2. Ofrecer tu sangre
-3. Ignorar el altar y seguir
 """
 
-        eleccion = engine.mostrar_nivel("assets/lvl3.jpg", texto)
+        eleccion = engine.mostrar_nivel(
+            "assets/lvl3.jpg",
+            texto,
+            opciones=True,
+            opciones_lista=[
+                "Leer el libro",
+                "Ofrecer tu sangre",
+                "Ignorar el altar y seguir"
+            ]
+        )
 
         # -------------------------
         # DECISIONES
@@ -48,7 +52,11 @@ Cada línea te revela.
 Pero también te cambia.
 """
 
-            engine.mostrar_nivel("assets/lvl3.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl3.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "2":
@@ -65,7 +73,11 @@ Con aceptación.
 Algo en vos… ya eligió.
 """
 
-            engine.mostrar_nivel("assets/lvl3.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl3.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "3":
@@ -81,7 +93,11 @@ Y sabés…
 que lo vas a volver a ver.
 """
 
-            engine.mostrar_nivel("assets/lvl3.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl3.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         return "muerte"

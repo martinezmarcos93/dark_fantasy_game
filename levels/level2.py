@@ -1,8 +1,7 @@
 class Level2:
+
     def __init__(self):
         self.nombre = "El Espejo de las Formas"
-
-class Level2:
 
     def jugar(self, player, engine):
 
@@ -17,13 +16,18 @@ La voz regresa:
 "No sos lo que creés. Mirá."
 
 ¿Qué hacés?
-
-1. Mirar fijamente el espejo
-2. Romper el espejo
-3. Dar la espalda y seguir
 """
 
-        eleccion = engine.mostrar_nivel("assets/lvl2.jpg", texto)
+        eleccion = engine.mostrar_nivel(
+            "assets/lvl2.jpg",
+            texto,
+            opciones=True,
+            opciones_lista=[
+                "Mirar fijamente el espejo",
+                "Romper el espejo",
+                "Dar la espalda y seguir"
+            ]
+        )
 
         # -------------------------
         # DECISIONES
@@ -42,7 +46,11 @@ No estás mirando.
 Estás siendo observado.
 """
 
-            engine.mostrar_nivel("assets/lvl2.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl2.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "2":
@@ -61,7 +69,11 @@ La voz:
 "Romper no elimina."
 """
 
-            engine.mostrar_nivel("assets/lvl2.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl2.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "3":
@@ -75,7 +87,11 @@ Ahora está en vos.
 Y no podés dejar de sentirlo.
 """
 
-            engine.mostrar_nivel("assets/lvl2.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl2.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         return "muerte"

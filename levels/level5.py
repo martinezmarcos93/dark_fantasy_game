@@ -1,4 +1,5 @@
 class Level5:
+
     def __init__(self):
         self.nombre = "Las Moradas de los Muertos"
 
@@ -14,13 +15,11 @@ class Level5:
         if psique["corrupcion"] > 40:
             texto = texto.replace("a", "á").replace("e", "ë")
 
-        # Distorsión por lucidez (más críptico)
+        # Distorsión por lucidez
         if psique["lucidez"] > 40:
             texto = "..." + texto + "..."
 
         return texto
-
-class Level5:
 
     def jugar(self, player, engine):
 
@@ -36,21 +35,28 @@ Cada una distinta.
 Algunas rotas.
 Otras selladas.
 Algunas… respiran.
+
 Sentís que cada una lleva a algo distinto.
 Pero también sabés algo más:
 No estás eligiendo libremente.
 Algo en vos ya decidió.
+
 La voz, por última vez:
 "No elegís la puerta. La reconocés."
 
 ¿Qué hacés?
-
-1. Elegir una puerta al azar
-2. Intentar analizar las puertas
-3. No elegir ninguna
 """
 
-        eleccion = engine.mostrar_nivel("assets/lvl5.jpg", texto)
+        eleccion = engine.mostrar_nivel(
+            "assets/lvl5.jpg",
+            texto,
+            opciones=True,
+            opciones_lista=[
+                "Elegir una puerta al azar",
+                "Intentar analizar las puertas",
+                "No elegir ninguna"
+            ]
+        )
 
         # -------------------------
         # DECISIONES
@@ -69,7 +75,13 @@ Porque no cruzaste.
 Siempre estuviste ahí.
 """
 
-            engine.mostrar_nivel("assets/lvl5.jpg", texto_resultado)
+            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+
+            engine.mostrar_nivel(
+                "assets/lvl5.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "2":
@@ -83,12 +95,19 @@ Intentás entender.
 Pero las puertas cambian.
 Se reconfiguran.
 No hay lógica estable.
+
 Entonces entendés:
 No es el entorno.
 Sos vos.
 """
 
-            engine.mostrar_nivel("assets/lvl5.jpg", texto_resultado)
+            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+
+            engine.mostrar_nivel(
+                "assets/lvl5.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "3":
@@ -99,13 +118,20 @@ No elegís.
 Te quedás.
 El tiempo no pasa.
 O pasa demasiado.
+
 Las puertas siguen ahí.
 Esperando.
 Como si supieran…
 que eventualmente vas a ceder.
 """
 
-            engine.mostrar_nivel("assets/lvl5.jpg", texto_resultado)
+            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+
+            engine.mostrar_nivel(
+                "assets/lvl5.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         return "muerte"

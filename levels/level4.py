@@ -1,8 +1,7 @@
 class Level4:
+
     def __init__(self):
         self.nombre = "El Rey de las Sombras"
-
-class Level4:
 
     def jugar(self, player, engine):
 
@@ -25,13 +24,18 @@ La voz dice:
 "No sos uno. Elegí."
 
 ¿Qué hacés?
-
-1. Aceptar todas las versiones
-2. Rechazar las versiones
-3. Atacar a las versiones
 """
 
-        eleccion = engine.mostrar_nivel("assets/lvl4.jpg", texto)
+        eleccion = engine.mostrar_nivel(
+            "assets/lvl4.jpg",
+            texto,
+            opciones=True,
+            opciones_lista=[
+                "Aceptar todas las versiones",
+                "Rechazar las versiones",
+                "Atacar a las versiones"
+            ]
+        )
 
         # -------------------------
         # DECISIONES
@@ -53,7 +57,11 @@ Y por un instante…
 sos completo.
 """
 
-            engine.mostrar_nivel("assets/lvl4.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl4.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "2":
@@ -73,7 +81,11 @@ La voz susurra:
 "Negar es alimentar."
 """
 
-            engine.mostrar_nivel("assets/lvl4.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl4.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         elif eleccion == "3":
@@ -92,7 +104,11 @@ Más reales.
 Y ya no esperan.
 """
 
-            engine.mostrar_nivel("assets/lvl4.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl4.jpg",
+                texto_resultado,
+                opciones=False
+            )
             return "continuar"
 
         return "muerte"

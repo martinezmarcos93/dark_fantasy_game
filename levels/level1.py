@@ -1,8 +1,7 @@
 class Level1:
+
     def __init__(self):
         self.nombre = "La Cueva del Origen"
-
-class Level1:
 
     def jugar(self, player, engine):
 
@@ -16,13 +15,18 @@ Una voz, o tal vez un pensamiento que no es tuyo, susurra:
 "Antes de la luz… ya estabas aquí."
 
 ¿Qué hacés?
-
-1. Avanzar hacia la oscuridad
-2. Encender una antorcha
-3. Llamar para saber quién está ahí
 """
 
-        eleccion = engine.mostrar_nivel("assets/lvl1.jpg", texto)
+        eleccion = engine.mostrar_nivel(
+            "assets/lvl1.jpg",
+            texto,
+            opciones=True,
+            opciones_lista=[
+                "Avanzar hacia la oscuridad",
+                "Encender una antorcha",
+                "Llamar para saber quién está ahí"
+            ]
+        )
 
         # -------------------------
         # DECISIONES
@@ -42,7 +46,11 @@ La voz vuelve:
 "Recordar es descender."
 """
 
-            engine.mostrar_nivel("assets/lvl1.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl1.jpg",
+                texto_resultado,
+                opciones=False   # 🔥 CLAVE
+            )
             return "continuar"
 
         elif eleccion == "2":
@@ -61,7 +69,11 @@ La voz susurra:
 "La luz no revela. Delata."
 """
 
-            engine.mostrar_nivel("assets/lvl1.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl1.jpg",
+                texto_resultado,
+                opciones=False   # 🔥 CLAVE
+            )
             return "continuar"
 
         elif eleccion == "3":
@@ -76,7 +88,11 @@ Ahora sabés que no estás solo.
 Y nunca lo estuviste.
 """
 
-            engine.mostrar_nivel("assets/lvl1.jpg", texto_resultado)
+            engine.mostrar_nivel(
+                "assets/lvl1.jpg",
+                texto_resultado,
+                opciones=False   # 🔥 CLAVE
+            )
             return "continuar"
 
         return "muerte"
