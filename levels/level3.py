@@ -8,20 +8,13 @@ class Level3:
 
         texto = """
 La cueva se abre en una sala amplia.
-
 El aire es pesado.
 Antiguo.
-
 En el centro hay un altar de piedra.
-
 Encima… un libro.
-
 Sus páginas están en blanco.
-
 Pero algo se escribe lentamente.
-
 No con tinta.
-
 Con algo más denso.
 
 La voz susurra:
@@ -46,18 +39,12 @@ La voz susurra:
 
             texto_resultado = """
 Leés.
-
 Las palabras no están escritas.
-
 Se forman mientras las mirás.
-
 Y hablan de vos.
-
 De cosas que no recordabas…
 pero que son ciertas.
-
 Cada línea te revela.
-
 Pero también te cambia.
 """
 
@@ -69,19 +56,12 @@ Pero también te cambia.
 
             texto_resultado = """
 Apoyás tu mano.
-
 La piedra está tibia.
-
 La sangre fluye.
-
 El libro responde.
-
 Las páginas se llenan.
-
 Pero no con conocimiento.
-
 Con aceptación.
-
 Algo en vos… ya eligió.
 """
 
@@ -93,17 +73,11 @@ Algo en vos… ya eligió.
 
             texto_resultado = """
 Te alejás.
-
 Pero el altar no desaparece.
-
 Lo sentís.
-
 Como una decisión no tomada.
-
 Como algo pendiente.
-
 Y sabés…
-
 que lo vas a volver a ver.
 """
 

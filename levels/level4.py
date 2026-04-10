@@ -8,25 +8,15 @@ class Level4:
 
         texto = """
 El camino se estrecha.
-
 Las paredes ya no son piedra.
-
 Son… carne.
-
 Respiran.
-
 Late algo dentro.
-
 Avanzás igual.
-
 Llegás a una grieta.
-
 Y ahí… los ves.
-
 Versiones tuyas.
-
 Distintas.
-
 Una llora.
 Otra sonríe.
 Otra te observa con desprecio.
@@ -52,21 +42,14 @@ La voz dice:
 
             texto_resultado = """
 No elegís.
-
 Las aceptás.
-
 Todas.
-
 Las que duelen.
 Las que avergüenzan.
 Las que ocultabas.
-
 No desaparecen.
-
 Se alinean.
-
 Y por un instante…
-
 sos completo.
 """
 
@@ -79,17 +62,11 @@ sos completo.
 
             texto_resultado = """
 Negás.
-
 Una por una.
-
 Intentás borrar lo que no te gusta.
-
 Pero no se van.
-
 Se deforman.
-
 Se vuelven más intensas.
-
 Más presentes.
 
 La voz susurra:
@@ -105,21 +82,13 @@ La voz susurra:
 
             texto_resultado = """
 Atacás.
-
 Golpeás.
-
 Destruís.
-
 Pero cada versión rota…
-
 se multiplica.
-
 Ahora son más.
-
 Más agresivas.
-
 Más reales.
-
 Y ya no esperan.
 """
 

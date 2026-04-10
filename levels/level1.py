@@ -8,15 +8,11 @@ class Level1:
 
         texto = """
 Te adentras en la cueva.
-
 No hay antorchas. No hay sonido.
 Solo oscuridad.
-
 Algo… respira en la profundidad.
 No lo ves, pero lo sentís.
-
 Una voz, o tal vez un pensamiento que no es tuyo, susurra:
-
 "Antes de la luz… ya estabas aquí."
 
 ¿Qué hacés?
@@ -37,10 +33,8 @@ Una voz, o tal vez un pensamiento que no es tuyo, susurra:
 
             texto_resultado = """
 Caminás sin ver.
-
 Cada paso se siente… correcto.
 Como si ya hubieras estado ahí antes.
-
 La oscuridad no te rechaza.
 Te envuelve.
 
@@ -56,16 +50,11 @@ La voz vuelve:
 
             texto_resultado = """
 La antorcha enciende.
-
 La luz revela paredes húmedas…
 y marcas.
-
 No son naturales.
-
 Son manos.
-
 Cientos de ellas.
-
 Marcadas desde adentro.
 
 La voz susurra:
@@ -80,15 +69,10 @@ La voz susurra:
 
             texto_resultado = """
 Tu voz se pierde.
-
 Pero algo responde.
-
 No con sonido.
-
 Con presencia.
-
 Ahora sabés que no estás solo.
-
 Y nunca lo estuviste.
 """
 

@@ -9,13 +9,10 @@ class Level2:
         texto = """
 Avanzás más profundo en la cueva.
 El aire cambia. Es más denso.
-
 Llegás a una cámara circular.
 En el centro… hay un espejo.
-
 Pero no refleja tu cuerpo.
 Refleja… algo más.
-
 La voz regresa:
 "No sos lo que creés. Mirá."
 
@@ -37,17 +34,11 @@ La voz regresa:
 
             texto_resultado = """
 Te acercás.
-
 Tu reflejo no te copia.
-
 Se adelanta.
-
 Sonríe antes que vos.
-
 Y entonces entendés…
-
 No estás mirando.
-
 Estás siendo observado.
 """
 
@@ -59,17 +50,11 @@ Estás siendo observado.
 
             texto_resultado = """
 Golpeás el espejo.
-
 Se rompe.
-
 Pero no desaparece.
-
 Cada fragmento sigue reflejando.
-
 Versiones tuyas.
-
 Peores.
-
 Más sinceras.
 
 La voz:
@@ -84,13 +69,9 @@ La voz:
 
             texto_resultado = """
 Das la espalda.
-
 Pero sentís la mirada.
-
 El reflejo no depende del espejo.
-
 Ahora está en vos.
-
 Y no podés dejar de sentirlo.
 """
 

@@ -26,32 +26,20 @@ class Level5:
 
         texto = """
 El espacio se abre.
-
 Pero no es una sala.
-
 Es… algo indefinido.
-
 No hay suelo.
 No hay techo.
-
 Solo puertas.
-
 Decenas.
-
 Cada una distinta.
-
 Algunas rotas.
 Otras selladas.
 Algunas… respiran.
-
 Sentís que cada una lleva a algo distinto.
-
 Pero también sabés algo más:
-
 No estás eligiendo libremente.
-
 Algo en vos ya decidió.
-
 La voz, por última vez:
 "No elegís la puerta. La reconocés."
 
@@ -73,17 +61,11 @@ La voz, por última vez:
 
             texto_resultado = """
 Elegís.
-
 Sin pensar.
-
 La puerta cede.
-
 Pero al cruzar…
-
 no sentís cambio.
-
 Porque no cruzaste.
-
 Siempre estuviste ahí.
 """
 
@@ -96,21 +78,13 @@ Siempre estuviste ahí.
 
             texto_resultado = """
 Observás.
-
 Comparás.
-
 Intentás entender.
-
 Pero las puertas cambian.
-
 Se reconfiguran.
-
 No hay lógica estable.
-
 Entonces entendés:
-
 No es el entorno.
-
 Sos vos.
 """
 
@@ -122,19 +96,12 @@ Sos vos.
 
             texto_resultado = """
 No elegís.
-
 Te quedás.
-
 El tiempo no pasa.
-
 O pasa demasiado.
-
 Las puertas siguen ahí.
-
 Esperando.
-
 Como si supieran…
-
 que eventualmente vas a ceder.
 """
 
