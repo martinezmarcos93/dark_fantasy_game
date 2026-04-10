@@ -16,7 +16,7 @@ class UI:
         pygame.display.set_caption("Descenso al Umbral")
 
         # Fuente
-        self.font = pygame.font.Font("fonts/Deutsch.ttf", 22)
+        self.font = pygame.font.Font("fonts/Goth.ttf", 22)
 
         # Colores
         self.text_color = (180, 180, 180)
