@@ -16,11 +16,15 @@ class UI:
         pygame.display.set_caption("Descenso al Umbral")
  
         # Fuente
-        self.font = pygame.font.Font("fonts/Goth.ttf", 22)
+        self.font      = pygame.font.Font("fonts/Goth.ttf", 24)
+        self.font_btn  = pygame.font.Font("fonts/Goth.ttf", 24)
  
         # Colores
-        self.text_color = (180, 180, 180)
-        self.bg_color = (5, 5, 5)
+        self.text_color    = (80, 140, 60)      # verde podredumbre
+        self.btn_color     = (110, 170, 85)     # verde más claro en reposo
+        self.btn_hover     = (210, 40, 40)      # rojo brillante al hover
+        self.divider_color = (50, 80, 35)       # verde oscuro para la línea
+        self.bg_color      = (5, 5, 5)
  
         # ─────────────────────────────────────────
         # ZONAS FIJAS (corazón del nuevo sistema)
@@ -105,7 +109,7 @@ class UI:
     def dibujar_divisor(self):
         pygame.draw.line(
             self.screen,
-            (60, 60, 60),
+            self.divider_color,
             (self.BTN_X, self.DIVIDER_Y),
             (self.width - 20, self.DIVIDER_Y),
             1
@@ -134,15 +138,16 @@ class UI:
  
             for i, opcion in enumerate(opciones):
                 txt = f"{i+1}. {opcion}"
-                color = self.text_color
  
-                render = self.font.render(txt, True, color)
-                rect = render.get_rect(topleft=(self.BTN_X, y))
+                render_normal = self.font_btn.render(txt, True, self.btn_color)
+                rect = render_normal.get_rect(topleft=(self.BTN_X, y))
  
                 if rect.collidepoint(mouse_pos):
-                    render = self.font.render(txt, True, (200, 80, 80))  # hover
+                    render_final = self.font_btn.render(txt, True, self.btn_hover)
+                else:
+                    render_final = render_normal
  
-                self.screen.blit(render, rect)
+                self.screen.blit(render_final, rect)
                 botones.append((rect, str(i+1)))
                 y += self.BTN_H
  
