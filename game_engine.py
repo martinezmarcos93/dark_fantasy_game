@@ -1,5 +1,5 @@
 import random
-from ui import UI
+from ui import UI, EscapeAlMenu
 from player import Player
 from menu import Menu
 from intro import Intro
@@ -24,8 +24,11 @@ class GameEngine:
             if accion == "nueva":
                 borrar_partida()
                 self.current_level_index = 0
-                self.intro.mostrar()
-                self.crear_personaje()
+                try:
+                    self.intro.mostrar()
+                    self.crear_personaje()
+                except EscapeAlMenu:
+                    continue  # volver al menú principal
                 self.cargar_niveles()
                 self.jugar()
 
@@ -155,6 +158,10 @@ Elegí tu senda:
 """
             if psique_exito:
                 self.player.modificar_psique(psique_exito)
+                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
+                self.ui.mostrar_cartel_psique()
+            else:
+                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
         else:
             texto_resultado = f"""
 {texto_fallo}
@@ -163,8 +170,10 @@ Elegí tu senda:
 """
             if psique_fallo:
                 self.player.modificar_psique(psique_fallo)
-
-        self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
+                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
+                self.ui.mostrar_cartel_psique()
+            else:
+                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
 
         if not self.player.alive:
             return "muerte"
@@ -174,22 +183,29 @@ Elegí tu senda:
     # LOOP PRINCIPAL
     # ─────────────────────────────────────────
     def jugar(self):
-        while self.player.alive and self.current_level_index < len(self.levels):
-            nivel = self.levels[self.current_level_index]
-            resultado = nivel.jugar(self.player, self)
+        try:
+            while self.player.alive and self.current_level_index < len(self.levels):
+                nivel = self.levels[self.current_level_index]
+                resultado = nivel.jugar(self.player, self)
 
-            if resultado == "muerte":
-                self.player.morir("Fallaste en la prueba.")
-                break
+                if resultado == "muerte":
+                    self.player.morir("Fallaste en la prueba.")
+                    break
 
-            elif resultado == "continuar":
-                self.current_level_index += 1
+                elif resultado == "continuar":
+                    self.current_level_index += 1
+                    guardar_partida(self.player, self.current_level_index)
+
+                else:
+                    break
+
+            self.final_juego()
+
+        except EscapeAlMenu:
+            # Guardar estado y volver al loop principal (iniciar())
+            if self.player and self.player.alive:
                 guardar_partida(self.player, self.current_level_index)
-
-            else:
-                break
-
-        self.final_juego()
+            return
 
     # ─────────────────────────────────────────
     # CARGAR JUEGO DESDE JSON
