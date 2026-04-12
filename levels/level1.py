@@ -1,158 +1,22 @@
+from enemies import crear_guardian
+
 class Level1:
 
     def __init__(self):
         self.nombre = "La Cueva del Origen"
 
     # ─────────────────────────────────────────
-    # FASE 1 — COMBATE (diferenciado por clase)
-    # Enemigo: El Guardián de Piedra
+    # FASE 1 — COMBATE
     # ─────────────────────────────────────────
     def fase_combate(self, player, engine):
-
-        # Intro del enemigo — igual para todos
-        engine.mostrar_nivel(
-            "assets/enemy1.jpg",
-            """
-Antes de que la oscuridad te reciba…
-algo la bloquea.
-
-El Guardián de Piedra.
-
-No fue puesto aquí por nadie.
-Creció solo.
-Del mismo material que la cueva.
-De la misma necesidad de no dejar pasar.
-
-No tiene ojos.
-Pero te ve.
-
-
-[ ESPACIO para continuar ]
-""",
-            opciones=False
-        )
-
-        clase = player.clase
-
-        if clase == "Guerrero":
-            intro = """
-No necesitás pensar.
-Tu cuerpo ya sabe.
-
-Tomás el arma.
-La piedra también conoce el peso del acero.
-
-
-[ ESPACIO para pelear ]
-"""
-            stat = "fuerza"
-            dificultad = 4
-            exito = """
-Lo golpeaste donde debía ceder.
-La piedra se fracturó.
-El guardián retrocedió.
-
-No sin antes marcarte.
-Pero seguís en pie.
-Eso es suficiente.
-"""
-            fallo = """
-Te aplastó contra la pared.
-Sentiste algo ceder adentro.
-
-Te arrastrás.
-No te detiene.
-Pero tu cuerpo no lo olvidará.
-"""
-
-        elif clase == "Hechicero":
-            intro = """
-La fuerza bruta no es tu camino.
-
-La piedra tiene memoria.
-Y toda memoria tiene una grieta.
-
-Buscás la frecuencia correcta.
-Extendés la mano.
-
-
-[ ESPACIO para hechizar ]
-"""
-            stat = "mente"
-            dificultad = 4
-            exito = """
-Encontraste la grieta.
-Una palabra, una intención, una resonancia.
-
-La piedra se fragmentó desde adentro.
-El pasaje quedó libre.
-
-Solo te costó claridad.
-"""
-            fallo = """
-El conjuro rebotó.
-La piedra no tenía la grieta que buscabas.
-
-El guardián te barrió con un brazo.
-Caíste lejos.
-
-Algo en tu mente crujió.
-"""
-
-        else:  # Ladrón
-            intro = """
-Los ojos de piedra no ven igual que los de carne.
-
-Hay sombras.
-Hay ángulos.
-Hay un lado que siempre existe.
-
-Te movés despacio.
-Sin ruido.
-
-
-[ ESPACIO para evadir ]
-"""
-            stat = "resistencia"
-            dificultad = 3
-            exito = """
-Pasaste por el borde.
-Pegado a la pared.
-
-El guardián miró hacia adelante
-mientras vos ya estabas del otro lado.
-
-Eso también tiene un costo.
-Saber que podés desaparecer.
-"""
-            fallo = """
-El guardián te vio igual.
-No se puede engañar a todo.
-
-Te golpeó de costado.
-No fue mortal.
-Fue un aviso.
-"""
-
-        resultado = engine.combate_narrativo(
-            "assets/enemy1.jpg",
-            intro,
-            dificultad,
-            stat,
-            exito,
-            fallo,
-            psique_exito={"lucidez": 5},
-            psique_fallo={"miedo": 8}
-        )
-
-        return resultado  # "vivo" o "muerte"
+        enemy = crear_guardian()
+        return engine.combate_narrativo(enemy)
 
     # ─────────────────────────────────────────
-    # FASE 2 — DECISIÓN PSICOLÓGICA (original)
+    # FASE 2 — DECISIÓN PSICOLÓGICA
     # ─────────────────────────────────────────
     def fase_psicologica(self, player, engine):
 
-        # Recuperación parcial entre fases
         player.recuperar(vida=8, energia=15)
 
         texto = """

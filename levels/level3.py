@@ -1,3 +1,5 @@
+from enemies import crear_sacerdote
+
 class Level3:
 
     def __init__(self):
@@ -8,159 +10,10 @@ class Level3:
     # Enemigo: El Sacerdote Sin Rostro
     # ─────────────────────────────────────────
     def fase_combate(self, player, engine):
+        from enemies import crear_sacerdote
+        enemy = crear_sacerdote()
+        return engine.combate_narrativo(enemy)
 
-        engine.mostrar_nivel(
-            "assets/enemy3.jpg",
-            """
-El altar no estaba vacío.
-
-El Sacerdote Sin Rostro lo custodia.
-
-No tiene facciones.
-Solo una superficie lisa donde debería haber una cara.
-Como si algo hubiera borrado todo
-antes de que pudiera formarse.
-
-No ataca.
-Pero tampoco deja pasar.
-Extiende las manos.
-Y el aire se vuelve espeso.
-
-
-[ ESPACIO para continuar ]
-""",
-            opciones=False
-        )
-
-        clase = player.clase
-
-        if clase == "Guerrero":
-            intro = """
-Lo que no tiene cara
-tampoco tiene miedo.
-
-Pero lo que no tiene miedo
-tampoco esquiva.
-
-Sabés exactamente qué hacer.
-
-
-[ ESPACIO para pelear ]
-"""
-            stat = "fuerza"
-            dificultad = 5
-            exito = """
-Lo golpeaste directo.
-Sin dudas.
-Sin preguntas.
-
-Cayó.
-No con dolor.
-Con algo parecido al alivio.
-
-El camino al altar quedó libre.
-"""
-            fallo = """
-El aire espeso te ralentizó.
-Cada golpe tuyo llegó tarde.
-
-El sacerdote te tocó en el pecho.
-No fue un golpe.
-Fue una extracción.
-
-Algo salió de vos.
-No sabés qué.
-"""
-
-        elif clase == "Hechicero":
-            intro = """
-Sin rostro, sin nombre, sin forma estable.
-
-Pero todo lo que existe
-tiene una frecuencia.
-
-Buscás la suya.
-La que lo define aunque no quiera ser definido.
-
-
-[ ESPACIO para hechizar ]
-"""
-            stat = "mente"
-            dificultad = 5
-            exito = """
-Lo nombraste.
-
-Eso fue suficiente.
-Lo que no tiene nombre no puede resistir
-cuando alguien le da uno.
-
-Se detuvo.
-Se encogió.
-Dejó pasar.
-"""
-            fallo = """
-No encontraste su frecuencia.
-O tal vez no tiene ninguna.
-
-El hechizo se disolvió en el aire espeso.
-Y el sacerdote te tocó igual.
-
-Algo salió de vos.
-Un recuerdo, quizás.
-O una certeza.
-"""
-
-        else:  # Ladrón
-            intro = """
-Lo que no tiene ojos
-no puede seguirte con la vista.
-
-Pero este sacerdote siente.
-El calor, el movimiento, la intención.
-
-Tenés que no tener ninguna.
-Moverte sin querer moverte.
-
-
-[ ESPACIO para evadir ]
-"""
-            stat = "resistencia"
-            dificultad = 4
-            exito = """
-Te vaciaste.
-Sin plan, sin destino, sin urgencia.
-
-El sacerdote te buscó en el aire
-y no encontró nada.
-
-Pasaste a su lado como humo.
-"""
-            fallo = """
-Sentiste la intención antes de poder borrarla.
-Demasiado tarde.
-
-Las manos sin dedos te encontraron igual.
-Te tocaron en algún lugar que no es el cuerpo.
-
-Algo quedó marcado.
-"""
-
-        resultado = engine.combate_narrativo(
-            "assets/enemy3.jpg",
-            intro,
-            dificultad,
-            stat,
-            exito,
-            fallo,
-            psique_exito={"lucidez": 5, "corrupcion": 5},
-            psique_fallo={"culpa": 10, "miedo": 5}
-        )
-
-        return resultado
-
-    # ─────────────────────────────────────────
-    # FASE 2 — DECISIÓN PSICOLÓGICA (original)
-    # ─────────────────────────────────────────
     def fase_psicologica(self, player, engine):
 
         player.recuperar(vida=6, energia=12)

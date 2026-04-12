@@ -95,92 +95,16 @@ Elegí tu senda:
         return self.ui.esperar_input(imagen, texto, opciones, opciones_lista, self.player)
 
     # ─────────────────────────────────────────
-    # RESOLVER COMBATE
-    #
-    # stat      : valor numérico del stat relevante del jugador (fuerza, mente, etc.)
-    # dificultad: número base de la amenaza (1-10 típicamente)
-    # Devuelve  : dict con claves "exito" (bool), "daño" (int), "descripcion" (str)
-    #
-    # Mecánica:
-    #   - Se tiran 2d6 + stat del jugador vs dificultad * 2
-    #   - Si el resultado supera la dificultad → éxito, daño reducido
-    #   - Si no → fracaso, daño completo
-    #   - Siempre hay algo de daño (el Umbral cobra su precio)
+    # COMBATE NARRATIVO — nuevo sistema multironda
+    # Recibe un objeto Enemy (de enemies.py).
+    # Delega toda la lógica a combat_system.combate_completo().
+    # Devuelve "vivo" o "muerte".
     # ─────────────────────────────────────────
-    def resolver_combate(self, stat, dificultad):
-        tirada = random.randint(1, 6) + random.randint(1, 6) + stat
-        umbral = dificultad * 2
+    def combate_narrativo(self, enemy):
+        from combat_system import combate_completo
+        return combate_completo(enemy, self.player, self)
 
-        if tirada >= umbral:
-            exito = True
-            daño = random.randint(1, dificultad) * 3          # daño leve
-            descripcion = "superaste la prueba, aunque no sin coste"
-        else:
-            exito = False
-            daño = random.randint(dificultad, dificultad * 2) * 3   # daño serio
-            descripcion = "la amenaza te golpeó de lleno"
-
-        return {
-            "exito": exito,
-            "daño": daño,
-            "descripcion": descripcion,
-            "tirada": tirada,
-            "umbral": umbral
-        }
-
-    # ─────────────────────────────────────────
-    # RESOLVER COMBATE — resultado narrativo
-    #
-    # Wrapper de alto nivel que aplica daño al player
-    # y devuelve un string narrativo listo para mostrar.
-    # clase_stat: "fuerza", "mente" o cualquier key de player.stats
-    # ─────────────────────────────────────────
-    def combate_narrativo(self, imagen_path, intro_texto, dificultad, clase_stat, texto_exito, texto_fallo, psique_exito=None, psique_fallo=None):
-        """
-        Muestra intro de combate (diferenciada por clase), resuelve mecánica, aplica daño, muestra resultado.
-        Devuelve "vivo" o "muerte".
-        Nota: la pantalla del enemigo ya fue mostrada por el nivel antes de llamar aquí.
-        """
-        # Mostrar solo la intro diferenciada por clase (NO la pantalla del enemigo)
-        self.mostrar_nivel(imagen_path, intro_texto, opciones=False)
-
-        # Resolver mecánica
-        stat_val = self.player.stats.get(clase_stat, 5)
-        resultado = self.resolver_combate(stat_val, dificultad)
-
-        # Aplicar daño
-        daño_real = self.player.recibir_daño(resultado["daño"])
-
-        if resultado["exito"]:
-            texto_resultado = f"""
-{texto_exito}
-
-[ Daño recibido: {daño_real} — Vida: {self.player.vida}/{self.player.vida_max} ]
-"""
-            if psique_exito:
-                self.player.modificar_psique(psique_exito)
-                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
-                self.ui.mostrar_cartel_psique()
-            else:
-                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
-        else:
-            texto_resultado = f"""
-{texto_fallo}
-
-[ Daño recibido: {daño_real} — Vida: {self.player.vida}/{self.player.vida_max} ]
-"""
-            if psique_fallo:
-                self.player.modificar_psique(psique_fallo)
-                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
-                self.ui.mostrar_cartel_psique()
-            else:
-                self.mostrar_nivel(imagen_path, texto_resultado, opciones=False)
-
-        if not self.player.alive:
-            return "muerte"
-        return "vivo"
-
-    # ─────────────────────────────────────────
+        # ─────────────────────────────────────────
     # LOOP PRINCIPAL
     # ─────────────────────────────────────────
     def jugar(self):
