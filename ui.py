@@ -29,6 +29,14 @@ class UI:
         )
         pygame.display.set_caption("Descenso al Umbral")
 
+        # Ícono de ventana
+        try:
+            icono = pygame.image.load("assets/pentagram.jpg").convert()
+            icono = pygame.transform.scale(icono, (32, 32))
+            pygame.display.set_icon(icono)
+        except Exception:
+            pass
+
         # Canvas lógico — siempre 1000×600
         self.canvas = pygame.Surface((self.width, self.height))
 
