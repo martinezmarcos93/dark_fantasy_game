@@ -42,7 +42,15 @@ class UI:
         self.IMG_X      = 0
         self.IMG_Y      = 0
         self.IMG_W      = 480
-        self.IMG_H      = 600
+        self.IMG_H      = 500          # achicada para dejar espacio al HUD
+
+        # HUD — franja inferior izquierda
+        self.HUD_X       = 0
+        self.HUD_Y       = 508
+        self.HUD_W       = 480
+        self.HUD_H       = 92
+        self.font_hud    = pygame.font.Font("fonts/Goth.ttf", 16)
+        self.font_hud_sm = pygame.font.Font("fonts/Goth.ttf", 13)
 
         self.TEXT_X     = 495
         self.TEXT_Y     = 20
@@ -116,13 +124,93 @@ class UI:
         )
 
     # ─────────────────────────────────────────
+    # HUD — vida, energía, nombre/clase
+    # player puede ser None (menú, intro)
+    # ─────────────────────────────────────────
+    def dibujar_hud(self, player=None):
+        # Fondo del HUD
+        pygame.draw.rect(
+            self.screen,
+            (10, 10, 10),
+            (self.HUD_X, self.HUD_Y, self.HUD_W, self.HUD_H)
+        )
+        # Línea separadora superior del HUD
+        pygame.draw.line(
+            self.screen,
+            self.divider_color,
+            (self.HUD_X, self.HUD_Y),
+            (self.HUD_X + self.HUD_W, self.HUD_Y),
+            1
+        )
+
+        if player is None:
+            return
+
+        x = self.HUD_X + 12
+        y = self.HUD_Y + 10
+
+        # Nombre y clase
+        nombre_txt = self.font_hud.render(
+            f"{player.name}  ·  {player.clase}", True, (90, 130, 70)
+        )
+        self.screen.blit(nombre_txt, (x, y))
+        y += 22
+
+        # ── BARRA DE VIDA ──
+        self._dibujar_barra(
+            x, y,
+            valor=player.vida,
+            maximo=player.vida_max,
+            color_llena=(160, 30, 30),
+            color_vacia=(40, 10, 10),
+            etiqueta="HP"
+        )
+        y += 22
+
+        # ── BARRA DE ENERGÍA ──
+        color_e = (40, 80, 160) if player.clase == "Hechicero" else (140, 120, 20)
+        color_e_vacia = (10, 20, 40) if player.clase == "Hechicero" else (35, 30, 5)
+        self._dibujar_barra(
+            x, y,
+            valor=player.energia,
+            maximo=player.energia_max,
+            color_llena=color_e,
+            color_vacia=color_e_vacia,
+            etiqueta=player.energia_nombre[:2].upper()
+        )
+
+    def _dibujar_barra(self, x, y, valor, maximo, color_llena, color_vacia, etiqueta):
+        BAR_W = 300
+        BAR_H = 14
+
+        # Etiqueta
+        lbl = self.font_hud_sm.render(etiqueta, True, (100, 100, 100))
+        self.screen.blit(lbl, (x, y))
+
+        bx = x + 30
+        # Fondo
+        pygame.draw.rect(self.screen, color_vacia, (bx, y + 1, BAR_W, BAR_H))
+        # Relleno proporcional
+        proporcion = max(0, valor / maximo) if maximo > 0 else 0
+        pygame.draw.rect(self.screen, color_llena, (bx, y + 1, int(BAR_W * proporcion), BAR_H))
+        # Borde
+        pygame.draw.rect(self.screen, (60, 60, 60), (bx, y + 1, BAR_W, BAR_H), 1)
+
+        # Número
+        num_txt = self.font_hud_sm.render(f"{valor}/{maximo}", True, (120, 120, 120))
+        self.screen.blit(num_txt, (bx + BAR_W + 6, y))
+
+    # ─────────────────────────────────────────
     # RENDER PRINCIPAL
     # ─────────────────────────────────────────
-    def render(self, imagen, texto, scroll_y=0, opciones=None):
+    def render(self, imagen, texto, scroll_y=0, opciones=None, player=None):
         self.screen.fill(self.bg_color)
 
         # Zona 1 — imagen
         self.screen.blit(imagen, (self.IMG_X, self.IMG_Y))
+
+        # HUD debajo de la imagen
+        self.dibujar_hud(player)
 
         # Zona 2 — texto (con clip)
         self.dibujar_texto(texto, scroll_y)
@@ -157,11 +245,11 @@ class UI:
     # ─────────────────────────────────────────
     # INPUT DEL USUARIO
     # ─────────────────────────────────────────
-    def esperar_input(self, imagen, texto, opciones=True, opciones_lista=None):
+    def esperar_input(self, imagen, texto, opciones=True, opciones_lista=None, player=None):
         clock = pygame.time.Clock()
         scroll_y = 0
 
-        self.fade_in(imagen, texto)
+        self.fade_in(imagen, texto, player)
 
         while True:
             clock.tick(60)
@@ -169,7 +257,7 @@ class UI:
             if not pygame.mixer.music.get_busy():
                 self.reproducir_musica()
 
-            botones = self.render(imagen, texto, scroll_y, opciones_lista)
+            botones = self.render(imagen, texto, scroll_y, opciones_lista, player)
 
             for event in pygame.event.get():
 
@@ -213,7 +301,7 @@ class UI:
     # ─────────────────────────────────────────
     # FADE IN
     # ─────────────────────────────────────────
-    def fade_in(self, imagen, texto):
+    def fade_in(self, imagen, texto, player=None):
         temp = imagen.copy()
 
         for alpha in range(0, 255, 15):
@@ -222,6 +310,7 @@ class UI:
             temp.set_alpha(alpha)
             self.screen.blit(temp, (self.IMG_X, self.IMG_Y))
 
+            self.dibujar_hud(player)
             self.dibujar_texto(texto)
             self.dibujar_divisor()
 

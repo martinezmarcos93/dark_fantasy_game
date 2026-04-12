@@ -1,6 +1,7 @@
 from ui import UI
 from player import Player
 from menu import Menu
+from intro import Intro
 from save_system import guardar_partida, cargar_partida, borrar_partida
 
 class GameEngine:
@@ -10,9 +11,10 @@ class GameEngine:
         self.levels = []
         self.ui = UI()
         self.menu = Menu(self.ui)
+        self.intro = Intro(self.ui)
 
     # ─────────────────────────────────────────
-    # INICIO — muestra menú y decide qué hacer
+    # INICIO
     # ─────────────────────────────────────────
     def iniciar(self):
         while True:
@@ -21,6 +23,7 @@ class GameEngine:
             if accion == "nueva":
                 borrar_partida()
                 self.current_level_index = 0
+                self.intro.mostrar()          # ← 4 pantallas de lore
                 self.crear_personaje()
                 self.cargar_niveles()
                 self.jugar()
@@ -85,7 +88,7 @@ Elegí tu senda:
     # ─────────────────────────────────────────
     def mostrar_nivel(self, imagen_path, texto, opciones=True, opciones_lista=None):
         imagen = self.ui.cargar_imagen(imagen_path)
-        return self.ui.esperar_input(imagen, texto, opciones, opciones_lista)
+        return self.ui.esperar_input(imagen, texto, opciones, opciones_lista, self.player)
 
     # ─────────────────────────────────────────
     # LOOP PRINCIPAL
