@@ -137,10 +137,11 @@ Elegí tu senda:
     # ─────────────────────────────────────────
     def combate_narrativo(self, imagen_path, intro_texto, dificultad, clase_stat, texto_exito, texto_fallo, psique_exito=None, psique_fallo=None):
         """
-        Muestra intro de combate, resuelve mecánica, aplica daño, muestra resultado.
+        Muestra intro de combate (diferenciada por clase), resuelve mecánica, aplica daño, muestra resultado.
         Devuelve "vivo" o "muerte".
+        Nota: la pantalla del enemigo ya fue mostrada por el nivel antes de llamar aquí.
         """
-        # Pantalla de intro de amenaza (sin opciones, ESPACIO para continuar)
+        # Mostrar solo la intro diferenciada por clase (NO la pantalla del enemigo)
         self.mostrar_nivel(imagen_path, intro_texto, opciones=False)
 
         # Resolver mecánica

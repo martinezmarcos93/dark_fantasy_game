@@ -152,6 +152,9 @@ class UI:
 
         self.canvas.set_clip(None)
 
+        # Devuelve la altura total del texto (en píxeles) para limitar scroll
+        return len(lineas_render) * self.LINE_H
+
     # ─────────────────────────────────────────
     # DIBUJAR LÍNEA DIVISORIA
     # ─────────────────────────────────────────
@@ -248,7 +251,7 @@ class UI:
         self.canvas.fill(self.bg_color)
         self.canvas.blit(imagen, (self.IMG_X, self.IMG_Y))
         self.dibujar_hud(player)
-        self.dibujar_texto(texto, scroll_y)
+        altura_texto = self.dibujar_texto(texto, scroll_y)
         self.dibujar_divisor()
 
         botones = []
@@ -268,7 +271,7 @@ class UI:
                 y += self.BTN_H
 
         self._blit_canvas()
-        return botones
+        return botones, altura_texto
 
     # ─────────────────────────────────────────
     # FADE IN
@@ -367,7 +370,10 @@ class UI:
             if not pygame.mixer.music.get_busy():
                 self.reproducir_musica()
 
-            botones = self.render(imagen, texto, scroll_y, opciones_lista, player)
+            botones, altura_texto = self.render(imagen, texto, scroll_y, opciones_lista, player)
+
+            # Límite inferior: no scrollear más allá del contenido
+            scroll_min = -(max(0, altura_texto - self.TEXT_H))
 
             for event in pygame.event.get():
 
@@ -387,13 +393,11 @@ class UI:
                         self.fade_out()
                         raise EscapeAlMenu()
 
-                    # Scroll
+                    # Scroll con límites
                     if event.key == pygame.K_DOWN:
-                        scroll_y -= self.LINE_H
+                        scroll_y = max(scroll_min, scroll_y - self.LINE_H)
                     if event.key == pygame.K_UP:
-                        scroll_y += self.LINE_H
-                    if scroll_y > 0:
-                        scroll_y = 0
+                        scroll_y = min(0, scroll_y + self.LINE_H)
 
                     # Sin opciones → SPACE
                     if not opciones:
@@ -410,6 +414,9 @@ class UI:
                         if event.key == pygame.K_3:
                             self.fade_out()
                             return "3"
+                        if event.key == pygame.K_4:
+                            self.fade_out()
+                            return "4"
 
                 # Click
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -431,14 +438,7 @@ class UI:
         cursor_visible = True
         cursor_timer = 0
 
-        while True:
-            clock.tick(60)
-            cursor_timer += 1
-            if cursor_timer >= 30:
-                cursor_visible = not cursor_visible
-                cursor_timer = 0
-
-            texto = f"""
+        texto_base = f"""
 Has elegido la senda del {clase}.
 
 
@@ -447,9 +447,19 @@ Antes de descender...
 
 
 """
+        # Fade in al entrar a la pantalla de nombre
+        self.fade_in(imagen, texto_base)
+
+        while True:
+            clock.tick(60)
+            cursor_timer += 1
+            if cursor_timer >= 30:
+                cursor_visible = not cursor_visible
+                cursor_timer = 0
+
             self.canvas.fill(self.bg_color)
             self.canvas.blit(imagen, (self.IMG_X, self.IMG_Y))
-            self.dibujar_texto(texto)
+            self.dibujar_texto(texto_base)
             self.dibujar_divisor()
 
             cursor = "|" if cursor_visible else " "
