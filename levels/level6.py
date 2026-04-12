@@ -6,6 +6,7 @@ class Level6:
     def distorsionar_texto(self, texto, player):
         psique = player.psique
 
+        # Distorsión más intensa
         if psique["miedo"] > 40:
             texto = texto.lower()
             texto = texto.replace(" ", "...")
@@ -20,13 +21,13 @@ class Level6:
 
     def jugar(self, player, engine):
 
-        texto = """
+        texto = f"""
 No hay más puertas.
 No hay más caminos.
 No hay cueva.
 No hay voz.
 Solo vos.
-O lo que queda.
+O lo que queda de {player.name}.
 
 Frente a vos…
 hay algo.
@@ -35,6 +36,8 @@ Pero no te copia.
 Respira con vos.
 Piensa con vos.
 Sabe todo lo que hiciste.
+
+Sabe que sos {player.name}.
 Y no te juzga.
 Solo espera.
 
@@ -52,8 +55,13 @@ Solo espera.
             ]
         )
 
+        # -------------------------
+        # DECISIÓN FINAL
+        # -------------------------
+
         if eleccion == "1":
             player.psique["lucidez"] += 20
+
             texto_resultado = """
 No resistís.
 No luchás.
@@ -68,15 +76,20 @@ no hay conflicto.
 
 Solo totalidad.
 """
+
+            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+
             engine.mostrar_nivel(
                 "assets/lvl6.jpg",
-                self.distorsionar_texto(texto_resultado, player),
+                texto_resultado,
                 opciones=False
             )
+            return "continuar"
 
         elif eleccion == "2":
             player.psique["miedo"] += 20
             player.psique["culpa"] += 10
+
             texto_resultado = """
 Negás.
 Intentás separarte.
@@ -89,15 +102,20 @@ Más inevitable.
 
 Porque no podés negar lo que sos.
 """
+
+            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+
             engine.mostrar_nivel(
                 "assets/lvl6.jpg",
-                self.distorsionar_texto(texto_resultado, player),
+                texto_resultado,
                 opciones=False
             )
+            return "continuar"
 
         elif eleccion == "3":
             player.psique["violencia"] += 20
             player.psique["corrupcion"] += 15
+
             texto_resultado = """
 Atacás.
 Sin dudar.
@@ -114,10 +132,14 @@ Pero no es eso.
 
 Sos vos.
 """
+
+            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+
             engine.mostrar_nivel(
                 "assets/lvl6.jpg",
-                self.distorsionar_texto(texto_resultado, player),
+                texto_resultado,
                 opciones=False
             )
+            return "continuar"
 
-        return "continuar"
+        return "muerte"

@@ -67,12 +67,32 @@ class UI:
         self.reproducir_musica()
 
     # ─────────────────────────────────────────
-    # CARGAR IMAGEN
+    # CARGAR IMAGEN — respeta proporción con letterbox
+    # Escala la imagen para ocupar el máximo espacio
+    # posible dentro de IMG_W x IMG_H sin deformar.
+    # Las franjas sobrantes quedan en negro (bg_color).
     # ─────────────────────────────────────────
     def cargar_imagen(self, path):
-        image = pygame.image.load(path).convert()
-        image = pygame.transform.scale(image, (self.IMG_W, self.IMG_H))
-        return image
+        original = pygame.image.load(path).convert()
+        orig_w, orig_h = original.get_size()
+
+        # Calcular escala manteniendo proporción
+        escala = min(self.IMG_W / orig_w, self.IMG_H / orig_h)
+        nuevo_w = int(orig_w * escala)
+        nuevo_h = int(orig_h * escala)
+
+        scaled = pygame.transform.scale(original, (nuevo_w, nuevo_h))
+
+        # Canvas negro del tamaño exacto de la zona imagen
+        canvas = pygame.Surface((self.IMG_W, self.IMG_H))
+        canvas.fill(self.bg_color)
+
+        # Centrar la imagen escalada dentro del canvas
+        offset_x = (self.IMG_W - nuevo_w) // 2
+        offset_y = (self.IMG_H - nuevo_h) // 2
+        canvas.blit(scaled, (offset_x, offset_y))
+
+        return canvas
 
     # ─────────────────────────────────────────
     # DIBUJAR TEXTO — confinado a ZONA TEXTO

@@ -210,23 +210,193 @@ Elegí tu senda:
         return True
 
     # ─────────────────────────────────────────
+    # PANTALLA DE MUERTE
+    # Imagen según clase + texto según nivel donde murió
+    # ─────────────────────────────────────────
+    def pantalla_muerte(self):
+        clase = self.player.clase
+        nivel = self.current_level_index  # 0-3 para muertes en combate
+
+        imagenes = {
+            "Guerrero":  "assets/death_warrior.jpg",
+            "Hechicero": "assets/death_mage.jpg",
+            "Ladrón":    "assets/death_rogue.jpg",
+        }
+        imagen_path = imagenes.get(clase, "assets/lvl6.jpg")
+
+        textos_guerrero = [
+            f"""
+{self.player.name}.
+
+La piedra no distingue entre los valientes y los demás.
+Solo entre lo que resiste... y lo que cede.
+
+Cediste.
+
+El Umbral absorbió tu fuerza.
+Ahora es suya.
+""",
+            f"""
+{self.player.name}.
+
+Peleaste contra vos mismo.
+Y perdiste.
+
+No hay vergüenza en eso.
+Solo hay silencio.
+
+El reflejo sigue ahí.
+Con tu cara.
+Con tu fuerza.
+Sin vos.
+""",
+            f"""
+{self.player.name}.
+
+El Sacerdote no te mató.
+Tomó algo.
+
+Y sin eso...
+el cuerpo siguió un rato más.
+Pero vos ya no estabas adentro.
+""",
+            f"""
+{self.player.name}.
+
+La Sombra Soberana te conocía
+mejor de lo que te conocías vos.
+
+Cada derrota que alguna vez tuviste
+ya estaba en ella.
+
+Ahora también estás vos.
+"""
+        ]
+
+        textos_hechicero = [
+            f"""
+{self.player.name}.
+
+La piedra no tiene memoria.
+Tenías razón.
+
+Pero tampoco tiene piedad.
+
+Tu hechizo volvió.
+Y fue más honesto que vos.
+""",
+            f"""
+{self.player.name}.
+
+El conocimiento que usaste contra el Reflejo
+era tuyo.
+
+Y él te lo devolvió
+multiplicado por todo lo que sabías.
+
+Moriste de tu propia comprensión.
+""",
+            f"""
+{self.player.name}.
+
+Intentaste nombrarlo.
+Fallaste.
+
+Lo que no puede ser nombrado
+tampoco puede ser detenido.
+
+Se llevó algo tuyo.
+El nombre que más importaba.
+El tuyo.
+""",
+            f"""
+{self.player.name}.
+
+Había demasiadas historias en la Sombra.
+No podías contenerlas todas.
+
+Una mente que lo intenta igual
+se rompe igual.
+
+La tuya resistió hasta el final.
+Eso es suficiente.
+O debería serlo.
+"""
+        ]
+
+        textos_ladron = [
+            f"""
+{self.player.name}.
+
+Siempre hay alguien que te ve
+aunque no quieras ser visto.
+
+El Guardián no tenía ojos.
+Pero te encontró igual.
+
+Algunas cosas no se pueden esquivar.
+Solo se pueden recibir.
+""",
+            f"""
+{self.player.name}.
+
+Intentaste desaparecer.
+El Reflejo sabía adónde ibas
+antes de que lo supieras vos.
+
+Porque eras predecible.
+No por tus movimientos.
+Por tus miedos.
+""",
+            f"""
+{self.player.name}.
+
+Te vaciaste de intención.
+Casi lo lograste.
+
+Pero quedó un rastro.
+Pequeño.
+Suficiente.
+
+El Sacerdote marcó ese rastro.
+Y lo que está marcado
+no puede ocultarse más.
+""",
+            f"""
+{self.player.name}.
+
+Le diste algo tuyo como señuelo.
+La Sombra no lo aceptó.
+
+Fue por vos directamente.
+
+Porque ya te tenía adentro
+desde antes de que empezara la pelea.
+"""
+        ]
+
+        textos = {
+            "Guerrero":  textos_guerrero,
+            "Hechicero": textos_hechicero,
+            "Ladrón":    textos_ladron,
+        }
+
+        lista = textos.get(clase, textos_guerrero)
+        idx = min(nivel, len(lista) - 1)
+        texto_muerte = lista[idx]
+
+        self.ui.esperar_input(
+            self.ui.cargar_imagen(imagen_path),
+            texto_muerte,
+            opciones=False
+        )
+
+    # ─────────────────────────────────────────
     # FINAL DEL JUEGO
     # ─────────────────────────────────────────
     def final_juego(self):
         if not self.player.alive:
-            texto = f"""
-{self.player.name}...
-
-Tu historia termina en la oscuridad.
-
-El umbral no te devoró.
-Simplemente... dejaste de resistir.
-"""
-            self.ui.esperar_input(
-                self.ui.cargar_imagen("assets/lvl6.jpg"),
-                texto,
-                opciones=False
-            )
+            self.pantalla_muerte()
             borrar_partida()
             return
 
