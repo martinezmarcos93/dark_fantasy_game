@@ -18,11 +18,19 @@ class UI:
         pygame.init()
         pygame.mixer.init()
 
-        # Pantalla
-        self.width = 1000
+        # Resolución lógica fija — todo se dibuja aquí
+        self.width  = 1000
         self.height = 600
-        self.screen = pygame.display.set_mode((self.width, self.height))
+
+        # Ventana real (redimensionable + maximizable)
+        self.screen = pygame.display.set_mode(
+            (self.width, self.height),
+            pygame.RESIZABLE
+        )
         pygame.display.set_caption("Descenso al Umbral")
+
+        # Canvas lógico — siempre 1000×600
+        self.canvas = pygame.Surface((self.width, self.height))
 
         # Fuente
         self.font      = pygame.font.Font("fonts/Goth.ttf", 24)
@@ -123,7 +131,7 @@ class UI:
             lineas_render.append(linea_actual)
 
         clip_rect = pygame.Rect(self.TEXT_X, self.TEXT_Y, self.TEXT_W, self.TEXT_H)
-        self.screen.set_clip(clip_rect)
+        self.canvas.set_clip(clip_rect)
 
         y = self.TEXT_Y + scroll_y
         for linea in lineas_render:
@@ -131,17 +139,17 @@ class UI:
                 break
             if y >= self.TEXT_Y:
                 render = self.font.render(linea, True, self.text_color)
-                self.screen.blit(render, (self.TEXT_X, y))
+                self.canvas.blit(render, (self.TEXT_X, y))
             y += self.LINE_H
 
-        self.screen.set_clip(None)
+        self.canvas.set_clip(None)
 
     # ─────────────────────────────────────────
     # DIBUJAR LÍNEA DIVISORIA
     # ─────────────────────────────────────────
     def dibujar_divisor(self):
         pygame.draw.line(
-            self.screen,
+            self.canvas,
             self.divider_color,
             (self.BTN_X, self.DIVIDER_Y),
             (self.width - 20, self.DIVIDER_Y),
@@ -152,9 +160,11 @@ class UI:
     # HUD
     # ─────────────────────────────────────────
     def dibujar_hud(self, player=None):
-        pygame.draw.rect(self.screen, (10, 10, 10),
+        pygame.draw.rect(self.canvas, (10, 10, 10),
                          (self.HUD_X, self.HUD_Y, self.HUD_W, self.HUD_H))
-        pygame.draw.line(self.screen, self.divider_color,
+        pygame.draw.rect(self.canvas, (10, 10, 10),
+                         (self.HUD_X, self.HUD_Y, self.HUD_W, self.HUD_H))
+        pygame.draw.line(self.canvas, self.divider_color,
                          (self.HUD_X, self.HUD_Y),
                          (self.HUD_X + self.HUD_W, self.HUD_Y), 1)
 
@@ -166,7 +176,7 @@ class UI:
 
         nombre_txt = self.font_hud.render(
             f"{player.name}  ·  {player.clase}", True, (90, 130, 70))
-        self.screen.blit(nombre_txt, (x, y))
+        self.canvas.blit(nombre_txt, (x, y))
         y += 22
 
         self._dibujar_barra(x, y,
@@ -184,28 +194,58 @@ class UI:
     def _dibujar_barra(self, x, y, valor, maximo, color_llena, color_vacia, etiqueta):
         BAR_W, BAR_H = 300, 14
         lbl = self.font_hud_sm.render(etiqueta, True, (100, 100, 100))
-        self.screen.blit(lbl, (x, y))
+        self.canvas.blit(lbl, (x, y))
         bx = x + 30
-        pygame.draw.rect(self.screen, color_vacia, (bx, y + 1, BAR_W, BAR_H))
+        pygame.draw.rect(self.canvas, color_vacia, (bx, y + 1, BAR_W, BAR_H))
         proporcion = max(0, valor / maximo) if maximo > 0 else 0
-        pygame.draw.rect(self.screen, color_llena, (bx, y + 1, int(BAR_W * proporcion), BAR_H))
-        pygame.draw.rect(self.screen, (60, 60, 60), (bx, y + 1, BAR_W, BAR_H), 1)
+        pygame.draw.rect(self.canvas, color_llena, (bx, y + 1, int(BAR_W * proporcion), BAR_H))
+        pygame.draw.rect(self.canvas, (60, 60, 60), (bx, y + 1, BAR_W, BAR_H), 1)
         num_txt = self.font_hud_sm.render(f"{valor}/{maximo}", True, (120, 120, 120))
-        self.screen.blit(num_txt, (bx + BAR_W + 6, y))
+        self.canvas.blit(num_txt, (bx + BAR_W + 6, y))
+
+    # ─────────────────────────────────────────
+    # LETTERBOX — escala canvas lógico a ventana real
+    # ─────────────────────────────────────────
+    def _blit_canvas(self):
+        win_w, win_h = self.screen.get_size()
+        escala = min(win_w / self.width, win_h / self.height)
+        nuevo_w = int(self.width  * escala)
+        nuevo_h = int(self.height * escala)
+        escalado = pygame.transform.scale(self.canvas, (nuevo_w, nuevo_h))
+        offset_x = (win_w - nuevo_w) // 2
+        offset_y = (win_h - nuevo_h) // 2
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(escalado, (offset_x, offset_y))
+        pygame.display.flip()
+
+    # ─────────────────────────────────────────
+    # MOUSE → coordenadas logicas
+    # ─────────────────────────────────────────
+    def _mouse_logico(self):
+        mx, my = pygame.mouse.get_pos()
+        win_w, win_h = self.screen.get_size()
+        escala = min(win_w / self.width, win_h / self.height)
+        nuevo_w = int(self.width  * escala)
+        nuevo_h = int(self.height * escala)
+        offset_x = (win_w - nuevo_w) // 2
+        offset_y = (win_h - nuevo_h) // 2
+        lx = (mx - offset_x) / escala
+        ly = (my - offset_y) / escala
+        return (lx, ly)
 
     # ─────────────────────────────────────────
     # RENDER PRINCIPAL
     # ─────────────────────────────────────────
     def render(self, imagen, texto, scroll_y=0, opciones=None, player=None):
-        self.screen.fill(self.bg_color)
-        self.screen.blit(imagen, (self.IMG_X, self.IMG_Y))
+        self.canvas.fill(self.bg_color)
+        self.canvas.blit(imagen, (self.IMG_X, self.IMG_Y))
         self.dibujar_hud(player)
         self.dibujar_texto(texto, scroll_y)
         self.dibujar_divisor()
 
         botones = []
         if opciones:
-            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = self._mouse_logico()
             y = self.BTN_Y
             for i, opcion in enumerate(opciones):
                 txt = f"{i+1}. {opcion}"
@@ -215,11 +255,11 @@ class UI:
                     render_final = self.font_btn.render(txt, True, self.btn_hover)
                 else:
                     render_final = render_normal
-                self.screen.blit(render_final, rect)
+                self.canvas.blit(render_final, rect)
                 botones.append((rect, str(i+1)))
                 y += self.BTN_H
 
-        pygame.display.flip()
+        self._blit_canvas()
         return botones
 
     # ─────────────────────────────────────────
@@ -228,13 +268,13 @@ class UI:
     def fade_in(self, imagen, texto, player=None):
         temp = imagen.copy()
         for alpha in range(0, 255, 15):
-            self.screen.fill(self.bg_color)
+            self.canvas.fill(self.bg_color)
             temp.set_alpha(alpha)
-            self.screen.blit(temp, (self.IMG_X, self.IMG_Y))
+            self.canvas.blit(temp, (self.IMG_X, self.IMG_Y))
             self.dibujar_hud(player)
             self.dibujar_texto(texto)
             self.dibujar_divisor()
-            pygame.display.flip()
+            self._blit_canvas()
             pygame.time.delay(20)
 
     # ─────────────────────────────────────────
@@ -245,8 +285,8 @@ class UI:
         overlay.fill((0, 0, 0))
         for alpha in range(0, 256, 18):
             overlay.set_alpha(alpha)
-            self.screen.blit(overlay, (0, 0))
-            pygame.display.flip()
+            self.canvas.blit(overlay, (0, 0))
+            self._blit_canvas()
             pygame.time.delay(18)
 
     # ─────────────────────────────────────────
@@ -280,8 +320,8 @@ class UI:
             else:
                 alpha_txt = 255
 
-            self.screen.blit(overlay, (cx, cy))
-            pygame.draw.rect(self.screen, borde_color,
+            self.canvas.blit(overlay, (cx, cy))
+            pygame.draw.rect(self.canvas, borde_color,
                              (cx, cy, ancho_cartel, alto_cartel), 1)
 
             l1 = font_cartel.render("Esto tendrá repercusión", True, (190, 150, 40))
@@ -289,10 +329,10 @@ class UI:
             l1.set_alpha(alpha_txt)
             l2.set_alpha(alpha_txt)
 
-            self.screen.blit(l1, (cx + (ancho_cartel - l1.get_width()) // 2, cy + 12))
-            self.screen.blit(l2, (cx + (ancho_cartel - l2.get_width()) // 2, cy + 46))
+            self.canvas.blit(l1, (cx + (ancho_cartel - l1.get_width()) // 2, cy + 12))
+            self.canvas.blit(l2, (cx + (ancho_cartel - l2.get_width()) // 2, cy + 46))
 
-            pygame.display.flip()
+            self._blit_canvas()
 
             # Cualquier tecla lo cierra antes
             for event in pygame.event.get():
@@ -326,6 +366,11 @@ class UI:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
+                if event.type == pygame.VIDEORESIZE:
+                    self.screen = pygame.display.set_mode(
+                        (event.w, event.h), pygame.RESIZABLE
+                    )
 
                 if event.type == pygame.KEYDOWN:
 
@@ -361,7 +406,7 @@ class UI:
                 # Click
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if opciones_lista:
-                        mouse_pos = pygame.mouse.get_pos()
+                        mouse_pos = self._mouse_logico()
                         for rect, valor in botones:
                             if rect.collidepoint(mouse_pos):
                                 self.fade_out()
@@ -394,25 +439,30 @@ Antes de descender...
 
 
 """
-            self.screen.fill(self.bg_color)
-            self.screen.blit(imagen, (self.IMG_X, self.IMG_Y))
+            self.canvas.fill(self.bg_color)
+            self.canvas.blit(imagen, (self.IMG_X, self.IMG_Y))
             self.dibujar_texto(texto)
             self.dibujar_divisor()
 
             cursor = "|" if cursor_visible else " "
             linea_nombre = f"> {nombre}{cursor}"
             render_nombre = self.font_btn.render(linea_nombre, True, self.btn_hover)
-            self.screen.blit(render_nombre, (self.BTN_X, self.BTN_Y))
+            self.canvas.blit(render_nombre, (self.BTN_X, self.BTN_Y))
 
             instruccion = self.font.render("[ ENTER para confirmar ]", True, (60, 100, 45))
-            self.screen.blit(instruccion, (self.BTN_X, self.BTN_Y + 50))
+            self.canvas.blit(instruccion, (self.BTN_X, self.BTN_Y + 50))
 
-            pygame.display.flip()
+            self._blit_canvas()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
+                if event.type == pygame.VIDEORESIZE:
+                    self.screen = pygame.display.set_mode(
+                        (event.w, event.h), pygame.RESIZABLE
+                    )
 
                 if event.type == pygame.KEYDOWN:
 
@@ -460,7 +510,7 @@ Antes de descender...
             texto = f"{i+1}. {opcion}"
             render = self.font.render(texto, True, (255, 255, 255))
             rect = render.get_rect(topleft=(self.BTN_X, y))
-            self.screen.blit(render, rect)
+            self.canvas.blit(render, rect)
             botones.append((rect, str(i+1)))
             y += self.BTN_H
         return botones

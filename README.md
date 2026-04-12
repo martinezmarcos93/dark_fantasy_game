@@ -1,101 +1,178 @@
-# 🜏 Descenso al Umbral  
+# 🜏 Descenso al Umbral
 ### Aventura de Texto Psicológica en Fantasía Oscura
----
-## 🧠 Descripción
-**Descenso al Umbral** es una aventura de texto desarrollada en Python que combina narrativa de fantasía oscura con exploración psicológica.
-El jugador cree estar ingresando a un calabozo para cumplir una misión heroica.  
-Pero a medida que avanza… descubre que el verdadero recorrido es hacia su propia mente.
-No se trata de ganar.
-Se trata de revelarse.
----
-## 🌑 Características Principales
-- 🧩 Sistema de decisiones con consecuencias acumulativas  
-- 🧠 Variables psicológicas ocultas (psique)  
-- 🜏 Narrativa simbólica y esotérica  
-- 🧬 Múltiples finales basados en el comportamiento del jugador  
-- 🗝️ Niveles diseñados como pruebas internas, no desafíos físicos  
-- 🔄 Alta rejugabilidad  
----
-## 🧬 Sistema de Psique
-El juego no se basa únicamente en estadísticas visibles.
-Existe un sistema interno oculto que registra:
-- Violencia  
-- Miedo  
-- Culpa  
-- Lucidez  
-- Corrupción  
 
-Estas variables determinan:
-- cómo reacciona el mundo  
-- qué eventos ocurren  
-- cuál será tu destino final  
 ---
-## 🗺️ Estructura del Juego
-El descenso está dividido en niveles:
-1. **La Cueva del Origen** — contacto con la oscuridad  
-2. **El Espejo de las Formas** — confrontación con el yo  
-3. **El Ritual de la Entrega** — sacrificio  
-4. **El Rey de las Sombras** — juicio e interpretación  
-5. **Las Moradas de los Muertos** — destino condicionado  
-6. **El Umbral Final** — confrontación total  
+
+## 🧠 Descripción
+
+**Descenso al Umbral** es una aventura narrativa desarrollada en Python con Pygame que combina fantasía oscura con exploración psicológica. El jugador cree estar ingresando a un calabozo para cumplir una misión heroica. Pero a medida que avanza… descubre que el verdadero recorrido es hacia su propia mente.
+
+No se trata de ganar. Se trata de revelarse.
+
+---
+
+## 🌑 Características
+
+- Sistema de decisiones con consecuencias acumulativas y diferidas
+- Variables psicológicas ocultas que el jugador nunca ve directamente
+- Narrativa simbólica y esotérica inspirada en psicología junguiana
+- Múltiples finales determinados por el comportamiento acumulado
+- Combate narrativo diferenciado por clase (mecánica 2d6 + stat)
+- Texto que se distorsiona visualmente según el estado psíquico del personaje
+- Interfaz gráfica con Pygame: HUD, fade in/out, fuente gótica
+- Sonidos de teclas aleatorios al escribir el nombre del personaje
+- Música de fondo aleatoria desde carpeta `music/`
+- Sistema de guardado y carga de partida en JSON
+- Ventana redimensionable con escalado letterbox (proporción preservada)
+
+---
+
+## 🧬 Sistema de Psique
+
+El juego registra cinco vectores ocultos que se acumulan a lo largo de toda la partida:
+
+| Variable | Descripción |
+|---|---|
+| `violencia` | Tendencia a resolver por la fuerza o destrucción |
+| `miedo` | Evasión, parálisis, negación del riesgo |
+| `culpa` | Peso de las omisiones y las decisiones no tomadas |
+| `lucidez` | Comprensión lúcida de lo que ocurre |
+| `corrupción` | Integración con la oscuridad del Umbral |
+
+Estas variables determinan cómo reacciona el mundo, qué eventos se desencadenan y cuál será el destino final del personaje.
+
+---
+
+## 🗺️ Estructura del Descenso
+
+| Nivel | Nombre | Enemigo |
+|---|---|---|
+| 1 | La Cueva del Origen | El Guardián de Piedra |
+| 2 | El Espejo de las Formas | El Reflejo Armado |
+| 3 | El Ritual de la Entrega | El Sacerdote Sin Rostro |
+| 4 | El Rey de las Sombras | La Sombra Soberana |
+| 5 | Las Moradas de los Muertos | — |
+| 6 | El Umbral Final | — |
+
+Cada nivel tiene dos fases: **combate narrativo** (diferenciado por clase) y **decisión psicológica** (con consecuencias ocultas).
+
+---
+
+## ⚔️ Clases
+
+| Clase | Stat principal | Recurso |
+|---|---|---|
+| Guerrero | Fuerza | Stamina |
+| Hechicero | Mente | Magia |
+| Ladrón | Resistencia | Ingenio |
+
+Cada clase enfrenta los mismos enemigos con mecánicas y textos distintos.
+
 ---
 
 ## 🜁 Finales
-El juego cuenta con múltiples finales narrativos, entre ellos:
-- Entidad del Abismo  
-- Lucidez Total  
-- Locura  
-- Autodestrucción  
-- Culpa Eterna  
-- Disolución  
-- Olvido  
-Cada final es consecuencia directa de tus decisiones.
+
+El juego tiene ocho finales narrativos posibles determinados por la combinación de variables psíquicas al terminar el descenso:
+
+- **Entidad del Abismo** — corrupción extrema
+- **Lucidez Total** — lucidez alta, corrupción moderada
+- **Locura** — miedo dominante
+- **Autodestrucción** — violencia y corrupción combinadas
+- **Culpa Eterna** — culpa dominante
+- **Voluntad Pura** — corrupción y lucidez en tensión
+- **Disolución** — miedo sin lucidez
+- **Olvido** — ningún vector dominante
+
+Ningún final es explícitamente "bueno" o "malo".
+
 ---
+
 ## 🏗️ Estructura del Proyecto
-main.py
-game_engine.py
-player.py
-levels/
-level1.py
-level2.py
-level3.py
-level4.py
-level5.py
-level6.py
+
+```
+aventura oscura/
+├── main.py              # Entrada
+├── game_engine.py       # Director: loop, combate, finales
+├── ui.py                # Pygame: render, input, audio, escalado
+├── player.py            # Objeto jugador: stats, psique, daño
+├── menu.py              # Menú principal y créditos
+├── intro.py             # Pantallas de introducción
+├── save_system.py       # Guardado/carga JSON
+├── levels/
+│   ├── level1.py  →  La Cueva del Origen
+│   ├── level2.py  →  El Espejo de las Formas
+│   ├── level3.py  →  El Ritual de la Entrega
+│   ├── level4.py  →  El Rey de las Sombras
+│   ├── level5.py  →  Las Moradas de los Muertos
+│   └── level6.py  →  El Umbral Final
+├── assets/              # Imágenes de niveles y enemigos
+├── fonts/               # Fuente gótica (Goth.ttf)
+├── music/               # Música de fondo (.mp3)
+└── sounds/              # Sonidos de teclas (.wav)
+```
+
 ---
+
 ## ▶️ Cómo Ejecutar
-1. Clonar el repositorio:
+
+**Requisitos:**
+```
+Python 3.11+
+pygame
+```
+
+**Instalación:**
+```bash
 git clone https://github.com/martinezmarcos93/dark_fantasy_game.git
-cd tu-repo
-
-2.Ejecutar el juego:
+cd dark_fantasy_game
+pip install pygame
 python main.py
+```
 
-🖥️ Tecnologías
-Python 3
-Consola (CLI)
+**Controles:**
+| Tecla | Acción |
+|---|---|
+| `ESPACIO` | Continuar pantalla narrativa |
+| `1` / `2` / `3` / `4` | Elegir opción |
+| `↑` / `↓` | Scroll de texto |
+| `ESC` | Volver al menú (guarda automáticamente) |
+| Clic | Seleccionar opción con mouse |
 
-🔮 Futuro del Proyecto
-Interfaz gráfica (pygame)
-Sistema de guardado
-Música y ambientación sonora
-Expansión narrativa y rutas alternativas
+---
 
-🧠 Filosofía del Proyecto
-Este juego está inspirado en conceptos esotéricos y psicológicos:
-La oscuridad como origen
-El conocimiento como transformación
-El descenso como proceso interno
-El yo como enemigo final
+## 🖥️ Tecnologías
 
-El dungeon no es un lugar.
-Es una proyección.
+- Python 3.11
+- Pygame (gráficos, audio, input)
+- JSON (sistema de guardado)
 
-⚠️ Nota
+---
 
-Este juego contiene temas introspectivos y puede resultar inquietante.
-No está diseñado como una experiencia casual.
+## 🔮 Roadmap
 
-👤 Autor
+- [ ] Iconos de psique visibles (feedback sutil sin revelar valores)
+- [ ] Más variaciones de texto en cartel de psique según variable afectada
+- [ ] Niveles adicionales con bifurcaciones narrativas
+- [ ] Efectos de partículas en transiciones
+- [ ] Soporte para gamepad
+- [ ] Versión empaquetada (.exe) para distribución sin Python
 
-Proyecto desarrollado por Marcos Martínez
+---
+
+## 🧠 Filosofía
+
+> *El dungeon no es un lugar. Es una proyección.*
+
+Inspirado en la psicología junguiana, la tradición esotérica y el diseño de Soulsborne. La oscuridad no es el enemigo. La resistencia a conocerla, sí.
+
+---
+
+## ⚠️ Advertencia
+
+Este juego contiene temas introspectivos, simbología oscura y narrativa perturbadora. No está diseñado como experiencia casual.
+
+---
+
+## 👤 Autor
+
+Desarrollado por **Marcos Martínez**
