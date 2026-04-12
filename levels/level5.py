@@ -6,16 +6,13 @@ class Level5:
     def distorsionar_texto(self, texto, player):
         psique = player.psique
 
-        # Distorsión por miedo
         if psique["miedo"] > 30:
             texto = texto.replace(" ", "  ")
             texto = texto.lower()
 
-        # Distorsión por corrupción
         if psique["corrupcion"] > 40:
             texto = texto.replace("a", "á").replace("e", "ë")
 
-        # Distorsión por lucidez
         if psique["lucidez"] > 40:
             texto = "..." + texto + "..."
 
@@ -58,13 +55,8 @@ La voz, por última vez:
             ]
         )
 
-        # -------------------------
-        # DECISIONES
-        # -------------------------
-
         if eleccion == "1":
             player.psique["corrupcion"] += 10
-
             texto_resultado = """
 Elegís.
 Sin pensar.
@@ -74,20 +66,15 @@ no sentís cambio.
 Porque no cruzaste.
 Siempre estuviste ahí.
 """
-
-            texto_resultado = self.distorsionar_texto(texto_resultado, player)
-
             engine.mostrar_nivel(
                 "assets/lvl5.jpg",
-                texto_resultado,
+                self.distorsionar_texto(texto_resultado, player),
                 opciones=False
             )
-            return "continuar"
 
         elif eleccion == "2":
             player.psique["lucidez"] += 10
             player.psique["culpa"] += 5
-
             texto_resultado = """
 Observás.
 Comparás.
@@ -100,19 +87,14 @@ Entonces entendés:
 No es el entorno.
 Sos vos.
 """
-
-            texto_resultado = self.distorsionar_texto(texto_resultado, player)
-
             engine.mostrar_nivel(
                 "assets/lvl5.jpg",
-                texto_resultado,
+                self.distorsionar_texto(texto_resultado, player),
                 opciones=False
             )
-            return "continuar"
 
         elif eleccion == "3":
             player.psique["miedo"] += 15
-
             texto_resultado = """
 No elegís.
 Te quedás.
@@ -124,14 +106,10 @@ Esperando.
 Como si supieran…
 que eventualmente vas a ceder.
 """
-
-            texto_resultado = self.distorsionar_texto(texto_resultado, player)
-
             engine.mostrar_nivel(
                 "assets/lvl5.jpg",
-                texto_resultado,
+                self.distorsionar_texto(texto_resultado, player),
                 opciones=False
             )
-            return "continuar"
 
-        return "muerte"
+        return "continuar"
