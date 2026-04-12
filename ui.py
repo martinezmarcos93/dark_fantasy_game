@@ -63,19 +63,21 @@ class UI:
         self.DIVIDER_Y  = 400
 
         # ─────────────────────────────────────────
-        # SONIDO MÁQUINA DE ESCRIBIR
-        # Busca en assets/ y sounds/ — si no existe, silencio
+        # SONIDOS DE TECLA (aleatorios)
+        # Carga todos los .wav de sounds/ — reproduce uno al azar por tecla
         # ─────────────────────────────────────────
-        self.sonido_tecla = None
-        for ruta in ["assets/typewriter.wav", "sounds/typewriter.wav",
-                     "assets/typewriter.mp3", "sounds/typewriter.mp3"]:
-            if os.path.exists(ruta):
-                try:
-                    self.sonido_tecla = pygame.mixer.Sound(ruta)
-                    self.sonido_tecla.set_volume(0.4)
-                except Exception:
-                    self.sonido_tecla = None
-                break
+        self.sonidos_tecla = []
+        carpeta_sounds = "sounds"
+        if os.path.exists(carpeta_sounds):
+            for archivo in sorted(os.listdir(carpeta_sounds)):
+                if archivo.endswith(".wav") or archivo.endswith(".mp3"):
+                    ruta = os.path.join(carpeta_sounds, archivo)
+                    try:
+                        s = pygame.mixer.Sound(ruta)
+                        s.set_volume(0.4)
+                        self.sonidos_tecla.append(s)
+                    except Exception:
+                        pass
 
         # Música
         self.reproducir_musica()
@@ -426,13 +428,13 @@ Antes de descender...
                     elif event.key == pygame.K_BACKSPACE:
                         if nombre:
                             nombre = nombre[:-1]
-                            if self.sonido_tecla:
-                                self.sonido_tecla.play()
+                            if self.sonidos_tecla:
+                                random.choice(self.sonidos_tecla).play()
 
                     elif len(nombre) < 20 and event.unicode.isprintable():
                         nombre += event.unicode
-                        if self.sonido_tecla:
-                            self.sonido_tecla.play()
+                        if self.sonidos_tecla:
+                            random.choice(self.sonidos_tecla).play()
 
     # ─────────────────────────────────────────
     # MÚSICA ALEATORIA
