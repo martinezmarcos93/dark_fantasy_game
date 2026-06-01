@@ -21,13 +21,15 @@ HECHIZOS = [
         "nombre": "Palabra de Fuego",
         "descripcion": "Daño directo alto",
         "efecto": "daño_alto",
+        "costo_energia": 15,
         "inmune": []
     },
     {
         "id": "velo",
         "nombre": "Velo de Sombra",
-        "descripcion": "Reduce daño próxima ronda",
+        "descripcion": "Reduce daño esta ronda",
         "efecto": "defensa",
+        "costo_energia": 10,
         "inmune": []
     },
     {
@@ -35,6 +37,7 @@ HECHIZOS = [
         "nombre": "Resonancia Mental",
         "descripcion": "Ventaja en siguiente tirada",
         "efecto": "ventaja",
+        "costo_energia": 10,
         "inmune": []
     },
     {
@@ -42,6 +45,7 @@ HECHIZOS = [
         "nombre": "Nombre Verdadero",
         "descripcion": "Paraliza al enemigo una ronda",
         "efecto": "paralizar",
+        "costo_energia": 20,
         "inmune": ["sacerdote"]  # El Sacerdote Sin Rostro no tiene nombre
     },
     {
@@ -49,6 +53,7 @@ HECHIZOS = [
         "nombre": "Fragmento del Abismo",
         "descripcion": "Daño masivo — te daña también",
         "efecto": "nuclear",
+        "costo_energia": 40,
         "inmune": []
     },
 ]
@@ -224,22 +229,24 @@ def resolver_accion_jugador(accion, player, enemy, state):
 
         elif accion == "golpe_cargado":
             state.golpe_cargado_disponible = False
+            player.gastar_energia(15)
             t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
-                result["texto"] = f"El golpe cargado encuentra su blanco. Impacto devastador.\n[ Daño infligido: {daño} ]"
+                result["texto"] = f"El golpe cargado encuentra su blanco. Impacto devastador.\n[ Daño infligido: {daño} — Stamina: -{15} ]"
                 result["daño_enemigo"] = daño
                 result["ronda_ganada"] = True
             else:
                 daño_recibido = random.randint(enemy.dificultad, enemy.dificultad * 2) * 3
-                result["texto"] = f"El golpe cargado erró. Quedaste expuesto y lo pagaste caro.\n[ Daño recibido: {daño_recibido} ]"
+                result["texto"] = f"El golpe cargado erró. Quedaste expuesto y lo pagaste caro.\n[ Daño recibido: {daño_recibido} — Stamina: -{15} ]"
                 result["daño_jugador"] = daño_recibido
 
         elif accion == "furia":
             state.furia_disponible = False
+            player.gastar_energia(20)
             daño = random.randint(enemy.dificultad * 2, enemy.dificultad * 3) * 4
             daño_propio = random.randint(5, 15)
-            result["texto"] = f"La furia ignora todo. Golpeás sin control, sin defensa.\n[ Daño infligido: {daño} — Daño propio: {daño_propio} ]"
+            result["texto"] = f"La furia ignora todo. Golpeás sin control, sin defensa.\n[ Daño infligido: {daño} — Daño propio: {daño_propio} — Stamina: -{20} ]"
             result["daño_enemigo"] = daño
             result["daño_jugador"] = daño_propio
             result["ronda_ganada"] = True
@@ -267,6 +274,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
 
             if accion in state.hechizos_disponibles:
                 state.hechizos_disponibles.remove(accion)
+            player.gastar_energia(hechizo["costo_energia"])
 
             # Verificar inmunidad del enemigo
             if enemy.id in hechizo["inmune"]:
@@ -332,48 +340,51 @@ def resolver_accion_jugador(accion, player, enemy, state):
     elif clase == "Ladrón":
 
         if accion == "observar":
+            player.gastar_energia(5)
             t = tirar(stats["resistencia"], enemy.dificultad)
             if t["exito"]:
                 result["texto"] = (
                     "Te fundís con la oscuridad. Estudiás cada movimiento.\n"
-                    "[ En posición — próxima ronda: Apuñalar o Estrangular disponibles ]"
+                    "[ En posición — próxima ronda: Apuñalar o Estrangular disponibles — Ingenio: -5 ]"
                 )
                 result["nuevo_estado"]["en_posicion"] = True
             else:
-                result["texto"] = "Intentás desaparecer pero algo te delata. No lograste posicionarte."
+                result["texto"] = "Intentás desaparecer pero algo te delata. No lograste posicionarte.\n[ Ingenio: -5 ]"
                 result["nuevo_estado"]["en_posicion"] = False
 
         elif accion == "apuñalar":
             state.en_posicion = False
+            player.gastar_energia(15)
             t = tirar(stats["resistencia"], enemy.dificultad, True)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
-                result["texto"] = f"Por la espalda. Sin aviso. Sin defensa posible.\n[ Daño infligido: {daño} ]"
+                result["texto"] = f"Por la espalda. Sin aviso. Sin defensa posible.\n[ Daño infligido: {daño} — Ingenio: -15 ]"
                 result["daño_enemigo"] = daño
                 result["ronda_ganada"] = True
             else:
                 daño_recibido = random.randint(enemy.dificultad, enemy.dificultad * 2) * 3
                 result["texto"] = (
                     f"Te vio en el último momento.\nTu ventaja se convirtió en trampa.\n"
-                    f"[ Daño recibido: {daño_recibido} ]"
+                    f"[ Daño recibido: {daño_recibido} — Ingenio: -15 ]"
                 )
                 result["daño_jugador"] = daño_recibido
 
         elif accion == "estrangular":
             state.en_posicion = False
+            player.gastar_energia(10)
             t = tirar(stats["resistencia"], enemy.dificultad)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 3
                 result["texto"] = (
                     f"Lo atrapás desde atrás. El agarre es firme.\n"
-                    f"No puede atacar la próxima ronda.\n[ Daño infligido: {daño} ]"
+                    f"No puede atacar la próxima ronda.\n[ Daño infligido: {daño} — Ingenio: -10 ]"
                 )
                 result["daño_enemigo"] = daño
                 result["nuevo_estado"]["_paralizado_siguiente"] = True
                 result["ronda_ganada"] = True
             else:
                 daño_recibido = random.randint(enemy.dificultad, enemy.dificultad * 2) * 2
-                result["texto"] = f"Resiste. Te saca de encima con fuerza bruta.\n[ Daño recibido: {daño_recibido} ]"
+                result["texto"] = f"Resiste. Te saca de encima con fuerza bruta.\n[ Daño recibido: {daño_recibido} — Ingenio: -10 ]"
                 result["daño_jugador"] = daño_recibido
 
         elif accion == "ataque_rapido":
@@ -454,28 +465,37 @@ def acciones_disponibles(player, state, enemy):
         acciones.append(("golpe_directo", "Golpe directo"))
         acciones.append(("defender", "Defender y contraatacar"))
         if state.golpe_cargado_disponible and player.vida >= player.vida_max * 0.6:
-            acciones.append(("golpe_cargado", "Golpe cargado  [1 uso]"))
+            puede = player.energia >= 15
+            sufijo = "  [1 uso — 15 ST]" if puede else "  [sin stamina]"
+            if puede:
+                acciones.append(("golpe_cargado", f"Golpe cargado{sufijo}"))
         if state.furia_disponible and player.vida <= player.vida_max * 0.4:
-            acciones.append(("furia", "Furia ciega  [1 uso — te daña]"))
+            puede = player.energia >= 20
+            sufijo = "  [1 uso — 20 ST, te daña]" if puede else "  [sin stamina]"
+            if puede:
+                acciones.append(("furia", f"Furia ciega{sufijo}"))
 
     elif clase == "Hechicero":
         for hid in state.hechizos_disponibles:
             hechizo = next(h for h in HECHIZOS if h["id"] == hid)
-            acciones.append((hid, f"{hechizo['nombre']} — {hechizo['descripcion']}"))
-        if not state.hechizos_disponibles:
+            costo = hechizo["costo_energia"]
+            puede = player.energia >= costo
+            if puede:
+                acciones.append((hid, f"{hechizo['nombre']} — {hechizo['descripcion']}  [{costo} MP]"))
+        # Daga si no hay magia suficiente para ningún hechizo o como última opción
+        if not acciones or not state.hechizos_disponibles:
             acciones.append(("daga", "Daga  [sin magia, daño mínimo]"))
-        # La daga siempre disponible como último recurso si quedan hechizos también
-        elif "daga" not in [a[0] for a in acciones]:
-            acciones.append(("daga", "Daga  [fallback]"))
+        else:
+            acciones.append(("daga", "Daga  [daño bajo, gratis]"))
 
     elif clase == "Ladrón":
         if state.en_posicion:
-            acciones.append(("apuñalar", "Apuñalar por la espalda  [requería posición ✓]"))
-            acciones.append(("estrangular", "Estrangular  [requería posición ✓]"))
+            acciones.append(("apuñalar", "Apuñalar por la espalda  [posición ✓ — 15 IN]"))
+            acciones.append(("estrangular", "Estrangular  [posición ✓ — 10 IN]"))
         else:
-            acciones.append(("observar", "Observar — preparar posición  [habilita ataques especiales]"))
-        acciones.append(("ataque_rapido", "Ataque rápido  [daño bajo, sin setup]"))
-        acciones.append(("huir", "Huir y reagruparse  [recupera energía, recibís daño]"))
+            acciones.append(("observar", "Observar — preparar posición  [5 IN]"))
+        acciones.append(("ataque_rapido", "Ataque rápido  [daño bajo, gratis]"))
+        acciones.append(("huir", "Huir y reagruparse  [recupera Ingenio, recibís daño]"))
 
     return acciones
 
