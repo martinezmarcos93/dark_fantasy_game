@@ -117,6 +117,7 @@ Elegí tu senda:
                     break
 
                 elif resultado == "continuar":
+                    self._mostrar_resumen_psique()
                     self.current_level_index += 1
                     guardar_partida(self.player, self.current_level_index)
 
@@ -360,6 +361,39 @@ Tu destino:
             opciones=False
         )
         borrar_partida()
+
+    def _mostrar_resumen_psique(self):
+        p = self.player.psique
+        nombres = {
+            "violencia":  "Violencia",
+            "miedo":      "Miedo",
+            "culpa":      "Culpa",
+            "lucidez":    "Lucidez",
+            "corrupcion": "Corrupción",
+        }
+        barras = ""
+        for clave, label in nombres.items():
+            val = p[clave]
+            llenas = int(val / 10)
+            vacias = 10 - llenas
+            barra = "█" * llenas + "░" * vacias
+            barras += f"{label:<12} [{barra}] {val:>3}/100\n"
+
+        texto = f"""
+— Estado psicológico —
+
+
+{barras}
+
+Lo que sentís va dejando marca.
+
+"""
+        imagen = self.ui.cargar_imagen(
+            ["assets/lvl1.jpg","assets/lvl2.jpg","assets/lvl3.jpg",
+             "assets/lvl4.jpg","assets/lvl5.jpg","assets/lvl6.jpg"]
+            [min(self.current_level_index, 5)]
+        )
+        self.ui.esperar_input(imagen, texto, opciones=False, player=self.player)
 
     def _mostrar_historial(self):
         if not self.player.historial:
