@@ -10,6 +10,7 @@ class GameEngine:
         self.current_level_index = 0
         self.levels = []
         self.save_slot = 0
+        self.modo_lectura = False
         self.ui = UI()
         self.menu = Menu(self.ui)
         self.intro = Intro(self.ui)
@@ -45,6 +46,24 @@ class GameEngine:
                 if exito:
                     self.cargar_niveles()
                     self.jugar()
+
+            elif accion == "lectura":
+                slot = self._elegir_slot(modo="nueva")
+                if slot is None:
+                    continue
+                self.save_slot = slot
+                self.modo_lectura = True
+                borrar_partida(slot)
+                self.current_level_index = 0
+                try:
+                    self.intro.mostrar()
+                    self.crear_personaje()
+                except EscapeAlMenu:
+                    self.modo_lectura = False
+                    continue
+                self.cargar_niveles()
+                self.jugar()
+                self.modo_lectura = False
 
             elif accion == "creditos":
                 self.menu.mostrar_creditos()
@@ -110,6 +129,11 @@ Elegí tu senda:
     # Devuelve "vivo" o "muerte".
     # ─────────────────────────────────────────
     def combate_narrativo(self, enemy):
+        if self.modo_lectura:
+            # Mostrar intro del enemigo y devolver victoria automática
+            self.mostrar_nivel(enemy.imagen, enemy.texto_intro, opciones=False)
+            self.player.modificar_psique(enemy.psique_victoria_jugador)
+            return "vivo"
         from combat_system import combate_completo
         return combate_completo(enemy, self.player, self)
 

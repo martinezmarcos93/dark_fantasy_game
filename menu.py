@@ -19,6 +19,7 @@ class Menu:
         opciones = ["Nueva partida"]
         if hay_guardado:
             opciones.append("Continuar")
+        opciones.append("Modo Lectura  [sin combate]")
         opciones.append("Créditos")
         opciones.append("Salir")
 
@@ -44,6 +45,8 @@ Los que regresan... ya no son los mismos.
         if hay_guardado:
             mapa[str(i)] = "cargar"
             i += 1
+        mapa[str(i)] = "lectura"
+        i += 1
         mapa[str(i)] = "creditos"
         i += 1
         mapa[str(i)] = "salir"
