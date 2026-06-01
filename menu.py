@@ -57,26 +57,80 @@ Los que regresan... ya no son los mismos.
     # PANTALLA DE CRÉDITOS
     # ─────────────────────────────────────────
     def mostrar_creditos(self):
+        import pygame, sys
         imagen = self.ui.cargar_imagen("assets/menu.jpg")
 
-        texto = """
-Descenso al Umbral
+        bloques = [
+            "Descenso al Umbral",
+            "Desarrollo y diseño\nMarcos Martínez",
+            "Inspirado en\nDark Souls  ·  Elden Ring\nPsicología Junguiana\nFilosofía esotérica",
+            '"El dungeon no es un lugar.\nEs una proyección."',
+            "[ ESPACIO para volver ]",
+        ]
 
+        clock = pygame.time.Clock()
+        font  = self.ui.font
+        ui    = self.ui
 
-Desarrollo y diseño:
-Marcos Martínez
+        for bloque in bloques:
+            # Fade in del bloque
+            for alpha in range(0, 256, 8):
+                clock.tick(60)
+                ui.canvas.fill(ui.bg_color)
+                ui.canvas.blit(imagen, (ui.IMG_X, ui.IMG_Y))
 
+                surf = pygame.Surface((ui.width, ui.height), pygame.SRCALPHA)
+                y = 220
+                for linea in bloque.split("\n"):
+                    r = font.render(linea, True, ui.text_color)
+                    r.set_alpha(alpha)
+                    surf.blit(r, (ui.width // 2 - r.get_width() // 2, y))
+                    y += 36
+                ui.canvas.blit(surf, (0, 0))
+                ui._blit_canvas()
 
-Inspirado en:
-Dark Souls · Elden Ring
-Psicología Junguiana
-Filosofía esotérica
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit(); sys.exit()
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        return
 
+            # Pausa visible
+            pausa = 90 if bloque != "[ ESPACIO para volver ]" else 9999
+            for _ in range(pausa):
+                clock.tick(60)
+                ui.canvas.fill(ui.bg_color)
+                ui.canvas.blit(imagen, (ui.IMG_X, ui.IMG_Y))
+                y = 220
+                for linea in bloque.split("\n"):
+                    r = font.render(linea, True, ui.text_color)
+                    ui.canvas.blit(r, (ui.width // 2 - r.get_width() // 2, y))
+                    y += 36
+                ui._blit_canvas()
 
-"El dungeon no es un lugar.
-Es una proyección."
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit(); sys.exit()
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        return
 
+            # Fade out
+            for alpha in range(255, -1, -8):
+                clock.tick(60)
+                ui.canvas.fill(ui.bg_color)
+                ui.canvas.blit(imagen, (ui.IMG_X, ui.IMG_Y))
+                surf = pygame.Surface((ui.width, ui.height), pygame.SRCALPHA)
+                y = 220
+                for linea in bloque.split("\n"):
+                    r = font.render(linea, True, ui.text_color)
+                    r.set_alpha(alpha)
+                    surf.blit(r, (ui.width // 2 - r.get_width() // 2, y))
+                    y += 36
+                ui.canvas.blit(surf, (0, 0))
+                ui._blit_canvas()
 
-[ESPACIO para volver]
-"""
-        self.ui.esperar_input(imagen, texto, opciones=False)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit(); sys.exit()
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        return
