@@ -259,7 +259,8 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 result["texto"] = "Algo falló. El hechizo no existe."
                 return result
 
-            state.hechizos_disponibles.remove(accion)
+            if accion in state.hechizos_disponibles:
+                state.hechizos_disponibles.remove(accion)
 
             # Verificar inmunidad del enemigo
             if enemy.id in hechizo["inmune"]:

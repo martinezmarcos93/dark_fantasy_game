@@ -86,7 +86,7 @@ class UI:
         carpeta_sounds = "sounds"
         if os.path.exists(carpeta_sounds):
             for archivo in sorted(os.listdir(carpeta_sounds)):
-                if archivo.endswith(".wav") or archivo.endswith(".mp3"):
+                if archivo.endswith(".wav") or archivo.endswith(".ogg"):
                     ruta = os.path.join(carpeta_sounds, archivo)
                     try:
                         s = pygame.mixer.Sound(ruta)
@@ -416,8 +416,8 @@ class UI:
                             self.fade_out()
                             return "4"
 
-                # Click
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                # Click izquierdo únicamente
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if opciones_lista:
                         mouse_pos = self._mouse_logico()
                         for rect, valor in botones:
