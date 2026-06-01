@@ -23,7 +23,8 @@ def guardar_partida(player, nivel_index, slot=0):
         "vida_max":   player.vida_max,
         "energia":    player.energia,
         "energia_max": player.energia_max,
-        "historial":  player.historial,
+        "historial":      player.historial,
+        "stats_combate":  player.stats_combate,
     }
     with open(_ruta(slot), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

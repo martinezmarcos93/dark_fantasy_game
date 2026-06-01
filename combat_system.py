@@ -213,7 +213,7 @@ def tirar(stat, dificultad, ventaja=False):
 def resolver_accion_jugador(accion, player, enemy, state):
     clase  = player.clase
     stats  = player.stats
-    result = {"texto": "", "daño_enemigo": 0, "daño_jugador": 0, "ronda_ganada": False, "nuevo_estado": {}}
+    result = {"texto": "", "daño_enemigo": 0, "daño_jugador": 0, "ronda_ganada": False, "critico": False, "nuevo_estado": {}}
 
     # La ventaja se consume al usarla por primera vez en el turno
     ventaja = state.ventaja_activa
@@ -228,6 +228,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 daño = random.randint(1, enemy.dificultad) * 4
                 if t["critico"]:
                     daño *= 2
+                    result["critico"] = True
                     result["texto"] = f"CRÍTICO — El golpe fue perfecto. Sin margen de error.\n[ Daño infligido: {daño} ]"
                 else:
                     result["texto"] = f"Tu golpe conecta. El guardián retrocede.\n[ Daño infligido: {daño} ]"
@@ -245,6 +246,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 daño_contra = random.randint(1, enemy.dificultad) * 2
                 if t["critico"]:
                     daño_contra *= 2
+                    result["critico"] = True
                     result["texto"] = f"CRÍTICO — Absorbés todo el impacto y contraatacás con fuerza.\n[ Daño bloqueado: {daño_bloqueado} — Contraataque: {daño_contra} ]"
                 else:
                     result["texto"] = f"Absorbés el golpe y contraatacás.\n[ Daño bloqueado: {daño_bloqueado} — Contraataque: {daño_contra} ]"
@@ -263,6 +265,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
                 if t["critico"]:
                     daño *= 2
+                    result["critico"] = True
                     result["texto"] = f"CRÍTICO — El golpe cargado destruye cualquier defensa.\n[ Daño infligido: {daño} — Stamina: -{15} ]"
                 else:
                     result["texto"] = f"El golpe cargado encuentra su blanco. Impacto devastador.\n[ Daño infligido: {daño} — Stamina: -{15} ]"
@@ -327,6 +330,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                     daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 4
                     if t["critico"]:
                         daño *= 2
+                        result["critico"] = True
                         result["texto"] = f"CRÍTICO — La Palabra de Fuego resuena hasta el hueso.\n[ Daño infligido: {daño} ]"
                     else:
                         result["texto"] = f"La Palabra de Fuego consume lo que toca.\n[ Daño infligido: {daño} ]"
@@ -396,6 +400,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
                 if t["critico"]:
                     daño *= 2
+                    result["critico"] = True
                     result["texto"] = f"CRÍTICO — Punto vital. El daño es absoluto.\n[ Daño infligido: {daño} — Ingenio: -15 ]"
                 else:
                     result["texto"] = f"Por la espalda. Sin aviso. Sin defensa posible.\n[ Daño infligido: {daño} — Ingenio: -15 ]"
@@ -665,8 +670,10 @@ def combate_completo(enemy, player, engine):
         except (ValueError, IndexError):
             accion_id = ids[0]
 
-        # Registrar acción para adaptación del enemigo
+        # Registrar acción para adaptación del enemigo y estadísticas
         state.acciones_jugador.append(accion_id)
+        sc = player.stats_combate
+        sc["acciones"][accion_id] = sc["acciones"].get(accion_id, 0) + 1
 
         # ── Resolver acción del jugador ───────────────────────
         result_jugador = resolver_accion_jugador(accion_id, player, enemy, state)
@@ -678,11 +685,15 @@ def combate_completo(enemy, player, engine):
         # Aplicar daño al enemigo
         enemy.vida -= result_jugador["daño_enemigo"]
         state.daño_jugador_total += result_jugador["daño_enemigo"]
+        player.stats_combate["daño_infligido"] += result_jugador["daño_enemigo"]
+        if result_jugador.get("critico"):
+            player.stats_combate["criticos"] += 1
 
         # Aplicar daño al jugador (por acciones propias)
         if result_jugador["daño_jugador"] > 0:
             daño_real = player.recibir_daño(result_jugador["daño_jugador"])
             state.daño_enemigo_total += daño_real
+            player.stats_combate["daño_recibido"] += daño_real
             ui.flash_daño()
 
         # Recuperar energía si huir
@@ -698,6 +709,7 @@ def combate_completo(enemy, player, engine):
         if result_enemigo["daño"] > 0:
             daño_enemigo_real = player.recibir_daño(result_enemigo["daño"])
             state.daño_enemigo_total += daño_enemigo_real
+            player.stats_combate["daño_recibido"] += daño_enemigo_real
             ui.flash_daño()
 
         # ── Impacto psíquico de acciones de combate ───────────────
@@ -712,12 +724,12 @@ def combate_completo(enemy, player, engine):
             player.modificar_psique(_psique_por_accion[accion_id])
 
         # ── Determinar ganador de la ronda ────────────────────
-        # Acciones defensivas/utilitarias (daño_enemigo=0, ronda_ganada=False)
-        # resultan en ronda neutral: ninguno suma punto.
         if result_jugador["ronda_ganada"]:
             state.rondas_jugador += 1
+            player.stats_combate["rondas_ganadas"] += 1
         elif daño_enemigo_real > result_jugador["daño_enemigo"]:
             state.rondas_enemigo += 1
+            player.stats_combate["rondas_perdidas"] += 1
 
         # ── Pantalla de resultado de ronda ────────────────────
         resultado_visual = (

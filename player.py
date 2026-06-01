@@ -70,6 +70,15 @@ class Player:
         self.level = 1
         # Registro narrativo de decisiones tomadas durante la partida
         self.historial = []
+        # Estadísticas de combate acumuladas
+        self.stats_combate = {
+            "daño_infligido":  0,
+            "daño_recibido":   0,
+            "rondas_ganadas":  0,
+            "rondas_perdidas": 0,
+            "criticos":        0,
+            "acciones":        {},   # accion_id → cantidad de veces usada
+        }
 
     # ─────────────────────────────────────────
     # MODIFICAR PSIQUE

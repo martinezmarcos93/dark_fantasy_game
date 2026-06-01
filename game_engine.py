@@ -216,8 +216,9 @@ Elegí tu senda:
         self.player.alive  = data["alive"]
         self.player.vida    = data.get("vida", self.player.vida_max)
         self.player.energia = data.get("energia", self.player.energia_max)
-        self.player.historial = data.get("historial", [])
-        self.current_level_index = data["nivel_actual"]
+        self.player.historial      = data.get("historial", [])
+        self.player.stats_combate  = data.get("stats_combate", self.player.stats_combate)
+        self.current_level_index   = data["nivel_actual"]
         return True
 
     # ─────────────────────────────────────────
@@ -411,6 +412,7 @@ desde antes de que empezara la pelea.
             borrar_partida(self.save_slot)
             return
 
+        self._mostrar_estadisticas()
         self._mostrar_historial()
 
         ending = self.determinar_final()
@@ -427,6 +429,40 @@ Tu destino:
             opciones=False
         )
         borrar_partida(self.save_slot)
+
+    def _mostrar_estadisticas(self):
+        sc = self.player.stats_combate
+        total_rondas = sc["rondas_ganadas"] + sc["rondas_perdidas"]
+        winrate = int(sc["rondas_ganadas"] / total_rondas * 100) if total_rondas > 0 else 0
+
+        # Acción más usada
+        if sc["acciones"]:
+            accion_top = max(sc["acciones"], key=sc["acciones"].get)
+            veces_top  = sc["acciones"][accion_top]
+            linea_accion = f"Acción más usada:   {accion_top}  ({veces_top} veces)"
+        else:
+            linea_accion = "Acción más usada:   —"
+
+        texto = f"""
+— Lo que dejaste en el camino —
+
+
+Daño infligido:     {sc['daño_infligido']}
+Daño recibido:      {sc['daño_recibido']}
+Rondas ganadas:     {sc['rondas_ganadas']} / {total_rondas}  ({winrate}%)
+Golpes críticos:    {sc['criticos']}
+{linea_accion}
+
+Estos números no mienten.
+Aunque vos sí lo hayas hecho.
+
+"""
+        self.ui.esperar_input(
+            self.ui.cargar_imagen("assets/lvl6.jpg"),
+            texto,
+            opciones=False,
+            player=self.player
+        )
 
     def _mostrar_resumen_psique(self):
         p = self.player.psique
