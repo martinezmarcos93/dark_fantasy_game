@@ -90,6 +90,9 @@ class CombatState:
         # Acciones especiales del guerrero
         self.golpe_cargado_disponible = True
         self.furia_disponible         = True
+        # Stack de postura defensiva: 2 defenders seguidos habilitan Contraataque Total
+        self.defensas_consecutivas    = 0
+        self.contraataque_disponible  = False
 
         # Modificadores activos esta ronda
         self.defensa_activa    = False   # Velo de Sombra
@@ -232,6 +235,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
     if clase == "Guerrero":
 
         if accion == "golpe_directo":
+            state.defensas_consecutivas = 0
             t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
             if t["exito"]:
                 daño = random.randint(1, enemy.dificultad) * 4
@@ -261,10 +265,35 @@ def resolver_accion_jugador(accion, player, enemy, state):
                     result["texto"] = f"Absorbés el golpe y contraatacás.\n[ Daño bloqueado: {daño_bloqueado} — Contraataque: {daño_contra} ]"
                 result["daño_enemigo"] = daño_contra
                 result["nuevo_estado"]["defensa_activa"] = True
+                state.defensas_consecutivas += 1
+                if state.defensas_consecutivas >= 2:
+                    result["nuevo_estado"]["contraataque_disponible"] = True
+                    result["texto"] += "\n[ Postura: Contraataque Total disponible ]"
             else:
+                state.defensas_consecutivas = 0
+                result["nuevo_estado"]["contraataque_disponible"] = False
                 daño_parcial = random.randint(1, enemy.dificultad) * 2
                 result["texto"] = f"Intentás cubrirte pero el impacto pasa igual.\n[ Daño parcial recibido: {daño_parcial} ]"
                 result["daño_jugador"] = daño_parcial
+
+        elif accion == "contraataque_total":
+            state.contraataque_disponible = False
+            state.defensas_consecutivas   = 0
+            t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
+            daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 6
+            if t["exito"]:
+                if t["critico"]:
+                    daño *= 2
+                    result["critico"] = True
+                    result["texto"] = f"CRÍTICO — Contraataque Total. La postura se convierte en devastación.\n[ Daño infligido: {daño} ]"
+                else:
+                    result["texto"] = f"Contraataque Total. Dos rondas de aguante convertidas en un golpe.\n[ Daño infligido: {daño} ]"
+                result["daño_enemigo"] = daño
+                result["ronda_ganada"] = True
+            else:
+                daño_recibido = random.randint(enemy.dificultad, enemy.dificultad * 2) * 2
+                result["texto"] = f"El contraataque no salió. La postura se rompió antes de tiempo.\n[ Daño recibido: {daño_recibido} ]"
+                result["daño_jugador"] = daño_recibido
 
         elif accion == "golpe_cargado":
             state.golpe_cargado_disponible = False
@@ -560,6 +589,8 @@ def acciones_disponibles(player, state, enemy):
     if clase == "Guerrero":
         acciones.append(("golpe_directo", "Golpe directo"))
         acciones.append(("defender", "Defender y contraatacar"))
+        if state.contraataque_disponible:
+            acciones.append(("contraataque_total", "Contraataque Total  [postura ✓ — daño alto, gana ronda]"))
         if state.golpe_cargado_disponible and player.vida >= player.vida_max * 0.6:
             puede = player.energia >= 15
             sufijo = "  [1 uso — 15 ST]" if puede else "  [sin stamina]"
