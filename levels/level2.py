@@ -10,7 +10,6 @@ class Level2:
     # Enemigo: El Reflejo Armado
     # ─────────────────────────────────────────
     def fase_combate(self, player, engine):
-        from enemies import crear_reflejo
         enemy = crear_reflejo()
         return engine.combate_narrativo(enemy)
 

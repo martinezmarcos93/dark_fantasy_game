@@ -11,7 +11,6 @@ class Level4:
     # El más difícil de los 4 — dificultad 6
     # ─────────────────────────────────────────
     def fase_combate(self, player, engine):
-        from enemies import crear_sombra
         enemy = crear_sombra()
         return engine.combate_narrativo(enemy)
 

@@ -41,8 +41,8 @@ class UI:
         self.canvas = pygame.Surface((self.width, self.height))
 
         # Fuente
-        self.font      = pygame.font.Font("fonts/Goth.ttf", 24)
-        self.font_btn  = pygame.font.Font("fonts/Goth.ttf", 24)
+        self.font     = pygame.font.Font("fonts/Goth.ttf", 24)
+        self.font_btn = pygame.font.Font("fonts/Goth.ttf", 22)
 
         # Colores
         self.text_color    = (80, 140, 60)
@@ -516,17 +516,3 @@ Antes de descender...
         pygame.mixer.music.load(os.path.join(carpeta, cancion))
         pygame.mixer.music.play()
 
-    # ─────────────────────────────────────────
-    # dibujar_opciones — mantenido por compatibilidad
-    # ─────────────────────────────────────────
-    def dibujar_opciones(self, opciones):
-        botones = []
-        y = self.BTN_Y
-        for i, opcion in enumerate(opciones):
-            texto = f"{i+1}. {opcion}"
-            render = self.font.render(texto, True, (255, 255, 255))
-            rect = render.get_rect(topleft=(self.BTN_X, y))
-            self.canvas.blit(render, rect)
-            botones.append((rect, str(i+1)))
-            y += self.BTN_H
-        return botones

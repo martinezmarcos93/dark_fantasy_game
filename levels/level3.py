@@ -10,7 +10,6 @@ class Level3:
     # Enemigo: El Sacerdote Sin Rostro
     # ─────────────────────────────────────────
     def fase_combate(self, player, engine):
-        from enemies import crear_sacerdote
         enemy = crear_sacerdote()
         return engine.combate_narrativo(enemy)
 
