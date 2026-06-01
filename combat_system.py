@@ -93,6 +93,9 @@ class CombatState:
         self.daño_jugador_total  = 0
         self.daño_enemigo_total  = 0
 
+        # Historial de acciones del jugador para que el enemigo adapte su patrón
+        self.acciones_jugador = []
+
 
 # ───────────────────────────────────────────────────────────────
 # CONFIGURACIÓN DE ENEMIGO
@@ -138,7 +141,9 @@ class Enemy:
     def elegir_accion(self, state, clase_jugador):
         """
         Decide qué hace el enemigo esta ronda según contexto.
-        Devuelve string: clave de textos_ataque + parámetros de daño.
+        Se adapta al historial de acciones del jugador:
+          - Si el jugador usó la misma acción 2 veces seguidas → contraataque
+          - Si el jugador usó acciones defensivas → presión psíquica
         """
         if state.enemigo_paralizado:
             return "paralizado"
@@ -153,7 +158,20 @@ class Enemy:
             if "desesperado" in self.textos_ataque:
                 return "desesperado"
 
-        # Patrón por ronda (cíclico)
+        # Adaptación: detectar acción repetida del jugador (2 consecutivas)
+        historial = state.acciones_jugador
+        if len(historial) >= 2 and historial[-1] == historial[-2]:
+            accion_repetida = historial[-1]
+            # Si el jugador spamea defensa → presión psíquica
+            if accion_repetida in ("defender", "velo", "observar"):
+                if "presencia_psiquica" in self.textos_ataque:
+                    return "presencia_psiquica"
+            # Si el jugador spamea ataque directo → ataque pesado en respuesta
+            if accion_repetida in ("golpe_directo", "fuego", "ataque_rapido"):
+                if "ataque_pesado" in self.textos_ataque:
+                    return "ataque_pesado"
+
+        # Patrón por ronda (cíclico) como fallback
         patrones_normales = [k for k in self.textos_ataque
                              if k not in ("detectar_sigilo", "desesperado", "paralizado")]
         if not patrones_normales:
@@ -634,6 +652,9 @@ def combate_completo(enemy, player, engine):
             accion_id = ids[idx]
         except (ValueError, IndexError):
             accion_id = ids[0]
+
+        # Registrar acción para adaptación del enemigo
+        state.acciones_jugador.append(accion_id)
 
         # ── Resolver acción del jugador ───────────────────────
         result_jugador = resolver_accion_jugador(accion_id, player, enemy, state)
