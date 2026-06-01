@@ -386,6 +386,39 @@ class UI:
                     return
 
     # ─────────────────────────────────────────
+    # TYPEWRITER — escribe el texto carácter a carácter
+    # SPACE o cualquier tecla lo salta al texto completo
+    # ─────────────────────────────────────────
+    def _typewriter(self, imagen, texto, player=None):
+        clock  = pygame.time.Clock()
+        visible = ""
+        # ~30 chars/s: suficientemente dramático, salteable
+        delay_ms = 30
+
+        for char in texto:
+            visible += char
+            clock.tick(60)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    return  # saltar al texto completo
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    return
+
+            img_filtrada = self._aplicar_filtro_psique(imagen, player)
+            self.canvas.fill(self.bg_color)
+            self.canvas.blit(img_filtrada, (self.IMG_X, self.IMG_Y))
+            self.dibujar_hud(player)
+            self.dibujar_texto(visible)
+            self.dibujar_divisor()
+            self._blit_canvas()
+
+            pygame.time.delay(delay_ms)
+
+    # ─────────────────────────────────────────
     # INPUT DEL USUARIO
     # ESC → lanza EscapeAlMenu
     # Fade out antes de cada return
@@ -394,9 +427,11 @@ class UI:
         clock = pygame.time.Clock()
         scroll_y = 0
 
-        self.fade_in(imagen, texto, player)
-
-        while True:
+        # Typewriter solo en pantallas sin opciones (narrativa pura)
+        if not opciones:
+            self._typewriter(imagen, texto, player)
+        else:
+            while True:
             clock.tick(60)
 
             if not pygame.mixer.music.get_busy():
