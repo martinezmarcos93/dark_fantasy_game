@@ -173,8 +173,6 @@ class UI:
     def dibujar_hud(self, player=None):
         pygame.draw.rect(self.canvas, (10, 10, 10),
                          (self.HUD_X, self.HUD_Y, self.HUD_W, self.HUD_H))
-        pygame.draw.rect(self.canvas, (10, 10, 10),
-                         (self.HUD_X, self.HUD_Y, self.HUD_W, self.HUD_H))
         pygame.draw.line(self.canvas, self.divider_color,
                          (self.HUD_X, self.HUD_Y),
                          (self.HUD_X + self.HUD_W, self.HUD_Y), 1)

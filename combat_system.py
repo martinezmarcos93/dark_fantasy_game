@@ -609,7 +609,6 @@ def combate_completo(enemy, player, engine):
             return "muerte"
 
         state.ronda_actual += 1
-        state.enemigo_paralizado = False  # Se resetea al inicio de la próxima ronda
 
     # ── Cierre narrativo por estadística ─────────────────────
     texto_final, resultado = texto_cierre(state, enemy, player)

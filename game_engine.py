@@ -1,4 +1,3 @@
-import random
 from ui import UI, EscapeAlMenu
 from player import Player
 from menu import Menu
@@ -104,7 +103,7 @@ Elegí tu senda:
         from combat_system import combate_completo
         return combate_completo(enemy, self.player, self)
 
-        # ─────────────────────────────────────────
+    # ─────────────────────────────────────────
     # LOOP PRINCIPAL
     # ─────────────────────────────────────────
     def jugar(self):
