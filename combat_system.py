@@ -409,6 +409,36 @@ def resolver_accion_jugador(accion, player, enemy, state):
             result["daño_jugador"] = daño_recibido
             result["nuevo_estado"]["energia_recuperada"] = energia_rec
 
+        elif accion == "improvisar":
+            # Sin ingenio: el ladrón improvisa con lo que tiene
+            # Efecto aleatorio: a veces funciona, a veces no
+            tirada = random.randint(1, 6)
+            if tirada >= 5:
+                daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 3
+                result["texto"] = (
+                    f"Sin plan. Sin recursos. Solo instinto.\n"
+                    f"Encontraste un hueco que el enemigo no esperaba.\n"
+                    f"[ Daño infligido: {daño} ]"
+                )
+                result["daño_enemigo"] = daño
+                result["ronda_ganada"] = True
+            elif tirada >= 3:
+                energia_rec = random.randint(5, 15)
+                result["texto"] = (
+                    f"Nada funciona como debería.\n"
+                    f"Pero al menos te recomponés un poco.\n"
+                    f"[ Ingenio recuperado: {energia_rec} ]"
+                )
+                result["nuevo_estado"]["energia_recuperada"] = energia_rec
+            else:
+                daño_recibido = random.randint(enemy.dificultad, enemy.dificultad * 2) * 2
+                result["texto"] = (
+                    f"Sin plan es sin plan.\n"
+                    f"El error fue costoso.\n"
+                    f"[ Daño recibido: {daño_recibido} ]"
+                )
+                result["daño_jugador"] = daño_recibido
+
     return result
 
 
@@ -490,12 +520,18 @@ def acciones_disponibles(player, state, enemy):
 
     elif clase == "Ladrón":
         if state.en_posicion:
-            acciones.append(("apuñalar", "Apuñalar por la espalda  [posición ✓ — 15 IN]"))
-            acciones.append(("estrangular", "Estrangular  [posición ✓ — 10 IN]"))
+            if player.energia >= 15:
+                acciones.append(("apuñalar", "Apuñalar por la espalda  [posición ✓ — 15 IN]"))
+            if player.energia >= 10:
+                acciones.append(("estrangular", "Estrangular  [posición ✓ — 10 IN]"))
         else:
-            acciones.append(("observar", "Observar — preparar posición  [5 IN]"))
+            if player.energia >= 5:
+                acciones.append(("observar", "Observar — preparar posición  [5 IN]"))
         acciones.append(("ataque_rapido", "Ataque rápido  [daño bajo, gratis]"))
         acciones.append(("huir", "Huir y reagruparse  [recupera Ingenio, recibís daño]"))
+        # Sin Ingenio para nada especial: improvisación como última salida
+        if player.energia < 5 and not state.en_posicion:
+            acciones.append(("improvisar", "Improvisar  [gratis — efecto aleatorio]"))
 
     return acciones
 
