@@ -100,7 +100,8 @@ Elegí tu senda:
     # ─────────────────────────────────────────
     def mostrar_nivel(self, imagen_path, texto, opciones=True, opciones_lista=None):
         imagen = self.ui.cargar_imagen(imagen_path)
-        return self.ui.esperar_input(imagen, texto, opciones, opciones_lista, self.player)
+        return self.ui.esperar_input(imagen, texto, opciones, opciones_lista, self.player,
+                                     nivel=self.current_level_index)
 
     # ─────────────────────────────────────────
     # COMBATE NARRATIVO — nuevo sistema multironda

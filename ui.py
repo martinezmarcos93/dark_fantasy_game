@@ -436,7 +436,7 @@ class UI:
     # ESC → lanza EscapeAlMenu
     # Fade out antes de cada return
     # ─────────────────────────────────────────
-    def esperar_input(self, imagen, texto, opciones=True, opciones_lista=None, player=None):
+    def esperar_input(self, imagen, texto, opciones=True, opciones_lista=None, player=None, nivel=None):
         clock = pygame.time.Clock()
         scroll_y = 0
 
@@ -444,11 +444,13 @@ class UI:
         if not opciones:
             self._typewriter(imagen, texto, player)
         else:
-            while True:
+            self.fade_in(imagen, texto, player)
+
+        while True:
             clock.tick(60)
 
             if not pygame.mixer.music.get_busy():
-                self.reproducir_musica()
+                self.reproducir_musica(nivel=nivel)
 
             botones, altura_texto = self.render(imagen, texto, scroll_y, opciones_lista, player)
 
@@ -585,16 +587,29 @@ Antes de descender...
                             random.choice(self.sonidos_tecla).play()
 
     # ─────────────────────────────────────────
-    # MÚSICA ALEATORIA
+    # MÚSICA POR NIVEL (con fallback aleatorio)
+    # Convención de nombres: nivel_0.mp3 … nivel_5.mp3
+    # Si no existe la pista del nivel, elige una aleatoria.
     # ─────────────────────────────────────────
-    def reproducir_musica(self):
+    def reproducir_musica(self, nivel=None):
         carpeta = "music"
         if not os.path.exists(carpeta):
             return
         canciones = [f for f in os.listdir(carpeta) if f.endswith(".mp3")]
         if not canciones:
             return
-        cancion = random.choice(canciones)
-        pygame.mixer.music.load(os.path.join(carpeta, cancion))
-        pygame.mixer.music.play()
+
+        cancion = None
+        if nivel is not None:
+            candidato = f"nivel_{nivel}.mp3"
+            if candidato in canciones:
+                cancion = candidato
+        if cancion is None:
+            cancion = random.choice(canciones)
+
+        try:
+            pygame.mixer.music.load(os.path.join(carpeta, cancion))
+            pygame.mixer.music.play()
+        except pygame.error:
+            pass
 
