@@ -2,7 +2,8 @@ from ui import UI, EscapeAlMenu
 from player import Player
 from menu import Menu
 from intro import Intro
-from save_system import guardar_partida, cargar_partida, borrar_partida, listar_slots
+from save_system import (guardar_partida, cargar_partida, borrar_partida,
+                         listar_slots, guardar_ng_plus, cargar_ng_plus, existe_ng_plus)
 
 class GameEngine:
     def __init__(self):
@@ -95,7 +96,46 @@ Elegí tu senda:
         nombre = self.ui.pedir_nombre(imagen, clase)
         self.player = Player(nombre, clase)
 
+        psique_previa = cargar_ng_plus()
+        if psique_previa:
+            self._aplicar_herencia_ng_plus(psique_previa)
+
         self._elegir_dificultad()
+
+    def _aplicar_herencia_ng_plus(self, psique_previa):
+        """
+        Transfiere el 20% de la psique del run anterior como "eco" psicológico.
+        Muestra una pantalla narrativa informando al jugador del efecto.
+        """
+        herencia = {k: int(v * 0.20) for k, v in psique_previa.items() if v > 0}
+        if not herencia:
+            return
+
+        self.player.modificar_psique(herencia)
+
+        lineas = "\n".join(
+            f"  {k:<12} +{v}"
+            for k, v in herencia.items() if v > 0
+        )
+        texto = f"""
+Algo persistió.
+
+No es un recuerdo exacto.
+Es una marca.
+Lo que el Umbral te dejó
+antes de que empezara este descenso.
+
+{lineas}
+
+Empezás con eso.
+Ya era tuyo de antes.
+"""
+        self.ui.esperar_input(
+            self.ui.cargar_imagen("assets/lvl1.jpg"),
+            texto,
+            opciones=False,
+            player=self.player
+        )
 
     def _elegir_dificultad(self):
         texto = """
@@ -474,6 +514,7 @@ Tu destino:
             texto,
             opciones=False
         )
+        guardar_ng_plus(self.player.psique)
         borrar_partida(self.save_slot)
 
     def _mostrar_estadisticas(self):

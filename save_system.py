@@ -1,8 +1,9 @@
 import json
 import os
 
-SAVE_DIR  = "saves"
-NUM_SLOTS = 3
+SAVE_DIR    = "saves"
+NUM_SLOTS   = 3
+NG_PLUS_FILE = "saves/ng_plus.json"
 
 def _ruta(slot):
     os.makedirs(SAVE_DIR, exist_ok=True)
@@ -75,3 +76,23 @@ def borrar_partida(slot=0):
     ruta = _ruta(slot)
     if os.path.exists(ruta):
         os.remove(ruta)
+
+# ─────────────────────────────────────────
+# NEW GAME+ — guarda la psique del run completado
+# ─────────────────────────────────────────
+def guardar_ng_plus(psique):
+    os.makedirs(SAVE_DIR, exist_ok=True)
+    with open(NG_PLUS_FILE, "w", encoding="utf-8") as f:
+        json.dump({"psique_heredada": psique}, f, ensure_ascii=False, indent=2)
+
+def cargar_ng_plus():
+    if not os.path.exists(NG_PLUS_FILE):
+        return None
+    try:
+        with open(NG_PLUS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f).get("psique_heredada")
+    except (json.JSONDecodeError, OSError):
+        return None
+
+def existe_ng_plus():
+    return os.path.exists(NG_PLUS_FILE)
