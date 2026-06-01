@@ -6,6 +6,7 @@ class Menu:
 
     def __init__(self, ui):
         self.ui = ui
+        self.ui.reproducir_musica(nombre="menu")
 
     # ─────────────────────────────────────────
     # PANTALLA PRINCIPAL

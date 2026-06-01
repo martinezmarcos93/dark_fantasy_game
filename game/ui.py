@@ -587,11 +587,12 @@ Antes de descender...
                             random.choice(self.sonidos_tecla).play()
 
     # ─────────────────────────────────────────
-    # MÚSICA POR NIVEL (con fallback aleatorio)
-    # Convención de nombres: nivel_0.mp3 … nivel_5.mp3
-    # Si no existe la pista del nivel, elige una aleatoria.
+    # MÚSICA POR CONTEXTO (nivel, nombre o aleatorio)
+    # nivel=N  → busca nivel_N.mp3
+    # nombre=X → busca X.mp3  (menu, boss, credits, ambiente)
+    # Sin parámetros → elige aleatoria del pool completo
     # ─────────────────────────────────────────
-    def reproducir_musica(self, nivel=None):
+    def reproducir_musica(self, nivel=None, nombre=None):
         carpeta = "music"
         if not os.path.exists(carpeta):
             return
@@ -600,7 +601,11 @@ Antes de descender...
             return
 
         cancion = None
-        if nivel is not None:
+        if nombre:
+            candidato = f"{nombre}.mp3"
+            if candidato in canciones:
+                cancion = candidato
+        elif nivel is not None:
             candidato = f"nivel_{nivel}.mp3"
             if candidato in canciones:
                 cancion = candidato
