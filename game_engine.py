@@ -139,11 +139,14 @@ Elegí tu senda:
         if not data:
             return False
 
+        REQUIRED = {"nombre", "clase", "stats", "psique", "alive", "nivel_actual"}
+        if not REQUIRED.issubset(data.keys()):
+            return False
+
         self.player = Player(data["nombre"], data["clase"])
         self.player.stats  = data["stats"]
         self.player.psique = data["psique"]
         self.player.alive  = data["alive"]
-        # Restaurar vida y energía si están guardadas
         self.player.vida   = data.get("vida", self.player.vida_max)
         self.player.energia = data.get("energia", self.player.energia_max)
         self.current_level_index = data["nivel_actual"]

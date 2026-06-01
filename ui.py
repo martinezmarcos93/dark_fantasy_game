@@ -102,7 +102,12 @@ class UI:
     # CARGAR IMAGEN — respeta proporción con letterbox
     # ─────────────────────────────────────────
     def cargar_imagen(self, path):
-        original = pygame.image.load(path).convert()
+        try:
+            original = pygame.image.load(path).convert()
+        except (pygame.error, FileNotFoundError, OSError):
+            original = pygame.Surface((self.IMG_W, self.IMG_H))
+            original.fill(self.bg_color)
+            return original
         orig_w, orig_h = original.get_size()
 
         escala = min(self.IMG_W / orig_w, self.IMG_H / orig_h)

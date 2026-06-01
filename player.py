@@ -75,7 +75,7 @@ class Player:
     def modificar_psique(self, cambios):
         for clave, valor in cambios.items():
             if clave in self.psique:
-                self.psique[clave] = max(0, self.psique[clave] + valor)
+                self.psique[clave] = max(0, min(100, self.psique[clave] + valor))
 
     # ─────────────────────────────────────────
     # MODIFICAR STATS
