@@ -64,9 +64,9 @@ HECHIZOS = [
 # Se crea al inicio de cada pelea y se destruye al terminar.
 # ───────────────────────────────────────────────────────────────
 class CombatState:
-    def __init__(self, player):
+    def __init__(self, player, rondas_max=3):
         self.ronda_actual = 1
-        self.rondas_max   = 3
+        self.rondas_max   = rondas_max
 
         # Marcador de rondas ganadas (jugador vs enemigo)
         self.rondas_jugador = 0
@@ -128,7 +128,8 @@ class Enemy:
         texto_empate,          # Texto si 1-1 en rondas (cierre por estadística)
         psique_victoria_jugador,  # Psique si jugador gana
         psique_derrota_jugador,   # Psique si jugador pierde
-        inmunidades=None       # Lista de efectos a los que es inmune
+        inmunidades=None,      # Lista de efectos a los que es inmune
+        rondas_max=3           # Rondas del combate (boss puede tener más)
     ):
         self.nombre     = nombre
         self.id         = id_enemigo
@@ -146,6 +147,7 @@ class Enemy:
         self.psique_victoria_jugador = psique_victoria_jugador
         self.psique_derrota_jugador  = psique_derrota_jugador
         self.inmunidades = inmunidades or []
+        self.rondas_max  = rondas_max
 
     def esta_debilitado(self):
         return self.vida < self.vida_max * 0.4
@@ -665,7 +667,11 @@ def combate_completo(enemy, player, engine):
     Muestra intro del enemigo, loop de rondas, cierre narrativo.
     """
     ui = engine.ui
-    state = CombatState(player)
+    state = CombatState(player, rondas_max=enemy.rondas_max)
+
+    # Música especial para el boss
+    if enemy.id == "umbral":
+        ui.reproducir_musica(nombre="boss")
 
     # ── Pantalla de intro del enemigo ─────────────────────────
     engine.mostrar_nivel(enemy.imagen, enemy.texto_intro, opciones=False)
