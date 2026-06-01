@@ -79,8 +79,6 @@ class GameEngine:
     # CREAR JUGADOR
     # ─────────────────────────────────────────
     def crear_personaje(self):
-        imagen = self.ui.cargar_imagen("assets/lvl1.jpg")
-
         texto_clase = """
 === CREACIÓN DE PERSONAJE ===
 
@@ -93,6 +91,10 @@ Elegí tu senda:
         clases = {"1": "Guerrero", "2": "Hechicero", "3": "Ladrón"}
         clase = clases.get(eleccion, "Errante")
 
+        # Pantalla de confirmación con retrato de la clase elegida
+        self._mostrar_retrato_clase(clase)
+
+        imagen = self.ui.cargar_imagen(self._retrato_path(clase))
         nombre = self.ui.pedir_nombre(imagen, clase)
         self.player = Player(nombre, clase)
 
@@ -101,6 +103,73 @@ Elegí tu senda:
             self._aplicar_herencia_ng_plus(psique_previa)
 
         self._elegir_dificultad()
+
+    def _retrato_path(self, clase):
+        retratos = {
+            "Guerrero":  "assets/portrait_warrior.jpg",
+            "Hechicero": "assets/portrait_mage.jpg",
+            "Ladrón":    "assets/portrait_rogue.jpg",
+        }
+        return retratos.get(clase, "assets/lvl1.jpg")
+
+    def _mostrar_retrato_clase(self, clase):
+        descripciones = {
+            "Guerrero": """
+La senda del Guerrero.
+
+Fuerza como primera respuesta.
+Resistencia como segunda.
+
+Stamina: 40
+Recurso más bajo — cada acción especial cuesta.
+Golpe Cargado y Furia Ciega son devastadores,
+pero no infinitos.
+
+Dos Defenders seguidos desbloquean
+el Contraataque Total.
+
+La fuerza no es solo del cuerpo.
+""",
+            "Hechicero": """
+La senda del Hechicero.
+
+Conocimiento como arma.
+La mente como campo de batalla.
+
+Magia: 100
+El recurso más alto — pero cada hechizo se usa
+una sola vez por combate.
+
+Los hechizos más poderosos se desbloquean
+a medida que descends.
+Nombre Verdadero en nivel 3.
+Fragmento del Abismo en nivel 4.
+
+Saber tiene un precio.
+""",
+            "Ladrón": """
+La senda del Ladrón.
+
+Posición como ventaja.
+La paciencia como táctica.
+
+Ingenio: 70
+Observar primero habilita ataques devastadores.
+Sin setup, solo opciones básicas.
+
+Sin Ingenio: Improvisar como última salida.
+El resultado es incierto.
+
+No todo se puede planear.
+""",
+        }
+        texto = descripciones.get(clase, "Clase desconocida.")
+        self.ui.esperar_input(
+            self.ui.cargar_imagen(self._retrato_path(clase)),
+            texto,
+            opciones=False,
+            player=None
+        )
 
     def _aplicar_herencia_ng_plus(self, psique_previa):
         """
