@@ -188,11 +188,15 @@ def resolver_accion_jugador(accion, player, enemy, state):
     stats  = player.stats
     result = {"texto": "", "daño_enemigo": 0, "daño_jugador": 0, "ronda_ganada": False, "nuevo_estado": {}}
 
+    # La ventaja se consume al usarla por primera vez en el turno
+    ventaja = state.ventaja_activa
+    state.ventaja_activa = False
+
     # ── GUERRERO ──────────────────────────────────────────────
     if clase == "Guerrero":
 
         if accion == "golpe_directo":
-            t = tirar(stats["fuerza"], enemy.dificultad, state.ventaja_activa)
+            t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
             if t["exito"]:
                 daño = random.randint(1, enemy.dificultad) * 4
                 result["texto"] = f"Tu golpe conecta. El guardián retrocede.\n[ Daño infligido: {daño} ]"
@@ -204,7 +208,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 result["daño_jugador"] = daño_recibido
 
         elif accion == "defender":
-            t = tirar(stats["resistencia"], enemy.dificultad, state.ventaja_activa)
+            t = tirar(stats["resistencia"], enemy.dificultad, ventaja)
             daño_bloqueado = random.randint(2, 6) * 2
             if t["exito"]:
                 daño_contra = random.randint(1, enemy.dificultad) * 2
@@ -218,7 +222,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
 
         elif accion == "golpe_cargado":
             state.golpe_cargado_disponible = False
-            t = tirar(stats["fuerza"], enemy.dificultad, state.ventaja_activa)
+            t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
                 result["texto"] = f"El golpe cargado encuentra su blanco. Impacto devastador.\n[ Daño infligido: {daño} ]"
@@ -274,7 +278,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                 return result
 
             efecto = hechizo["efecto"]
-            t = tirar(stats["mente"], enemy.dificultad, state.ventaja_activa)
+            t = tirar(stats["mente"], enemy.dificultad, ventaja)
 
             if efecto == "daño_alto":
                 if t["exito"]:
@@ -339,7 +343,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
 
         elif accion == "apuñalar":
             state.en_posicion = False
-            t = tirar(stats["resistencia"], enemy.dificultad, ventaja=True)
+            t = tirar(stats["resistencia"], enemy.dificultad, True)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
                 result["texto"] = f"Por la espalda. Sin aviso. Sin defensa posible.\n[ Daño infligido: {daño} ]"
@@ -514,9 +518,11 @@ def combate_completo(enemy, player, engine):
     # ── Loop de rondas ────────────────────────────────────────
     while state.ronda_actual <= state.rondas_max:
 
-        # Resetear modificadores de ronda
-        state.defensa_activa   = False
-        state.ventaja_activa   = False
+        # Resetear modificadores de ronda que duran solo 1 turno.
+        # ventaja_activa NO se resetea aquí: fue seteada al final de la ronda
+        # anterior y debe estar disponible para la acción del jugador esta ronda.
+        # Se consume y resetea dentro de resolver_accion_jugador().
+        state.defensa_activa    = False
         state.enemigo_paralizado = False
 
         # Construir opciones para esta ronda
