@@ -1,9 +1,9 @@
-from ui import UI, EscapeAlMenu
-from player import Player
-from menu import Menu
-from intro import Intro
-from save_system import (guardar_partida, cargar_partida, borrar_partida,
-                         listar_slots, guardar_ng_plus, cargar_ng_plus, existe_ng_plus)
+from game.ui import UI, EscapeAlMenu
+from game.player import Player
+from game.menu import Menu
+from game.intro import Intro
+from game.save_system import (guardar_partida, cargar_partida, borrar_partida,
+                               listar_slots, guardar_ng_plus, cargar_ng_plus, existe_ng_plus)
 
 class GameEngine:
     def __init__(self):
@@ -157,12 +157,12 @@ La narrativa y los finales son siempre los mismos.
     # CARGAR NIVELES
     # ─────────────────────────────────────────
     def cargar_niveles(self):
-        from levels.level1 import Level1
-        from levels.level2 import Level2
-        from levels.level3 import Level3
-        from levels.level4 import Level4
-        from levels.level5 import Level5
-        from levels.level6 import Level6
+        from game.levels.level1 import Level1
+        from game.levels.level2 import Level2
+        from game.levels.level3 import Level3
+        from game.levels.level4 import Level4
+        from game.levels.level5 import Level5
+        from game.levels.level6 import Level6
 
         self.levels = [
             Level1(),
@@ -195,7 +195,7 @@ La narrativa y los finales son siempre los mismos.
         # Aplicar modificador de dificultad global (no muta la definición original)
         import math
         enemy.dificultad = max(1, round(enemy.dificultad * self.dificultad_global))
-        from combat_system import combate_completo
+        from game.combat_system import combate_completo
         return combate_completo(enemy, self.player, self)
 
     # ─────────────────────────────────────────

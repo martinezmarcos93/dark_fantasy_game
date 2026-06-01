@@ -1,4 +1,4 @@
-from combat_system import Enemy
+from game.combat_system import Enemy
 
 # ═══════════════════════════════════════════════════════════════
 # ENEMIES — Descenso al Umbral

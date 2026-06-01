@@ -1,4 +1,4 @@
-from enemies import crear_sacerdote
+from game.enemies import crear_sacerdote
 
 class Level3:
 

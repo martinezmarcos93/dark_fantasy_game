@@ -1,6 +1,6 @@
 import pygame
 import sys
-from save_system import existe_partida
+from game.save_system import existe_partida
 
 class Menu:
 
