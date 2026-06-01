@@ -320,7 +320,8 @@ La narrativa y los finales son siempre los mismos.
             "Hechicero": "assets/death_mage.jpg",
             "Ladrón":    "assets/death_rogue.jpg",
         }
-        imagen_path = imagenes.get(clase, "assets/lvl6.jpg")
+        imagen_path = imagenes.get(clase, "assets/game_over.jpg")
+        self.ui.reproducir_musica(nombre="ambiente")
 
         textos_guerrero = [
             f"""
