@@ -665,6 +665,17 @@ def combate_completo(enemy, player, engine):
             daño_enemigo_real = player.recibir_daño(result_enemigo["daño"])
             state.daño_enemigo_total += daño_enemigo_real
 
+        # ── Impacto psíquico de acciones de combate ───────────────
+        _psique_por_accion = {
+            "furia":    {"violencia": 3},
+            "abismo":   {"corrupcion": 4},
+            "nombre":   {"lucidez": 3},
+            "apuñalar": {"violencia": 2},
+            "huir":     {"miedo": 2},
+        }
+        if accion_id in _psique_por_accion:
+            player.modificar_psique(_psique_por_accion[accion_id])
+
         # ── Determinar ganador de la ronda ────────────────────
         # Acciones defensivas/utilitarias (daño_enemigo=0, ronda_ganada=False)
         # resultan en ronda neutral: ninguno suma punto.
