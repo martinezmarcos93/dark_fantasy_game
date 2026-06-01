@@ -75,8 +75,17 @@ class CombatState:
         # Estado del ladrón
         self.en_posicion = False   # True tras Observar exitoso
 
-        # Hechizos disponibles (copias para no mutar la lista global)
-        self.hechizos_disponibles = [h["id"] for h in HECHIZOS]
+        # Hechizos disponibles según nivel del jugador (desbloqueo progresivo)
+        # nivel 1-2: solo fuego, velo, resonancia
+        # nivel 3+:  + nombre verdadero
+        # nivel 4+:  + fragmento del abismo
+        nivel = getattr(player, "level", 1)
+        desbloqueados = ["fuego", "velo", "resonancia"]
+        if nivel >= 3:
+            desbloqueados.append("nombre")
+        if nivel >= 4:
+            desbloqueados.append("abismo")
+        self.hechizos_disponibles = [h["id"] for h in HECHIZOS if h["id"] in desbloqueados]
 
         # Acciones especiales del guerrero
         self.golpe_cargado_disponible = True

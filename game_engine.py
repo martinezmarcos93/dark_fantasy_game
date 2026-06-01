@@ -129,6 +129,7 @@ Elegí tu senda:
                 elif resultado == "continuar":
                     self._mostrar_resumen_psique()
                     self.current_level_index += 1
+                    self.player.level = self.current_level_index + 1
                     guardar_partida(self.player, self.current_level_index, self.save_slot)
 
                 else:
