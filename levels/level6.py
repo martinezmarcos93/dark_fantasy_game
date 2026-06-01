@@ -6,16 +6,35 @@ class Level6:
     def distorsionar_texto(self, texto, player):
         psique = player.psique
 
-        # Distorsión más intensa
+        # Miedo extremo: minúsculas + fragmentar cada línea larga con pausa (…)
         if psique["miedo"] > 40:
             texto = texto.lower()
-            texto = texto.replace(" ", "...")
+            lineas = []
+            for linea in texto.split("\n"):
+                palabras = linea.split()
+                if len(palabras) > 3:
+                    mitad = len(palabras) // 2
+                    linea = " ".join(palabras[:mitad]) + "…\n" + " ".join(palabras[mitad:])
+                lineas.append(linea)
+            texto = "\n".join(lineas)
 
+        # Corrupción intensa: corromper vocales en palabras largas, una de cada dos
         if psique["corrupcion"] > 50:
-            texto = texto.replace("o", "ø").replace("e", "ë")
+            _MAP = str.maketrans("aeiou", "áëïøù")
+            lineas = []
+            for linea in texto.split("\n"):
+                palabras = linea.split(" ")
+                nueva = []
+                for i, p in enumerate(palabras):
+                    if len(p) > 4 and i % 2 == 0:
+                        p = p.translate(_MAP)
+                    nueva.append(p)
+                lineas.append(" ".join(nueva))
+            texto = "\n".join(lineas)
 
+        # Lucidez: doble marcador (el umbral final rompe la cuarta pared)
         if psique["lucidez"] > 50:
-            texto = "/// " + texto + " ///"
+            texto = "/// " + texto.strip() + " ///"
 
         return texto
 
@@ -44,9 +63,10 @@ Solo espera.
 ¿Qué hacés?
 """
 
+        # La distorsión aplica al texto de pregunta: el umbral final ya afecta la percepción
         eleccion = engine.mostrar_nivel(
             "assets/lvl6.jpg",
-            texto,
+            self.distorsionar_texto(texto, player),
             opciones=True,
             opciones_lista=[
                 "Aceptar lo que sos",

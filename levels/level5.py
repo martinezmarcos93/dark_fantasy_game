@@ -6,15 +6,32 @@ class Level5:
     def distorsionar_texto(self, texto, player):
         psique = player.psique
 
+        # Miedo: minúsculas + doble espacio entre palabras (lectura fragmentada)
         if psique["miedo"] > 30:
-            texto = texto.replace(" ", "  ")
             texto = texto.lower()
+            texto = "\n".join(
+                "  ".join(l.split()) if l.strip() else l
+                for l in texto.split("\n")
+            )
 
+        # Corrupción: corromper vocales solo en palabras largas, una de cada tres
+        # (evitar artículos/preposiciones cortas que volverían el texto ilegible)
         if psique["corrupcion"] > 40:
-            texto = texto.replace("a", "á").replace("e", "ë")
+            _MAP = str.maketrans("aeiou", "áëïøù")
+            lineas = []
+            for linea in texto.split("\n"):
+                palabras = linea.split(" ")
+                nueva = []
+                for i, p in enumerate(palabras):
+                    if len(p) > 5 and i % 3 == 0:
+                        p = p.translate(_MAP)
+                    nueva.append(p)
+                lineas.append(" ".join(nueva))
+            texto = "\n".join(lineas)
 
+        # Lucidez: marco de meta-consciencia (el personaje observa su propio estado)
         if psique["lucidez"] > 40:
-            texto = "..." + texto + "..."
+            texto = "[ " + texto.strip() + " ]"
 
         return texto
 
@@ -44,9 +61,10 @@ La voz, por última vez:
 ¿Qué hacés?
 """
 
+        # La distorsión aplica también a la pregunta: la psique ya afecta la percepción
         eleccion = engine.mostrar_nivel(
             "assets/lvl5.jpg",
-            texto,
+            self.distorsionar_texto(texto, player),
             opciones=True,
             opciones_lista=[
                 "Elegir una puerta al azar",
