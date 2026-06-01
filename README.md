@@ -136,28 +136,35 @@ Ningún final es explícitamente "bueno" o "malo".
 
 ```
 dark_fantasy_game/
-├── main.py              # Entrada
-├── game_engine.py       # Director: loop, slots, finales, resúmenes
-├── ui.py                # Pygame: render, typewriter, filtro psique, audio
-├── player.py            # Objeto jugador: stats, psique, historial
-├── combat_system.py     # Sistema de combate: dados, críticos, enemigos
-├── enemies.py           # Definición de los 4 enemigos con textos por clase
-├── menu.py              # Menú principal y créditos
-├── intro.py             # Pantallas de introducción
-├── save_system.py       # 3 slots de guardado en saves/
+├── main.py              # Entrada — único archivo en la raíz
+├── README.md
 ├── requirements.txt     # pygame>=2.1.0
-├── levels/
-│   ├── level1.py  →  La Cueva del Origen
-│   ├── level2.py  →  El Espejo de las Formas
-│   ├── level3.py  →  El Ritual de la Entrega
-│   ├── level4.py  →  El Rey de las Sombras
-│   ├── level5.py  →  Las Moradas de los Muertos (texto distorsionado)
-│   └── level6.py  →  El Umbral Final (texto distorsionado)
+├── .gitignore
+├── .gitattributes
+│
+├── game/                # Paquete Python con todo el código fuente
+│   ├── game_engine.py   # Director: loop, slots, finales, resúmenes
+│   ├── ui.py            # Pygame: render, typewriter, filtro psique, audio
+│   ├── player.py        # Objeto jugador: stats, psique, historial
+│   ├── combat_system.py # Sistema de combate: dados, críticos, enemigos
+│   ├── enemies.py       # Definición de los 4 enemigos con textos por clase
+│   ├── menu.py          # Menú principal y créditos animados
+│   ├── intro.py         # Pantallas de introducción
+│   ├── save_system.py   # 3 slots de guardado + New Game+
+│   └── levels/
+│       ├── level1.py  →  La Cueva del Origen
+│       ├── level2.py  →  El Espejo de las Formas
+│       ├── level3.py  →  El Ritual de la Entrega
+│       ├── level4.py  →  El Rey de las Sombras
+│       ├── level5.py  →  Las Moradas de los Muertos (texto distorsionado)
+│       └── level6.py  →  El Umbral Final (texto distorsionado)
+│
 ├── assets/              # Imágenes de niveles, enemigos y muertes por clase
 ├── fonts/               # Fuente gótica (Goth.ttf)
-├── music/               # Música de fondo (.mp3)
-├── saves/               # Slots de guardado (generado automáticamente)
-└── sounds/              # Sonidos de teclas (.wav / .ogg)
+├── music/               # Música de fondo (.mp3) — nivel_N.mp3 para pistas por nivel
+├── sounds/              # Sonidos de teclas (.wav)
+├── docs/                # Documentación de diseño (guías, referencias, bocetos)
+└── saves/               # Slots de guardado (generado en runtime, ignorado por git)
 ```
 
 ---
