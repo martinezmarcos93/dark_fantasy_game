@@ -13,7 +13,7 @@ class Menu:
     # Devuelve: "nueva", "cargar", "creditos", "salir"
     # ─────────────────────────────────────────
     def mostrar(self):
-        imagen = self.ui.cargar_imagen("assets/menu.jpg")
+        imagen = self.ui.cargar_imagen("assets/menu_alt.jpg")
 
         hay_guardado = existe_partida()
 

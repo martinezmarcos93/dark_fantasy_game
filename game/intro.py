@@ -97,6 +97,29 @@ Pero ya sabés
 que no vas a hacerlo.
 
 
+[ ESPACIO para continuar ]
+"""
+            },
+            {
+                "imagen": "assets/intro4.jpg",
+                "texto": """
+Entrás.
+
+El sonido del mundo de afuera
+desaparece antes de que hagas
+tres pasos.
+
+No es silencio.
+Es ausencia de todo lo que
+usabas para orientarte.
+
+Aquí no hay arriba ni abajo.
+Solo profundidad.
+
+Y algo que te conoce
+desde antes de que llegaras.
+
+
 [ ESPACIO para comenzar ]
 """
             }
