@@ -80,7 +80,9 @@ class CombatState:
         # Modificadores activos esta ronda
         self.defensa_activa    = False   # Velo de Sombra
         self.ventaja_activa    = False   # Resonancia Mental
-        self.enemigo_paralizado = False  # Nombre Verdadero
+        self.enemigo_paralizado = False  # Nombre Verdadero / Estrangular (esta ronda)
+        # Parálisis diferida: se activa al inicio de la PRÓXIMA ronda (Estrangular)
+        self._paralizado_siguiente = False
 
         # Daño total infligido (para narrativa de cierre)
         self.daño_jugador_total  = 0
@@ -367,7 +369,7 @@ def resolver_accion_jugador(accion, player, enemy, state):
                     f"No puede atacar la próxima ronda.\n[ Daño infligido: {daño} ]"
                 )
                 result["daño_enemigo"] = daño
-                result["nuevo_estado"]["enemigo_paralizado"] = True
+                result["nuevo_estado"]["_paralizado_siguiente"] = True
                 result["ronda_ganada"] = True
             else:
                 daño_recibido = random.randint(enemy.dificultad, enemy.dificultad * 2) * 2
@@ -518,12 +520,10 @@ def combate_completo(enemy, player, engine):
     # ── Loop de rondas ────────────────────────────────────────
     while state.ronda_actual <= state.rondas_max:
 
-        # Resetear modificadores de ronda que duran solo 1 turno.
-        # ventaja_activa NO se resetea aquí: fue seteada al final de la ronda
-        # anterior y debe estar disponible para la acción del jugador esta ronda.
-        # Se consume y resetea dentro de resolver_accion_jugador().
-        state.defensa_activa    = False
-        state.enemigo_paralizado = False
+        # Aplicar parálisis diferida de la ronda anterior (Estrangular)
+        state.enemigo_paralizado = state._paralizado_siguiente
+        state._paralizado_siguiente = False
+        state.defensa_activa = False
 
         # Construir opciones para esta ronda
         acciones = acciones_disponibles(player, state, enemy)
