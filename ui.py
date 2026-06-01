@@ -40,6 +40,9 @@ class UI:
         # Canvas lógico — siempre 1000×600
         self.canvas = pygame.Surface((self.width, self.height))
 
+        # Flash de daño: frames restantes de parpadeo rojo en la barra de HP
+        self._flash_hp_frames = 0
+
         # Fuente
         self.font     = pygame.font.Font("fonts/Goth.ttf", 24)
         self.font_btn = pygame.font.Font("fonts/Goth.ttf", 22)
@@ -193,9 +196,15 @@ class UI:
         self.canvas.blit(nombre_txt, (x, y))
         y += 22
 
+        # Color de HP: blanco brillante durante flash, rojo normal de lo contrario
+        if self._flash_hp_frames > 0:
+            self._flash_hp_frames -= 1
+            color_hp = (255, 255, 255)
+        else:
+            color_hp = (160, 30, 30)
         self._dibujar_barra(x, y,
             valor=player.vida, maximo=player.vida_max,
-            color_llena=(160, 30, 30), color_vacia=(40, 10, 10), etiqueta="HP")
+            color_llena=color_hp, color_vacia=(40, 10, 10), etiqueta="HP")
         y += 22
 
         color_e = (40, 80, 160) if player.clase == "Hechicero" else (140, 120, 20)
@@ -204,6 +213,10 @@ class UI:
             valor=player.energia, maximo=player.energia_max,
             color_llena=color_e, color_vacia=color_e_vacia,
             etiqueta=player.energia_nombre[:2].upper())
+
+    def flash_daño(self, frames=8):
+        """Activa el flash blanco en la barra de HP durante N frames."""
+        self._flash_hp_frames = frames
 
     def _dibujar_barra(self, x, y, valor, maximo, color_llena, color_vacia, etiqueta):
         BAR_W, BAR_H = 300, 14

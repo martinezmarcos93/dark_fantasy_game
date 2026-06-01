@@ -683,6 +683,7 @@ def combate_completo(enemy, player, engine):
         if result_jugador["daño_jugador"] > 0:
             daño_real = player.recibir_daño(result_jugador["daño_jugador"])
             state.daño_enemigo_total += daño_real
+            ui.flash_daño()
 
         # Recuperar energía si huir
         if "energia_recuperada" in result_jugador.get("nuevo_estado", {}):
@@ -697,6 +698,7 @@ def combate_completo(enemy, player, engine):
         if result_enemigo["daño"] > 0:
             daño_enemigo_real = player.recibir_daño(result_enemigo["daño"])
             state.daño_enemigo_total += daño_enemigo_real
+            ui.flash_daño()
 
         # ── Impacto psíquico de acciones de combate ───────────────
         _psique_por_accion = {
