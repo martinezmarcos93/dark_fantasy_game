@@ -485,6 +485,18 @@ def resolver_accion_jugador(accion, player, enemy, state):
 # ───────────────────────────────────────────────────────────────
 # RESOLVER ATAQUE DEL ENEMIGO
 # ───────────────────────────────────────────────────────────────
+def _texto_ataque(textos_ataque, accion, clase):
+    """
+    Resuelve el texto de un ataque. Si el valor es un dict, busca la
+    clave de la clase del jugador y cae a '_' como fallback genérico.
+    Si es string, lo devuelve directamente.
+    """
+    entry = textos_ataque.get(accion, textos_ataque.get("default", "Ataca."))
+    if isinstance(entry, dict):
+        return entry.get(clase, entry.get("_", "Ataca."))
+    return entry
+
+
 def resolver_ataque_enemigo(accion_enemigo, enemy, player, state):
     """
     Calcula el daño del enemigo al jugador.
@@ -497,7 +509,7 @@ def resolver_ataque_enemigo(accion_enemigo, enemy, player, state):
             "daño": 0
         }
 
-    texto_base = enemy.textos_ataque.get(accion_enemigo, enemy.textos_ataque.get("default", "Ataca."))
+    texto_base = _texto_ataque(enemy.textos_ataque, accion_enemigo, player.clase)
 
     # Calcular daño base según acción
     if accion_enemigo == "ataque_pesado" or accion_enemigo == "desesperado":

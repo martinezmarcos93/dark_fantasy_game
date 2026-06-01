@@ -42,16 +42,18 @@ Pero te ve.
 """,
 
         textos_ataque={
-            "default": (
-                "Un brazo de piedra avanza.\n"
-                "Lento. Inevitable.\n"
-                "Sin intención de parar."
-            ),
-            "ataque_pesado": (
-                "Levanta ambos brazos.\n"
-                "El suelo tiembla antes del impacto.\n"
-                "No hay dónde cubrirse."
-            ),
+            "default": {
+                "Guerrero":  "Un brazo de piedra avanza.\nSabés que viene. No podés detenerlo.\nSolo aguantar.",
+                "Hechicero": "La piedra no entiende de hechizos.\nAvanza igual.\nTu magia no cambia su peso.",
+                "Ladrón":    "Un brazo de piedra avanza.\nLento. Inevitable.\nNo hay ángulo que esquivar.",
+                "_":         "Un brazo de piedra avanza.\nLento. Inevitable.\nSin intención de parar.",
+            },
+            "ataque_pesado": {
+                "Guerrero":  "Levanta ambos brazos.\nReconocés el movimiento.\nNo es suficiente para bloquearlo.",
+                "Hechicero": "Levanta ambos brazos.\nEl impacto viene antes de que puedas canalizar nada.",
+                "Ladrón":    "Levanta ambos brazos.\nEl suelo tiembla. No hay sombra donde esconderse.",
+                "_":         "Levanta ambos brazos.\nEl suelo tiembla antes del impacto.\nNo hay dónde cubrirse.",
+            },
             "detectar_sigilo": (
                 "La piedra vibra.\n"
                 "Algo en ella percibió tu presencia antes de que te movieras.\n"
@@ -146,16 +148,18 @@ Y viene hacia vos.
 """,
 
         textos_ataque={
-            "default": (
-                "Te devuelve lo que le diste.\n"
-                "Mismo movimiento.\n"
-                "Mejor ejecutado."
-            ),
-            "ataque_pesado": (
-                "Aprendió de tus últimas rondas.\n"
-                "El golpe que viene es una versión mejorada tuya.\n"
-                "Como si hubiera practicado mientras vos no mirabas."
-            ),
+            "default": {
+                "Guerrero":  "Devuelve tu golpe.\nMisma fuerza.\nMejor posición.",
+                "Hechicero": "Refleja tu hechizo.\nSabe la frecuencia.\nLo aprendió mientras lo lanzabas.",
+                "Ladrón":    "Estaba donde ibas.\nNo donde estabas.\nTe conoce mejor que vos.",
+                "_":         "Te devuelve lo que le diste.\nMismo movimiento.\nMejor ejecutado.",
+            },
+            "ataque_pesado": {
+                "Guerrero":  "Copió tu golpe cargado.\nY lo ejecutó más rápido.\nComo si hubiera esperado esta ronda.",
+                "Hechicero": "Tomó prestada tu magia.\nLa devuelve amplificada.\nCon tu misma voz.",
+                "Ladrón":    "Ya estaba en tu espalda.\nAntes de que lo pensaras.\nTu táctica favorita, usada contra vos.",
+                "_":         "Aprendió de tus últimas rondas.\nEl golpe que viene es una versión mejorada tuya.",
+            },
             "detectar_sigilo": (
                 "El reflejo no necesita verte.\n"
                 "Sabe adónde vas porque ya fue ahí antes.\n"
@@ -248,17 +252,18 @@ Y el aire se vuelve espeso.
 """,
 
         textos_ataque={
-            "default": (
-                "Las manos sin dedos se extienden hacia vos.\n"
-                "No es un golpe.\n"
-                "Es una extracción."
-            ),
-            "presencia_psiquica": (
-                "No te toca.\n"
-                "Pero algo en el aire cambia.\n"
-                "Una presión que no tiene dirección.\n"
-                "Que viene de adentro."
-            ),
+            "default": {
+                "Guerrero":  "Las manos se extienden.\nTu fuerza no sirve aquí.\nNo hay nada que golpear.",
+                "Hechicero": "Las manos se extienden.\nSaben tu nombre arcano.\nSe lo llevan antes de que lo digas.",
+                "Ladrón":    "Las manos se extienden.\nNo buscan tu cuerpo.\nBuscan lo que ocultás.",
+                "_":         "Las manos sin dedos se extienden hacia vos.\nNo es un golpe.\nEs una extracción.",
+            },
+            "presencia_psiquica": {
+                "Guerrero":  "No te golpea.\nTe hace dudar de cada golpe que diste.\n¿Para qué?",
+                "Hechicero": "No te golpea.\nEntra en la frecuencia de tu magia.\nLa enturbia.",
+                "Ladrón":    "No te golpea.\nHace que tu posición se sienta expuesta.\nAunque no estés visible.",
+                "_":         "No te toca.\nPero algo en el aire cambia.\nUna presión que viene de adentro.",
+            },
             "ataque_pesado": (
                 "El aire espeso se condensa.\n"
                 "Una ola de nada que pesa como todo.\n"
@@ -363,16 +368,18 @@ Sabe exactamente cuánto podés aguantar.
 """,
 
         textos_ataque={
-            "default": (
-                "La sombra cambia de forma.\n"
-                "Cada cambio, un golpe desde un ángulo distinto.\n"
-                "Como si supiera cuál lado no cubrís."
-            ),
-            "presencia_psiquica": (
-                "No te toca.\n"
-                "Se acerca lo suficiente para que la sientas.\n"
-                "Frío. Reconocimiento. Como mirarte en un espejo roto."
-            ),
+            "default": {
+                "Guerrero":  "La sombra adopta tu postura de combate.\nCada golpe que planeás, ella lo anticipa.\nTu fuerza es también la suya.",
+                "Hechicero": "La sombra absorbe la resonancia de tus hechizos.\nY los convierte en presión.\nContra vos.",
+                "Ladrón":    "La sombra ya estaba en tu posición de escape.\nTe esperaba ahí.\nNo hay ángulo tuyo que no conozca.",
+                "_":         "La sombra cambia de forma.\nCada cambio, un golpe desde un ángulo distinto.\nComo si supiera cuál lado no cubrís.",
+            },
+            "presencia_psiquica": {
+                "Guerrero":  "Se acerca.\nRecordás cada vez que la fuerza no alcanzó.\nEso pesa más que el golpe.",
+                "Hechicero": "Se acerca.\nSusurra los nombres de los hechizos que fallaron.\nEn tu voz.",
+                "Ladrón":    "Se acerca.\nY en ese momento sabés:\nnunca estuviste realmente escondido.",
+                "_":         "No te toca.\nSe acerca lo suficiente para que la sientas.\nFrío. Reconocimiento.",
+            },
             "ataque_pesado": (
                 "Todas las derrotas que absorbió\n"
                 "se concentran en un solo movimiento.\n"
