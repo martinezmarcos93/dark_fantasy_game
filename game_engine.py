@@ -371,7 +371,13 @@ Tu destino:
         l  = psique["lucidez"]
         co = psique["corrupcion"]
 
-        if co > 70:
+        # El stat dominante determina el eje narrativo principal.
+        # Dentro de cada eje, los valores secundarios afinan el ending.
+        dominante = max(psique, key=psique.get)
+        valor_dominante = psique[dominante]
+
+        # Corrupción alta con valor significativo → rendición al abismo
+        if dominante == "corrupcion" and co >= 40:
             return """
 El silencio ya no te resulta ajeno.
 Late contigo.
@@ -382,7 +388,8 @@ Y ahora…
 alguien más desciende.
 Vos esperás.
 """
-        elif l > 70 and co < 50:
+        # Lucidez dominante, corrupción contenida → integración
+        elif dominante == "lucidez" and co < 50:
             return """
 No hay salida.
 Pero tampoco prisión.
@@ -395,42 +402,8 @@ Sino hacia algo más amplio.
 El ciclo… no se rompe.
 Se comprende.
 """
-        elif m > 60:
-            return """
-Corrés.
-Pero no hay dirección.
-Las puertas ya no existen.
-El espacio se pliega.
-Tu mente intenta sostener algo que ya no tiene forma.
-Y entonces…
-todo se fragmenta.
-Seguís ahí.
-Pero ya no sabés qué sos.
-"""
-        elif v > 60 and co > 40:
-            return """
-Intentaste destruirlo.
-Pero nunca estuvo separado.
-Cada golpe fue hacia adentro.
-Cada intento… una grieta más.
-Hasta que no quedó nada coherente.
-Solo impulso.
-Solo reacción.
-Solo ruptura.
-"""
-        elif c > 50:
-            return """
-Recordás.
-Una y otra vez.
-Cada decisión.
-Cada omisión.
-Cada instante en el que pudiste ser distinto.
-Pero no lo fuiste.
-No hay castigo externo.
-No hace falta.
-Vos ya sos suficiente.
-"""
-        elif co > 50 and l > 50:
+        # Lucidez y corrupción juntas → voluntad lúcida en el abismo
+        elif dominante == "lucidez" and co >= 50:
             return """
 Lo ves.
 Todo.
@@ -445,17 +418,45 @@ No sos héroe.
 Sos voluntad.
 Y el abismo… ahora tiene ojos.
 """
-        elif m > 30 and l < 30:
+        # Miedo dominante → fragmentación
+        elif dominante == "miedo":
             return """
-Te desvanecés lentamente.
-Sin ruido.
-Sin forma.
-Sin resistencia.
-No hay dolor.
-No hay comprensión.
-Solo una pérdida progresiva de todo.
-Incluso de la idea de haber sido algo.
+Corrés.
+Pero no hay dirección.
+Las puertas ya no existen.
+El espacio se pliega.
+Tu mente intenta sostener algo que ya no tiene forma.
+Y entonces…
+todo se fragmenta.
+Seguís ahí.
+Pero ya no sabés qué sos.
 """
+        # Violencia dominante → ruptura interna
+        elif dominante == "violencia":
+            return """
+Intentaste destruirlo.
+Pero nunca estuvo separado.
+Cada golpe fue hacia adentro.
+Cada intento… una grieta más.
+Hasta que no quedó nada coherente.
+Solo impulso.
+Solo reacción.
+Solo ruptura.
+"""
+        # Culpa dominante → el juicio eterno
+        elif dominante == "culpa":
+            return """
+Recordás.
+Una y otra vez.
+Cada decisión.
+Cada omisión.
+Cada instante en el que pudiste ser distinto.
+Pero no lo fuiste.
+No hay castigo externo.
+No hace falta.
+Vos ya sos suficiente.
+"""
+        # Psique equilibrada o todos los valores bajos → salida vacía
         else:
             return """
 Salís.
