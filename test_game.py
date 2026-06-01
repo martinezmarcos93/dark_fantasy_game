@@ -199,10 +199,14 @@ check("Hech sin MP: sin hechizos",  not any(h["id"] in ids_h for h in HECHIZOS))
 
 # ── Enemies ──────────────────────────────────────────────────────
 print("\n== Enemies ==")
-from game.enemies import crear_guardian, crear_reflejo, crear_sacerdote, crear_sombra
+from game.enemies import (crear_guardian, crear_reflejo, crear_sacerdote, crear_sombra,
+                           crear_eco, crear_archivista, crear_grieta,
+                           crear_testigo, crear_umbral_encarnado)
 
 gua=crear_guardian(); ref=crear_reflejo()
 sac=crear_sacerdote(); som=crear_sombra()
+eco=crear_eco(); arc=crear_archivista()
+gri=crear_grieta(); tes=crear_testigo(); boss=crear_umbral_encarnado()
 
 for clase in ("Guerrero","Hechicero","Ladrón"):
     txt=_texto_ataque(gua.textos_ataque,"default",clase)
@@ -214,37 +218,52 @@ check("Reflejo Guer!=Hech",     tg!=th)
 check("Sacerdote 5 ataques",    len(sac.textos_ataque)==5)
 check("Sombra dif=6",           som.dificultad==6)
 check("Sombra vida=110",        som.vida==110)
+check("Eco dif=6 rondas=3",     eco.dificultad==6 and eco.rondas_max==3)
+check("Archivista dif=6",       arc.dificultad==6)
+check("Grieta inmune a nombre", "nombre" in gri.inmunidades)
+check("Testigo dif=7",          tes.dificultad==7)
+check("Boss rondas_max=5",      boss.rondas_max==5)
+check("Boss dificultad=8",      boss.dificultad==8)
+check("Boss inmune nombre+paralizar",
+      "nombre" in boss.inmunidades and "paralizar" in boss.inmunidades)
 check("_ta fallback _",         _texto_ataque({"default":{"_":"fb","Guerrero":"g"}},"default","Raro")=="fb")
 check("_ta string plano",       _texto_ataque({"default":"plano"},"default","X")=="plano")
 check("_ta accion=>default",    _texto_ataque({"default":"def"},"rara","X")=="def")
 
 # ── Niveles ──────────────────────────────────────────────────────
 print("\n== Niveles ==")
-from game.levels.level1 import Level1
-from game.levels.level2 import Level2
-from game.levels.level3 import Level3
-from game.levels.level4 import Level4
-from game.levels.level5 import Level5
-from game.levels.level6 import Level6
+from game.levels.level1  import Level1
+from game.levels.level2  import Level2
+from game.levels.level3  import Level3
+from game.levels.level4  import Level4
+from game.levels.level5  import Level5
+from game.levels.level6  import Level6
+from game.levels.level7  import Level7
+from game.levels.level8  import Level8
+from game.levels.level9  import Level9
+from game.levels.level10 import Level10
 
-for Kls,nom in [(Level1,"L1"),(Level2,"L2"),(Level3,"L3"),
-                 (Level4,"L4"),(Level5,"L5"),(Level6,"L6")]:
+for Kls,nom in [(Level1,"L1"),(Level2,"L2"),(Level3,"L3"),(Level4,"L4"),
+                 (Level5,"L5"),(Level6,"L6"),(Level7,"L7"),(Level8,"L8"),
+                 (Level9,"L9"),(Level10,"L10")]:
     lvl=Kls()
     check(f"{nom} instancia OK", hasattr(lvl,"nombre") and hasattr(lvl,"jugar"))
 
-for Kls,nom in [(Level1,"L1"),(Level2,"L2"),(Level3,"L3"),(Level4,"L4")]:
+for Kls,nom in [(Level1,"L1"),(Level2,"L2"),(Level3,"L3"),(Level4,"L4"),
+                 (Level7,"L7"),(Level8,"L8")]:
     check(f"{nom} fase_combate", hasattr(Kls(),"fase_combate"))
 
-check("L5 distorsionar_texto",  hasattr(Level5(),"distorsionar_texto"))
-check("L6 distorsionar_texto",  hasattr(Level6(),"distorsionar_texto"))
+check("L9 fase_combate",        hasattr(Level9(),"fase_combate"))
+check("L10 fase_combate_boss",  hasattr(Level10(),"fase_combate_boss"))
+
+for Kls,nom in [(Level5,"L5"),(Level6,"L6"),(Level9,"L9")]:
+    check(f"{nom} distorsionar_texto", hasattr(Kls(),"distorsionar_texto"))
 
 pd_=Player("X","Guerrero")
 pd_.psique={"miedo":50,"corrupcion":60,"lucidez":60,"violencia":0,"culpa":0}
-r5=Level5().distorsionar_texto("Texto distorsion prueba",pd_)
-check("L5 distorsion OK",       isinstance(r5,str) and len(r5)>0)
-
-r6=Level6().distorsionar_texto("Texto distorsion prueba",pd_)
-check("L6 distorsion OK",       isinstance(r6,str) and len(r6)>0)
+for Kls,nom in [(Level5,"L5"),(Level6,"L6"),(Level9,"L9")]:
+    r=Kls().distorsionar_texto("Texto distorsion prueba",pd_)
+    check(f"{nom} distorsion OK", isinstance(r,str) and len(r)>0)
 
 pc_=Player("X","Guerrero")
 rc=Level5().distorsionar_texto("Sin distorsion",pc_)

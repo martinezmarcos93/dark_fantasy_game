@@ -226,12 +226,16 @@ La narrativa y los finales son siempre los mismos.
     # CARGAR NIVELES
     # ─────────────────────────────────────────
     def cargar_niveles(self):
-        from game.levels.level1 import Level1
-        from game.levels.level2 import Level2
-        from game.levels.level3 import Level3
-        from game.levels.level4 import Level4
-        from game.levels.level5 import Level5
-        from game.levels.level6 import Level6
+        from game.levels.level1  import Level1
+        from game.levels.level2  import Level2
+        from game.levels.level3  import Level3
+        from game.levels.level4  import Level4
+        from game.levels.level5  import Level5
+        from game.levels.level6  import Level6
+        from game.levels.level7  import Level7
+        from game.levels.level8  import Level8
+        from game.levels.level9  import Level9
+        from game.levels.level10 import Level10
 
         self.levels = [
             Level1(),
@@ -239,7 +243,11 @@ La narrativa y los finales son siempre los mismos.
             Level3(),
             Level4(),
             Level5(),
-            Level6()
+            Level6(),
+            Level7(),
+            Level8(),
+            Level9(),
+            Level10(),
         ]
 
     # ─────────────────────────────────────────
@@ -647,10 +655,12 @@ Aunque vos sí lo hayas hecho.
 Lo que sentís va dejando marca.
 
 """
+        _imgs = ["assets/lvl1.jpg","assets/lvl2.jpg","assets/lvl3.jpg",
+                 "assets/lvl4.jpg","assets/lvl5.jpg","assets/lvl6.jpg",
+                 "assets/lvl7.jpg","assets/lvl8.jpg","assets/lvl9.jpg",
+                 "assets/lvl10.jpg"]
         imagen = self.ui.cargar_imagen(
-            ["assets/lvl1.jpg","assets/lvl2.jpg","assets/lvl3.jpg",
-             "assets/lvl4.jpg","assets/lvl5.jpg","assets/lvl6.jpg"]
-            [min(self.current_level_index, 5)]
+            _imgs[min(self.current_level_index, len(_imgs) - 1)]
         )
         self.ui.esperar_input(imagen, texto, opciones=False, player=self.player)
 
