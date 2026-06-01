@@ -371,39 +371,73 @@ Tu destino:
         l  = psique["lucidez"]
         co = psique["corrupcion"]
 
-        # El stat dominante determina el eje narrativo principal.
-        # Dentro de cada eje, los valores secundarios afinan el ending.
         dominante = max(psique, key=psique.get)
-        valor_dominante = psique[dominante]
+        segundo   = sorted(psique, key=psique.get, reverse=True)[1]
+        val_dom   = psique[dominante]
+        val_seg   = psique[segundo]
 
-        # Corrupción alta con valor significativo → rendición al abismo
-        if dominante == "corrupcion" and co >= 40:
+        # Combinación dominante + segundo significativo (ambos >= 35)
+        combo = (dominante, segundo) if val_seg >= 35 else (dominante, None)
+
+        # ── Combos dobles ────────────────────────────────────────
+        if combo == ("miedo", "culpa") or combo == ("culpa", "miedo"):
             return """
-El silencio ya no te resulta ajeno.
-Late contigo.
-La cueva… respira como vos.
-No entraste a destruir nada.
-Entraste a recordar.
-Y ahora…
-alguien más desciende.
-Vos esperás.
+No corrés.
+No te quedás.
+Estás suspendido entre las dos.
+El miedo dice: movete.
+La culpa dice: no merecés escapar.
+Y así…
+el tiempo pasa alrededor.
+Sin vos adentro.
 """
-        # Lucidez dominante, corrupción contenida → integración
-        elif dominante == "lucidez" and co < 50:
+        if combo == ("violencia", "miedo") or combo == ("miedo", "violencia"):
             return """
-No hay salida.
-Pero tampoco prisión.
-Lo que enfrentaste…
+Atacás porque tenés miedo.
+No porque seas valiente.
+Cada golpe es un grito
+que nadie escucha.
+Incluyéndote.
+La violencia no te protegió.
+Solo te aisló más rápido.
+"""
+        if combo == ("culpa", "lucidez") or combo == ("lucidez", "culpa"):
+            return """
+Lo entendés todo.
+Cada error.
+Cada momento en que pudiste elegir distinto.
+La lucidez no te absuelve.
+Te hace cómplice
+de cada versión tuya
+que sabía
+y eligió igual.
+"""
+        if combo == ("miedo", "lucidez") or combo == ("lucidez", "miedo"):
+            return """
+Ves exactamente por qué tenés miedo.
+Podés nombrarlo.
+Describirlo.
+Rastrearlo hasta su origen.
+Y aun así…
 no desaparece.
-Se integra.
-Das un paso.
-No hacia afuera.
-Sino hacia algo más amplio.
-El ciclo… no se rompe.
-Se comprende.
+Entender no es sanar.
+A veces es solo
+una forma más precisa de sufrir.
 """
-        # Lucidez y corrupción juntas → voluntad lúcida en el abismo
-        elif dominante == "lucidez" and co >= 50:
+        if combo == ("violencia", "culpa") or combo == ("culpa", "violencia"):
+            return """
+Golpeaste.
+Y después lo lamentaste.
+Una y otra vez.
+El ciclo no es debilidad.
+Es la forma que encontraste
+de no quedarte quieto
+con lo que hiciste.
+El movimiento como anestesia.
+Funciona.
+Hasta que deja de funcionar.
+"""
+        if combo == ("corrupcion", "lucidez") or combo == ("lucidez", "corrupcion"):
             return """
 Lo ves.
 Todo.
@@ -418,8 +452,33 @@ No sos héroe.
 Sos voluntad.
 Y el abismo… ahora tiene ojos.
 """
-        # Miedo dominante → fragmentación
-        elif dominante == "miedo":
+
+        # ── Endings por stat dominante único ─────────────────────
+        if dominante == "corrupcion" and co >= 40:
+            return """
+El silencio ya no te resulta ajeno.
+Late contigo.
+La cueva… respira como vos.
+No entraste a destruir nada.
+Entraste a recordar.
+Y ahora…
+alguien más desciende.
+Vos esperás.
+"""
+        if dominante == "lucidez" and co < 50:
+            return """
+No hay salida.
+Pero tampoco prisión.
+Lo que enfrentaste…
+no desaparece.
+Se integra.
+Das un paso.
+No hacia afuera.
+Sino hacia algo más amplio.
+El ciclo… no se rompe.
+Se comprende.
+"""
+        if dominante == "miedo":
             return """
 Corrés.
 Pero no hay dirección.
@@ -431,8 +490,7 @@ todo se fragmenta.
 Seguís ahí.
 Pero ya no sabés qué sos.
 """
-        # Violencia dominante → ruptura interna
-        elif dominante == "violencia":
+        if dominante == "violencia":
             return """
 Intentaste destruirlo.
 Pero nunca estuvo separado.
@@ -443,8 +501,7 @@ Solo impulso.
 Solo reacción.
 Solo ruptura.
 """
-        # Culpa dominante → el juicio eterno
-        elif dominante == "culpa":
+        if dominante == "culpa":
             return """
 Recordás.
 Una y otra vez.
@@ -457,8 +514,7 @@ No hace falta.
 Vos ya sos suficiente.
 """
         # Psique equilibrada o todos los valores bajos → salida vacía
-        else:
-            return """
+        return """
 Salís.
 O al menos… eso parece.
 El mundo sigue.
