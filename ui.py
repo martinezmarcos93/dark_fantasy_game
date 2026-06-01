@@ -248,11 +248,40 @@ class UI:
         return (lx, ly)
 
     # ─────────────────────────────────────────
+    # FILTRO PSÍQUICO — overlay de color sobre la imagen según psique dominante
+    # ─────────────────────────────────────────
+    def _aplicar_filtro_psique(self, imagen, player):
+        if player is None:
+            return imagen
+        psique = player.psique
+        dominante = max(psique, key=psique.get)
+        intensidad = min(psique[dominante], 100)
+        if intensidad < 20:
+            return imagen
+
+        _COLORES = {
+            "violencia":  (180, 20,  20),
+            "miedo":      (20,  20,  80),
+            "culpa":      (60,  40,  20),
+            "lucidez":    (20,  80,  60),
+            "corrupcion": (60,  0,   80),
+        }
+        color = _COLORES[dominante]
+        alpha = int((intensidad - 20) / 80 * 90)  # 0→90 según 20-100
+
+        filtro = pygame.Surface((self.IMG_W, self.IMG_H), pygame.SRCALPHA)
+        filtro.fill((*color, alpha))
+        resultado = imagen.copy()
+        resultado.blit(filtro, (0, 0))
+        return resultado
+
+    # ─────────────────────────────────────────
     # RENDER PRINCIPAL
     # ─────────────────────────────────────────
     def render(self, imagen, texto, scroll_y=0, opciones=None, player=None):
         self.canvas.fill(self.bg_color)
-        self.canvas.blit(imagen, (self.IMG_X, self.IMG_Y))
+        img_filtrada = self._aplicar_filtro_psique(imagen, player)
+        self.canvas.blit(img_filtrada, (self.IMG_X, self.IMG_Y))
         self.dibujar_hud(player)
         altura_texto = self.dibujar_texto(texto, scroll_y)
         self.dibujar_divisor()
