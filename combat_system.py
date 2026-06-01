@@ -582,12 +582,12 @@ def combate_completo(enemy, player, engine):
             state.daño_enemigo_total += daño_enemigo_real
 
         # ── Determinar ganador de la ronda ────────────────────
+        # Acciones defensivas/utilitarias (daño_enemigo=0, ronda_ganada=False)
+        # resultan en ronda neutral: ninguno suma punto.
         if result_jugador["ronda_ganada"]:
             state.rondas_jugador += 1
-        elif result_enemigo["daño"] > result_jugador["daño_enemigo"] or not result_jugador["ronda_ganada"]:
-            # El enemigo gana la ronda si hizo más daño y el jugador no la ganó
-            if daño_enemigo_real > result_jugador["daño_enemigo"]:
-                state.rondas_enemigo += 1
+        elif daño_enemigo_real > result_jugador["daño_enemigo"]:
+            state.rondas_enemigo += 1
 
         # ── Pantalla de resultado de ronda ────────────────────
         resultado_visual = (
