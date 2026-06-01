@@ -2,13 +2,14 @@ from ui import UI, EscapeAlMenu
 from player import Player
 from menu import Menu
 from intro import Intro
-from save_system import guardar_partida, cargar_partida, borrar_partida
+from save_system import guardar_partida, cargar_partida, borrar_partida, listar_slots
 
 class GameEngine:
     def __init__(self):
         self.player = None
         self.current_level_index = 0
         self.levels = []
+        self.save_slot = 0
         self.ui = UI()
         self.menu = Menu(self.ui)
         self.intro = Intro(self.ui)
@@ -21,18 +22,26 @@ class GameEngine:
             accion = self.menu.mostrar()
 
             if accion == "nueva":
-                borrar_partida()
+                slot = self._elegir_slot(modo="nueva")
+                if slot is None:
+                    continue
+                self.save_slot = slot
+                borrar_partida(slot)
                 self.current_level_index = 0
                 try:
                     self.intro.mostrar()
                     self.crear_personaje()
                 except EscapeAlMenu:
-                    continue  # volver al menú principal
+                    continue
                 self.cargar_niveles()
                 self.jugar()
 
             elif accion == "cargar":
-                exito = self.cargar_juego()
+                slot = self._elegir_slot(modo="cargar")
+                if slot is None:
+                    continue
+                self.save_slot = slot
+                exito = self.cargar_juego(slot)
                 if exito:
                     self.cargar_niveles()
                     self.jugar()
@@ -119,7 +128,7 @@ Elegí tu senda:
                 elif resultado == "continuar":
                     self._mostrar_resumen_psique()
                     self.current_level_index += 1
-                    guardar_partida(self.player, self.current_level_index)
+                    guardar_partida(self.player, self.current_level_index, self.save_slot)
 
                 else:
                     break
@@ -127,16 +136,72 @@ Elegí tu senda:
             self.final_juego()
 
         except EscapeAlMenu:
-            # Guardar estado y volver al loop principal (iniciar())
             if self.player and self.player.alive:
-                guardar_partida(self.player, self.current_level_index)
+                guardar_partida(self.player, self.current_level_index, self.save_slot)
             return
 
     # ─────────────────────────────────────────
     # CARGAR JUEGO DESDE JSON
     # ─────────────────────────────────────────
-    def cargar_juego(self):
-        data = cargar_partida()
+    def _elegir_slot(self, modo="cargar"):
+        slots = listar_slots()
+        imagen = self.ui.cargar_imagen("assets/lvl1.jpg")
+
+        if modo == "cargar":
+            opciones_validas = [s for s in slots if not s["vacio"]]
+            if not opciones_validas:
+                return None
+            labels = []
+            ids    = []
+            for s in slots:
+                if s["vacio"]:
+                    labels.append(f"Slot {s['slot']+1}  [vacío]")
+                else:
+                    labels.append(
+                        f"Slot {s['slot']+1}  — {s['nombre']} ({s['clase']})  Nivel {s['nivel']}"
+                    )
+                    ids.append(s["slot"])
+            # Filtrar labels solo de slots con datos
+            labels_cargables = [
+                f"Slot {s['slot']+1}  — {s['nombre']} ({s['clase']})  Nivel {s['nivel']}"
+                for s in slots if not s["vacio"]
+            ]
+            ids_cargables = [s["slot"] for s in slots if not s["vacio"]]
+            if not ids_cargables:
+                return None
+            eleccion = self.ui.esperar_input(
+                imagen,
+                "\n¿Qué partida querés cargar?\n",
+                opciones=True,
+                opciones_lista=labels_cargables
+            )
+            try:
+                return ids_cargables[int(eleccion) - 1]
+            except (ValueError, IndexError):
+                return ids_cargables[0]
+
+        else:  # modo == "nueva"
+            labels = []
+            for s in slots:
+                if s["vacio"]:
+                    labels.append(f"Slot {s['slot']+1}  [libre]")
+                else:
+                    labels.append(
+                        f"Slot {s['slot']+1}  — {s['nombre']} ({s['clase']})  [sobreescribir]"
+                    )
+            eleccion = self.ui.esperar_input(
+                imagen,
+                "\n¿En qué slot guardás la nueva partida?\n",
+                opciones=True,
+                opciones_lista=labels
+            )
+            try:
+                return int(eleccion) - 1
+            except (ValueError, IndexError):
+                return 0
+
+    def cargar_juego(self, slot=0):
+        data = cargar_partida(slot)
         if not data:
             return False
 
@@ -342,7 +407,7 @@ desde antes de que empezara la pelea.
     def final_juego(self):
         if not self.player.alive:
             self.pantalla_muerte()
-            borrar_partida()
+            borrar_partida(self.save_slot)
             return
 
         self._mostrar_historial()
@@ -360,7 +425,7 @@ Tu destino:
             texto,
             opciones=False
         )
-        borrar_partida()
+        borrar_partida(self.save_slot)
 
     def _mostrar_resumen_psique(self):
         p = self.player.psique

@@ -1,46 +1,76 @@
 import json
 import os
 
-SAVE_FILE = "savegame.json"
+SAVE_DIR  = "saves"
+NUM_SLOTS = 3
+
+def _ruta(slot):
+    os.makedirs(SAVE_DIR, exist_ok=True)
+    return os.path.join(SAVE_DIR, f"slot{slot}.json")
 
 # ─────────────────────────────────────────
 # GUARDAR PARTIDA
 # ─────────────────────────────────────────
-def guardar_partida(player, nivel_index):
+def guardar_partida(player, nivel_index, slot=0):
     data = {
-        "nombre": player.name,
-        "clase": player.clase,
+        "nombre":     player.name,
+        "clase":      player.clase,
         "nivel_actual": nivel_index,
-        "alive": player.alive,
-        "stats": player.stats,
-        "psique": player.psique,
-        "vida": player.vida,
-        "vida_max": player.vida_max,
-        "energia": player.energia,
+        "alive":      player.alive,
+        "stats":      player.stats,
+        "psique":     player.psique,
+        "vida":       player.vida,
+        "vida_max":   player.vida_max,
+        "energia":    player.energia,
         "energia_max": player.energia_max,
-        "historial": player.historial,
+        "historial":  player.historial,
     }
-    with open(SAVE_FILE, "w", encoding="utf-8") as f:
+    with open(_ruta(slot), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # ─────────────────────────────────────────
 # CARGAR PARTIDA
 # ─────────────────────────────────────────
-def cargar_partida():
-    if not os.path.exists(SAVE_FILE):
+def cargar_partida(slot=0):
+    ruta = _ruta(slot)
+    if not os.path.exists(ruta):
         return None
-    with open(SAVE_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(ruta, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
 
 # ─────────────────────────────────────────
-# EXISTE PARTIDA GUARDADA?
+# RESUMEN DE TODOS LOS SLOTS
+# Devuelve lista de dicts con info rápida para el menú de carga
 # ─────────────────────────────────────────
-def existe_partida():
-    return os.path.exists(SAVE_FILE)
+def listar_slots():
+    slots = []
+    for i in range(NUM_SLOTS):
+        data = cargar_partida(i)
+        if data:
+            slots.append({
+                "slot":   i,
+                "nombre": data.get("nombre", "???"),
+                "clase":  data.get("clase",  "???"),
+                "nivel":  data.get("nivel_actual", 0),
+                "vacio":  False,
+            })
+        else:
+            slots.append({"slot": i, "vacio": True})
+    return slots
 
 # ─────────────────────────────────────────
-# BORRAR PARTIDA (al iniciar nueva)
+# EXISTE PARTIDA EN SLOT?
 # ─────────────────────────────────────────
-def borrar_partida():
-    if os.path.exists(SAVE_FILE):
-        os.remove(SAVE_FILE)
+def existe_partida(slot=0):
+    return os.path.exists(_ruta(slot))
+
+# ─────────────────────────────────────────
+# BORRAR PARTIDA
+# ─────────────────────────────────────────
+def borrar_partida(slot=0):
+    ruta = _ruta(slot)
+    if os.path.exists(ruta):
+        os.remove(ruta)
