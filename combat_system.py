@@ -169,7 +169,8 @@ def tirar(stat, dificultad, ventaja=False):
     """
     2d6 + stat vs dificultad * 2.
     Con ventaja: 3d6 toma los 2 mejores.
-    Devuelve dict {exito, tirada, umbral}.
+    Crítico si supera el umbral por 4+: daño x2.
+    Devuelve dict {exito, critico, tirada, umbral}.
     """
     if ventaja:
         dados = sorted([random.randint(1,6), random.randint(1,6), random.randint(1,6)])
@@ -179,9 +180,10 @@ def tirar(stat, dificultad, ventaja=False):
 
     umbral = dificultad * 2
     return {
-        "exito":  resultado >= umbral,
-        "tirada": resultado,
-        "umbral": umbral
+        "exito":   resultado >= umbral,
+        "critico": resultado >= umbral + 4,
+        "tirada":  resultado,
+        "umbral":  umbral
     }
 
 
@@ -206,7 +208,11 @@ def resolver_accion_jugador(accion, player, enemy, state):
             t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
             if t["exito"]:
                 daño = random.randint(1, enemy.dificultad) * 4
-                result["texto"] = f"Tu golpe conecta. El guardián retrocede.\n[ Daño infligido: {daño} ]"
+                if t["critico"]:
+                    daño *= 2
+                    result["texto"] = f"CRÍTICO — El golpe fue perfecto. Sin margen de error.\n[ Daño infligido: {daño} ]"
+                else:
+                    result["texto"] = f"Tu golpe conecta. El guardián retrocede.\n[ Daño infligido: {daño} ]"
                 result["daño_enemigo"] = daño
                 result["ronda_ganada"] = True
             else:
@@ -219,7 +225,11 @@ def resolver_accion_jugador(accion, player, enemy, state):
             daño_bloqueado = random.randint(2, 6) * 2
             if t["exito"]:
                 daño_contra = random.randint(1, enemy.dificultad) * 2
-                result["texto"] = f"Absorbés el golpe y contraatacás.\n[ Daño bloqueado: {daño_bloqueado} — Contraataque: {daño_contra} ]"
+                if t["critico"]:
+                    daño_contra *= 2
+                    result["texto"] = f"CRÍTICO — Absorbés todo el impacto y contraatacás con fuerza.\n[ Daño bloqueado: {daño_bloqueado} — Contraataque: {daño_contra} ]"
+                else:
+                    result["texto"] = f"Absorbés el golpe y contraatacás.\n[ Daño bloqueado: {daño_bloqueado} — Contraataque: {daño_contra} ]"
                 result["daño_enemigo"] = daño_contra
                 result["nuevo_estado"]["defensa_activa"] = True
             else:
@@ -233,7 +243,11 @@ def resolver_accion_jugador(accion, player, enemy, state):
             t = tirar(stats["fuerza"], enemy.dificultad, ventaja)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
-                result["texto"] = f"El golpe cargado encuentra su blanco. Impacto devastador.\n[ Daño infligido: {daño} — Stamina: -{15} ]"
+                if t["critico"]:
+                    daño *= 2
+                    result["texto"] = f"CRÍTICO — El golpe cargado destruye cualquier defensa.\n[ Daño infligido: {daño} — Stamina: -{15} ]"
+                else:
+                    result["texto"] = f"El golpe cargado encuentra su blanco. Impacto devastador.\n[ Daño infligido: {daño} — Stamina: -{15} ]"
                 result["daño_enemigo"] = daño
                 result["ronda_ganada"] = True
             else:
@@ -293,7 +307,11 @@ def resolver_accion_jugador(accion, player, enemy, state):
             if efecto == "daño_alto":
                 if t["exito"]:
                     daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 4
-                    result["texto"] = f"La Palabra de Fuego consume lo que toca.\n[ Daño infligido: {daño} ]"
+                    if t["critico"]:
+                        daño *= 2
+                        result["texto"] = f"CRÍTICO — La Palabra de Fuego resuena hasta el hueso.\n[ Daño infligido: {daño} ]"
+                    else:
+                        result["texto"] = f"La Palabra de Fuego consume lo que toca.\n[ Daño infligido: {daño} ]"
                     result["daño_enemigo"] = daño
                     result["ronda_ganada"] = True
                 else:
@@ -358,7 +376,11 @@ def resolver_accion_jugador(accion, player, enemy, state):
             t = tirar(stats["resistencia"], enemy.dificultad, True)
             if t["exito"]:
                 daño = random.randint(enemy.dificultad, enemy.dificultad * 2) * 5
-                result["texto"] = f"Por la espalda. Sin aviso. Sin defensa posible.\n[ Daño infligido: {daño} — Ingenio: -15 ]"
+                if t["critico"]:
+                    daño *= 2
+                    result["texto"] = f"CRÍTICO — Punto vital. El daño es absoluto.\n[ Daño infligido: {daño} — Ingenio: -15 ]"
+                else:
+                    result["texto"] = f"Por la espalda. Sin aviso. Sin defensa posible.\n[ Daño infligido: {daño} — Ingenio: -15 ]"
                 result["daño_enemigo"] = daño
                 result["ronda_ganada"] = True
             else:
