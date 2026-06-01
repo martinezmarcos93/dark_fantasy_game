@@ -11,6 +11,7 @@ class GameEngine:
         self.levels = []
         self.save_slot = 0
         self.modo_lectura = False
+        self.dificultad_global = 1.0
         self.ui = UI()
         self.menu = Menu(self.ui)
         self.intro = Intro(self.ui)
@@ -94,6 +95,24 @@ Elegí tu senda:
         nombre = self.ui.pedir_nombre(imagen, clase)
         self.player = Player(nombre, clase)
 
+        self._elegir_dificultad()
+
+    def _elegir_dificultad(self):
+        texto = """
+¿Qué tan profundo querés descender?
+
+La dificultad afecta el daño enemigo y las tiradas de combate.
+La narrativa y los finales son siempre los mismos.
+"""
+        opciones = [
+            "Umbral Suave  [enemigos más fáciles]",
+            "Umbral Normal  [experiencia diseñada]",
+            "Umbral Profundo  [enemigos más duros]",
+        ]
+        eleccion = self.mostrar_nivel("assets/lvl1.jpg", texto, opciones=True, opciones_lista=opciones)
+        mapa = {"1": 0.7, "2": 1.0, "3": 1.4}
+        self.dificultad_global = mapa.get(eleccion, 1.0)
+
     # ─────────────────────────────────────────
     # CARGAR NIVELES
     # ─────────────────────────────────────────
@@ -130,10 +149,12 @@ Elegí tu senda:
     # ─────────────────────────────────────────
     def combate_narrativo(self, enemy):
         if self.modo_lectura:
-            # Mostrar intro del enemigo y devolver victoria automática
             self.mostrar_nivel(enemy.imagen, enemy.texto_intro, opciones=False)
             self.player.modificar_psique(enemy.psique_victoria_jugador)
             return "vivo"
+        # Aplicar modificador de dificultad global (no muta la definición original)
+        import math
+        enemy.dificultad = max(1, round(enemy.dificultad * self.dificultad_global))
         from combat_system import combate_completo
         return combate_completo(enemy, self.player, self)
 
