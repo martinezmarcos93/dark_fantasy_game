@@ -46,6 +46,7 @@ La voz susurra:
         )
 
         if eleccion == "1":
+            player.registrar_decision("Leíste el libro. Las palabras hablaban de vos.")
             player.psique["lucidez"] += 15
             player.psique["corrupcion"] += 5
             engine.mostrar_nivel(
@@ -64,6 +65,7 @@ Pero también te cambia.
             )
 
         elif eleccion == "2":
+            player.registrar_decision("Ofreciste tu sangre al altar. Algo en vos ya había elegido.")
             player.psique["corrupcion"] += 20
             engine.mostrar_nivel(
                 "assets/lvl3.jpg",
@@ -81,6 +83,7 @@ Algo en vos… ya eligió.
             )
 
         elif eleccion == "3":
+            player.registrar_decision("Ignoraste el altar. La decisión pendiente te siguió.")
             player.psique["miedo"] += 10
             engine.mostrar_nivel(
                 "assets/lvl3.jpg",

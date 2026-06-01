@@ -18,6 +18,7 @@ def guardar_partida(player, nivel_index):
         "vida_max": player.vida_max,
         "energia": player.energia,
         "energia_max": player.energia_max,
+        "historial": player.historial,
     }
     with open(SAVE_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

@@ -147,8 +147,9 @@ Elegí tu senda:
         self.player.stats  = data["stats"]
         self.player.psique = data["psique"]
         self.player.alive  = data["alive"]
-        self.player.vida   = data.get("vida", self.player.vida_max)
+        self.player.vida    = data.get("vida", self.player.vida_max)
         self.player.energia = data.get("energia", self.player.energia_max)
+        self.player.historial = data.get("historial", [])
         self.current_level_index = data["nivel_actual"]
         return True
 
@@ -343,8 +344,9 @@ desde antes de que empezara la pelea.
             borrar_partida()
             return
 
-        ending = self.determinar_final()
+        self._mostrar_historial()
 
+        ending = self.determinar_final()
         texto = f"""
 {self.player.name}.
 
@@ -358,6 +360,26 @@ Tu destino:
             opciones=False
         )
         borrar_partida()
+
+    def _mostrar_historial(self):
+        if not self.player.historial:
+            return
+        lineas = "\n".join(f"— {d}" for d in self.player.historial)
+        texto = f"""
+Lo que hiciste no desaparece.
+Solo se acumula.
+
+{lineas}
+
+Eso sos.
+Todo eso junto.
+"""
+        self.ui.esperar_input(
+            self.ui.cargar_imagen("assets/lvl6.jpg"),
+            texto,
+            opciones=False,
+            player=self.player
+        )
 
     # ─────────────────────────────────────────
     # SISTEMA DE FINALES

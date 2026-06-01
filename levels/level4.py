@@ -51,6 +51,7 @@ La voz dice:
         )
 
         if eleccion == "1":
+            player.registrar_decision("Aceptaste todas las versiones de vos mismo. Las que dolían también.")
             player.psique["lucidez"] += 20
             engine.mostrar_nivel(
                 "assets/lvl4.jpg",
@@ -70,6 +71,7 @@ sos completo.
             )
 
         elif eleccion == "2":
+            player.registrar_decision("Rechazaste las versiones. Se volvieron más intensas.")
             player.psique["culpa"] += 15
             player.psique["miedo"] += 10
             engine.mostrar_nivel(
@@ -90,6 +92,7 @@ La voz susurra:
             )
 
         elif eleccion == "3":
+            player.registrar_decision("Atacaste a las versiones. Se multiplicaron.")
             player.psique["violencia"] += 20
             player.psique["corrupcion"] += 10
             engine.mostrar_nivel(

@@ -68,6 +68,8 @@ class Player:
 
         self.alive = True
         self.level = 1
+        # Registro narrativo de decisiones tomadas durante la partida
+        self.historial = []
 
     # ─────────────────────────────────────────
     # MODIFICAR PSIQUE
@@ -114,6 +116,9 @@ class Player:
     # ─────────────────────────────────────────
     # MORIR
     # ─────────────────────────────────────────
+    def registrar_decision(self, descripcion):
+        self.historial.append(descripcion)
+
     def morir(self, razon=""):
         self.alive = False
 

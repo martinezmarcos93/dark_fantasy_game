@@ -42,6 +42,7 @@ La voz regresa:
         )
 
         if eleccion == "1":
+            player.registrar_decision("Miraste fijamente el espejo aunque el reflejo se adelantara.")
             player.psique["lucidez"] += 15
             engine.mostrar_nivel(
                 "assets/lvl2.jpg",
@@ -58,6 +59,7 @@ Estás siendo observado.
             )
 
         elif eleccion == "2":
+            player.registrar_decision("Rompiste el espejo. Las versiones peores siguen ahí.")
             player.psique["violencia"] += 15
             engine.mostrar_nivel(
                 "assets/lvl2.jpg",
@@ -77,6 +79,7 @@ La voz:
             )
 
         elif eleccion == "3":
+            player.registrar_decision("Le diste la espalda al espejo. El reflejo no necesitó verlo.")
             player.psique["miedo"] += 10
             engine.mostrar_nivel(
                 "assets/lvl2.jpg",

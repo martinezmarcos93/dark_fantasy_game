@@ -74,6 +74,7 @@ La voz, por última vez:
         )
 
         if eleccion == "1":
+            player.registrar_decision("Elegiste una puerta al azar. Siempre estuviste ahí.")
             player.psique["corrupcion"] += 10
             texto_resultado = """
 Elegís.
@@ -91,6 +92,7 @@ Siempre estuviste ahí.
             )
 
         elif eleccion == "2":
+            player.registrar_decision("Intentaste analizar las puertas. La lógica no aplicaba.")
             player.psique["lucidez"] += 10
             player.psique["culpa"] += 5
             texto_resultado = """
@@ -112,6 +114,7 @@ Sos vos.
             )
 
         elif eleccion == "3":
+            player.registrar_decision("No elegiste ninguna puerta. Las puertas esperaron.")
             player.psique["miedo"] += 15
             texto_resultado = """
 No elegís.

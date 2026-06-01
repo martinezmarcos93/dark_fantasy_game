@@ -80,6 +80,7 @@ Solo espera.
         # -------------------------
 
         if eleccion == "1":
+            player.registrar_decision("Aceptaste lo que sos. Todo. Sin condiciones.")
             player.psique["lucidez"] += 20
 
             texto_resultado = """
@@ -107,6 +108,7 @@ Solo totalidad.
             return "continuar"
 
         elif eleccion == "2":
+            player.registrar_decision("Negaste lo que sos. Se volvió más presente.")
             player.psique["miedo"] += 20
             player.psique["culpa"] += 10
 
@@ -133,6 +135,7 @@ Porque no podés negar lo que sos.
             return "continuar"
 
         elif eleccion == "3":
+            player.registrar_decision("Intentaste destruirlo. Cada golpe fue interno.")
             player.psique["violencia"] += 20
             player.psique["corrupcion"] += 15
 

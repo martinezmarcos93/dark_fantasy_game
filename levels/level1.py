@@ -43,6 +43,7 @@ Una voz, o tal vez un pensamiento que no es tuyo, susurra:
         )
 
         if eleccion == "1":
+            player.registrar_decision("Avanzaste hacia la oscuridad sin dudar.")
             player.psique["corrupcion"] += 10
             engine.mostrar_nivel(
                 "assets/lvl1.jpg",
@@ -60,6 +61,7 @@ La voz vuelve:
             )
 
         elif eleccion == "2":
+            player.registrar_decision("Encendiste una antorcha para ver lo que había.")
             player.psique["lucidez"] += 10
             engine.mostrar_nivel(
                 "assets/lvl1.jpg",
@@ -79,6 +81,7 @@ La voz susurra:
             )
 
         elif eleccion == "3":
+            player.registrar_decision("Llamaste hacia la oscuridad, aunque sabías que algo respondería.")
             player.psique["miedo"] += 15
             engine.mostrar_nivel(
                 "assets/lvl1.jpg",
