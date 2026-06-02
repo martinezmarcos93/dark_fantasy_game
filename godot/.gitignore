@@ -1,0 +1,14 @@
+# Godot 4 — archivos generados en runtime
+.godot/
+*.uid
+
+# Exportaciones
+export/
+*.exe
+*.app
+*.pck
+*.apk
+
+# OS
+.DS_Store
+Thumbs.db
