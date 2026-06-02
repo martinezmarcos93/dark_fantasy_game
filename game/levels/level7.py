@@ -208,7 +208,7 @@ es más peligroso.
         # Llave de piedra para el Nivel 8
         player.llave_piedra = True
         engine.mostrar_nivel(
-            "assets/lvl7.jpg",
+            "assets/key_stone.jpg",
             """
 Al salir de la Sala encontrás algo en la silla central.
 

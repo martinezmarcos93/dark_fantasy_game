@@ -99,7 +99,7 @@ Y nunca lo estuviste.
         # Al final del nivel, el jugador encuentra la llave de piedra para el nivel 2
         player.llave_piedra = True
         engine.mostrar_nivel(
-            "assets/lvl1.jpg",
+            "assets/key_stone.jpg",
             """
 Antes de continuar encontrás algo en el suelo.
 

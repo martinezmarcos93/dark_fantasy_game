@@ -463,7 +463,7 @@ La narrativa y los finales son siempre los mismos.
         """Cofre de Eco: solo si el último combate fue perfecto (3/3 rondas)."""
         if not self.player.ultimo_combate_perfecto:
             return
-        img = imagen_path or _LEVEL_IMGS[min(self.current_level_index, 9)]
+        img = "assets/chest_eco.jpg"
         item = random.choice(TIER_MEDIO)
         texto_cofre = (
             f"Cofre de Eco.\n\n"

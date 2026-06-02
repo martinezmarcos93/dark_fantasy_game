@@ -181,7 +181,7 @@ que lo vas a volver a ver.
         # Llave de piedra para el Nivel 4
         player.llave_piedra = True
         engine.mostrar_nivel(
-            "assets/lvl3.jpg",
+            "assets/key_stone.jpg",
             """
 Al salir del altar encontrás algo grabado en el umbral.
 
