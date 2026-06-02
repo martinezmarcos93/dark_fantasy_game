@@ -1,6 +1,33 @@
+import random
+
+# IDs y nombres display de todos los ítems
+NOMBRES_ITEMS = {
+    "antorcha":   "Antorcha",
+    "sal":        "Sal Consagrada",
+    "vendas":     "Vendas Viejas",
+    "espejo":     "Fragmento de Espejo",
+    "tinta":      "Tinta del Abismo",
+    "sangre":     "Sangre Seca",
+    "eco_piedra": "Piedra de Eco",
+    "mapa":       "Mapa Roto",
+    "elixir":     "Elixir del Olvido",
+}
+
+# Ítems que pueden usarse entre combates (no en combate)
+ITEMS_ENTRE_COMBATES = {"antorcha", "sal", "vendas", "espejo", "sangre", "mapa", "elixir"}
+# Ítems de un solo uso
+ITEMS_CONSUMIBLES = {"sal", "vendas", "espejo", "tinta", "eco_piedra", "mapa", "elixir"}
+# Ítems que solo aplican dentro del combate
+ITEMS_DE_COMBATE = {"tinta", "eco_piedra"}
+
+# Tier de cada ítem (para cofres)
+TIER_BASICO  = ["vendas", "antorcha", "sangre"]
+TIER_MEDIO   = ["espejo", "mapa"]
+TIER_ALTO    = ["tinta", "eco_piedra"]
+
+
 class Player:
 
-    # Stats base por clase
     CLASES = {
         "Guerrero": {
             "fuerza": 8,
@@ -26,7 +53,6 @@ class Player:
             "energia_max": 70,
             "energia_nombre": "Ingenio"
         },
-        # Fallback por si acaso
         "Errante": {
             "fuerza": 5,
             "mente":  5,
@@ -43,21 +69,18 @@ class Player:
 
         base = self.CLASES.get(clase, self.CLASES["Errante"])
 
-        # Stats visibles
         self.stats = {
             "fuerza":      base["fuerza"],
             "mente":       base["mente"],
             "resistencia": base["resistencia"]
         }
 
-        # Vida y energía
         self.vida_max     = base["vida_max"]
         self.vida         = base["vida_max"]
         self.energia_max  = base["energia_max"]
         self.energia      = base["energia_max"]
         self.energia_nombre = base["energia_nombre"]
 
-        # Sistema oculto (el núcleo del juego)
         self.psique = {
             "violencia":  0,
             "miedo":      0,
@@ -68,28 +91,57 @@ class Player:
 
         self.alive = True
         self.level = 1
-        # Registro narrativo de decisiones tomadas durante la partida
         self.historial = []
-        # Estadísticas de combate acumuladas
         self.stats_combate = {
             "daño_infligido":  0,
             "daño_recibido":   0,
             "rondas_ganadas":  0,
             "rondas_perdidas": 0,
             "criticos":        0,
-            "acciones":        {},   # accion_id → cantidad de veces usada
+            "acciones":        {},
         }
 
+        # ── Nuevo: Aliento del Umbral ──────────────────────────
+        self.aliento = 0
+
+        # ── Nuevo: Inventario (max 3) ──────────────────────────
+        self.inventario = []
+
+        # ── Nuevo: Llave de Piedra (para cofres) ───────────────
+        self.llave_piedra = False
+
+        # ── Nuevo: Aliado (solo uno por run) ───────────────────
+        self.aliado_tipo      = None   # "viajero" | "voz"
+        self.viajero_activo   = False  # Viajero listo para el próximo combate
+        self.viajero_usado    = False  # Viajero ya acompañó en un combate
+
+        # ── Nuevo: Ending secreto ──────────────────────────────
+        self.fusionado_con_otro = False
+
+        # ── Nuevo: Memorias como moneda ───────────────────────
+        self.memorias_gastadas = 0
+
+        # ── Nuevo: Estado de último combate ───────────────────
+        self.ultimo_combate_perfecto = False  # 3/3 rondas ganadas
+
+        # ── Nuevo: Cofre del Umbral (1 por run) ───────────────
+        self.cofre_umbral_disponible = True
+
     # ─────────────────────────────────────────
-    # MODIFICAR PSIQUE
+    # PSIQUE
     # ─────────────────────────────────────────
     def modificar_psique(self, cambios):
         for clave, valor in cambios.items():
             if clave in self.psique:
                 self.psique[clave] = max(0, min(100, self.psique[clave] + valor))
 
+    def psique_equilibrada(self):
+        """True si todos los valores de psique están dentro de un rango de 10 puntos."""
+        valores = list(self.psique.values())
+        return max(valores) - min(valores) <= 10
+
     # ─────────────────────────────────────────
-    # MODIFICAR STATS
+    # STATS
     # ─────────────────────────────────────────
     def modificar_stats(self, cambios):
         for clave, valor in cambios.items():
@@ -97,33 +149,70 @@ class Player:
                 self.stats[clave] += valor
 
     # ─────────────────────────────────────────
-    # RECIBIR DAÑO
+    # VIDA Y ENERGÍA
     # ─────────────────────────────────────────
     def recibir_daño(self, cantidad):
-        # La resistencia mitiga el daño (cada punto reduce 2%)
         reduccion = self.stats["resistencia"] * 0.02
         daño_real = int(cantidad * (1 - reduccion))
-        daño_real = max(1, daño_real)           # mínimo 1 de daño siempre
+        daño_real = max(1, daño_real)
         self.vida = max(0, self.vida - daño_real)
         if self.vida <= 0:
             self.alive = False
         return daño_real
 
-    # ─────────────────────────────────────────
-    # GASTAR ENERGÍA
-    # ─────────────────────────────────────────
     def gastar_energia(self, cantidad):
         self.energia = max(0, self.energia - cantidad)
 
-    # ─────────────────────────────────────────
-    # RECUPERAR (parcial, entre niveles)
-    # ─────────────────────────────────────────
     def recuperar(self, vida=0, energia=0):
         self.vida    = min(self.vida_max,    self.vida    + vida)
         self.energia = min(self.energia_max, self.energia + energia)
 
     # ─────────────────────────────────────────
-    # MORIR
+    # ALIENTO DEL UMBRAL
+    # ─────────────────────────────────────────
+    def ganar_aliento(self, cantidad=1):
+        self.aliento = min(10, self.aliento + cantidad)
+
+    def gastar_aliento(self, cantidad):
+        if self.aliento >= cantidad:
+            self.aliento -= cantidad
+            return True
+        return False
+
+    # ─────────────────────────────────────────
+    # INVENTARIO
+    # ─────────────────────────────────────────
+    def agregar_item(self, id_item):
+        if len(self.inventario) >= 3:
+            return False
+        self.inventario.append(id_item)
+        return True
+
+    def tiene_item(self, id_item):
+        return id_item in self.inventario
+
+    def quitar_item(self, id_item):
+        if id_item in self.inventario:
+            self.inventario.remove(id_item)
+
+    # ─────────────────────────────────────────
+    # MEMORIAS COMO MONEDA
+    # ─────────────────────────────────────────
+    def gastar_memoria(self, indice):
+        if 0 <= indice < len(self.historial):
+            self.historial.pop(indice)
+            self.memorias_gastadas += 1
+            return True
+        return False
+
+    # ─────────────────────────────────────────
+    # ESTADÍSTICAS DE COMBATE
+    # ─────────────────────────────────────────
+    def contar_usos_accion(self, id_accion):
+        return self.stats_combate["acciones"].get(id_accion, 0)
+
+    # ─────────────────────────────────────────
+    # HISTORIAL
     # ─────────────────────────────────────────
     def registrar_decision(self, descripcion):
         self.historial.append(descripcion)
@@ -132,11 +221,13 @@ class Player:
         self.alive = False
 
     # ─────────────────────────────────────────
-    # RESUMEN (debug)
+    # DEBUG
     # ─────────────────────────────────────────
     def mostrar_estado(self):
         print(f"\n=== {self.name} ({self.clase}) ===")
         print(f"Vida: {self.vida}/{self.vida_max}")
         print(f"{self.energia_nombre}: {self.energia}/{self.energia_max}")
+        print(f"Aliento del Umbral: {self.aliento}/10")
         print("Stats:", self.stats)
         print("Psique:", self.psique)
+        print("Inventario:", self.inventario)

@@ -5,16 +5,10 @@ class Level1:
     def __init__(self):
         self.nombre = "La Cueva del Origen"
 
-    # ─────────────────────────────────────────
-    # FASE 1 — COMBATE
-    # ─────────────────────────────────────────
     def fase_combate(self, player, engine):
         enemy = crear_guardian()
         return engine.combate_narrativo(enemy)
 
-    # ─────────────────────────────────────────
-    # FASE 2 — DECISIÓN PSICOLÓGICA
-    # ─────────────────────────────────────────
     def fase_psicologica(self, player, engine):
 
         player.recuperar(vida=8, energia=15)
@@ -45,6 +39,7 @@ Una voz, o tal vez un pensamiento que no es tuyo, susurra:
         if eleccion == "1":
             player.registrar_decision("Avanzaste hacia la oscuridad sin dudar.")
             player.psique["corrupcion"] += 10
+            player.ganar_aliento(1)  # Elección peligrosa
             engine.mostrar_nivel(
                 "assets/lvl1.jpg",
                 """
@@ -56,6 +51,8 @@ Te envuelve.
 
 La voz vuelve:
 "Recordar es descender."
+
+[ +1 Aliento del Umbral ]
 """,
                 opciones=False
             )
@@ -96,9 +93,27 @@ Y nunca lo estuviste.
                 opciones=False
             )
 
-    # ─────────────────────────────────────────
-    # ENTRY POINT
-    # ─────────────────────────────────────────
+        # Cofre de Eco si el combate fue perfecto
+        engine.ofrecer_cofre_eco("assets/lvl1.jpg")
+
+        # Al final del nivel, el jugador encuentra la llave de piedra para el nivel 2
+        player.llave_piedra = True
+        engine.mostrar_nivel(
+            "assets/lvl1.jpg",
+            """
+Antes de continuar encontrás algo en el suelo.
+
+Una llave de piedra.
+Pulida por manos que ya no están.
+
+No sabés qué abre.
+Pero la tomás igual.
+
+[ Llave de Piedra obtenida ]
+""",
+            opciones=False
+        )
+
     def jugar(self, player, engine):
         resultado = self.fase_combate(player, engine)
         if resultado == "muerte":

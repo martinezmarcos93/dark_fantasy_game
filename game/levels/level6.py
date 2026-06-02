@@ -1,3 +1,5 @@
+from game.enemies import crear_hambre
+
 class Level6:
 
     def __init__(self):
@@ -6,7 +8,6 @@ class Level6:
     def distorsionar_texto(self, texto, player):
         psique = player.psique
 
-        # Miedo extremo: minúsculas + fragmentar cada línea larga con pausa (…)
         if psique["miedo"] > 40:
             texto = texto.lower()
             lineas = []
@@ -18,7 +19,6 @@ class Level6:
                 lineas.append(linea)
             texto = "\n".join(lineas)
 
-        # Corrupción intensa: corromper vocales en palabras largas, una de cada dos
         if psique["corrupcion"] > 50:
             _MAP = str.maketrans("aeiou", "áëïøù")
             lineas = []
@@ -32,13 +32,68 @@ class Level6:
                 lineas.append(" ".join(nueva))
             texto = "\n".join(lineas)
 
-        # Lucidez: doble marcador (el umbral final rompe la cuarta pared)
         if psique["lucidez"] > 50:
             texto = "/// " + texto.strip() + " ///"
 
         return texto
 
+    def _chequear_hambre(self, player, engine):
+        """
+        El Hambre — aparece si furia (Guerrero) o apuñalar (Ladrón)
+        se usaron más de 4 veces en total en la run.
+        Aparece sin intro al inicio del nivel.
+        """
+        usos_violentos = (
+            player.contar_usos_accion("furia") +
+            player.contar_usos_accion("apuñalar")
+        )
+        if usos_violentos <= 4:
+            return None
+
+        # Aparece sin pantalla de intro — directamente en el encabezado de combate
+        enemy = crear_hambre()
+        # Sobreescribir texto_intro para que sea mínimo
+        enemy.texto_intro = (
+            "\nNo hubo aviso.\n"
+            "No hubo transición.\n"
+            "\nEl Hambre ya estaba acá.\n"
+            "\n\n[ ESPACIO para continuar ]\n"
+        )
+
+        resultado = engine.combate_narrativo(enemy)
+
+        if resultado == "muerte":
+            return "muerte"
+
+        # Reward: +20 HP máximo permanente
+        player.vida_max += 20
+        player.recuperar(vida=20)
+        player.registrar_decision("Venciste al Hambre. Algo en vos aprendió a contenerlo.")
+        engine.mostrar_nivel(
+            "assets/enemy_hambre.jpg",
+            """
+El Hambre retrocedió.
+
+No porque hayas ganado.
+Sino porque, por ahora,
+está satisfecho.
+
+Algo en vos absorbe lo que dejó.
+
+[ HP máximo +20 — permanente hasta el fin del run ]
+""",
+            opciones=False
+        )
+        return None
+
     def jugar(self, player, engine):
+        # El Hambre (consecuencia de violencia acumulada)
+        resultado_hambre = self._chequear_hambre(player, engine)
+        if resultado_hambre == "muerte":
+            return "muerte"
+
+        # Cofre del Umbral (si aliento >= 5 y aún disponible)
+        engine.ofrecer_cofre_umbral("assets/lvl6.jpg")
 
         texto = f"""
 No hay más puertas.
@@ -63,7 +118,6 @@ Solo espera.
 ¿Qué hacés?
 """
 
-        # La distorsión aplica al texto de pregunta: el umbral final ya afecta la percepción
         eleccion = engine.mostrar_nivel(
             "assets/lvl6.jpg",
             self.distorsionar_texto(texto, player),
@@ -74,10 +128,6 @@ Solo espera.
                 "Destruirlo"
             ]
         )
-
-        # -------------------------
-        # DECISIÓN FINAL
-        # -------------------------
 
         if eleccion == "1":
             player.registrar_decision("Aceptaste lo que sos. Todo. Sin condiciones.")
@@ -98,11 +148,9 @@ no hay conflicto.
 Solo totalidad.
 """
 
-            texto_resultado = self.distorsionar_texto(texto_resultado, player)
-
             engine.mostrar_nivel(
                 "assets/lvl6.jpg",
-                texto_resultado,
+                self.distorsionar_texto(texto_resultado, player),
                 opciones=False
             )
             return "continuar"
@@ -125,11 +173,9 @@ Más inevitable.
 Porque no podés negar lo que sos.
 """
 
-            texto_resultado = self.distorsionar_texto(texto_resultado, player)
-
             engine.mostrar_nivel(
                 "assets/lvl6.jpg",
-                texto_resultado,
+                self.distorsionar_texto(texto_resultado, player),
                 opciones=False
             )
             return "continuar"
@@ -138,6 +184,7 @@ Porque no podés negar lo que sos.
             player.registrar_decision("Intentaste destruirlo. Cada golpe fue interno.")
             player.psique["violencia"] += 20
             player.psique["corrupcion"] += 15
+            player.ganar_aliento(1)  # Elección peligrosa
 
             texto_resultado = """
 Atacás.
@@ -154,13 +201,13 @@ Y algo empieza a romperse.
 Pero no es eso.
 
 Sos vos.
-"""
 
-            texto_resultado = self.distorsionar_texto(texto_resultado, player)
+[ +1 Aliento del Umbral ]
+"""
 
             engine.mostrar_nivel(
                 "assets/lvl6.jpg",
-                texto_resultado,
+                self.distorsionar_texto(texto_resultado, player),
                 opciones=False
             )
             return "continuar"

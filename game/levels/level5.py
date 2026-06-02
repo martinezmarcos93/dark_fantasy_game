@@ -1,3 +1,5 @@
+from game.enemies import crear_otro
+
 class Level5:
 
     def __init__(self):
@@ -6,7 +8,6 @@ class Level5:
     def distorsionar_texto(self, texto, player):
         psique = player.psique
 
-        # Miedo: minúsculas + doble espacio entre palabras (lectura fragmentada)
         if psique["miedo"] > 30:
             texto = texto.lower()
             texto = "\n".join(
@@ -14,8 +15,6 @@ class Level5:
                 for l in texto.split("\n")
             )
 
-        # Corrupción: corromper vocales solo en palabras largas, una de cada tres
-        # (evitar artículos/preposiciones cortas que volverían el texto ilegible)
         if psique["corrupcion"] > 40:
             _MAP = str.maketrans("aeiou", "áëïøù")
             lineas = []
@@ -29,13 +28,70 @@ class Level5:
                 lineas.append(" ".join(nueva))
             texto = "\n".join(lineas)
 
-        # Lucidez: marco de meta-consciencia (el personaje observa su propio estado)
         if psique["lucidez"] > 40:
             texto = "[ " + texto.strip() + " ]"
 
         return texto
 
+    def _chequear_otro(self, player, engine):
+        """
+        El Otro — aparece si todos los valores de psique están
+        dentro de un rango de 10 puntos entre sí.
+        Reemplaza la transición entre Level 4 y Level 5.
+        """
+        if not player.psique_equilibrada():
+            return None
+
+        engine.mostrar_nivel(
+            "assets/enemy_otro.jpg",
+            """
+Antes de que te adentres en las moradas…
+
+algo te espera en el umbral.
+
+No es una criatura.
+No es un guardián.
+
+Es lo que ocurre cuando
+todas las partes de vos
+están, por primera vez,
+en equilibrio.
+
+El Otro.
+
+No podés ignorarlo.
+Viene de adentro.
+""",
+            opciones=False
+        )
+
+        enemy = crear_otro()
+        resultado = engine.combate_narrativo(enemy)
+
+        if resultado == "muerte":
+            return "muerte"
+
+        # Ofrecer fusión (ending secreto)
+        engine.ofrecer_fusion_con_otro("assets/enemy_otro.jpg")
+
+        return None  # Continuar con el nivel
+
+    def _chequear_voz_umbral(self, player, engine):
+        """La Voz del Umbral — aliado de información. Requiere lucidez >= 30."""
+        engine.encuentro_voz_umbral("assets/npc_voz.jpg")
+
     def jugar(self, player, engine):
+
+        # Chequear El Otro (psique equilibrada)
+        resultado_otro = self._chequear_otro(player, engine)
+        if resultado_otro == "muerte":
+            return "muerte"
+
+        # La Voz del Umbral (si lucidez >= 30 y sin aliado)
+        self._chequear_voz_umbral(player, engine)
+
+        # Cofre de Eco: basado en si el último combate (Level 4) fue perfecto
+        engine.ofrecer_cofre_eco("assets/lvl5.jpg")
 
         texto = """
 El espacio se abre.
@@ -61,7 +117,6 @@ La voz, por última vez:
 ¿Qué hacés?
 """
 
-        # La distorsión aplica también a la pregunta: la psique ya afecta la percepción
         eleccion = engine.mostrar_nivel(
             "assets/lvl5.jpg",
             self.distorsionar_texto(texto, player),

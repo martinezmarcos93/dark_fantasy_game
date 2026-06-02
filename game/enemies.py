@@ -1,4 +1,5 @@
 from game.combat_system import Enemy
+import random
 
 # ═══════════════════════════════════════════════════════════════
 # ENEMIES — Descenso al Umbral
@@ -987,4 +988,315 @@ El Umbral queda igual.
         psique_derrota_jugador={"miedo": 15, "corrupcion": 10, "culpa": 5},
         inmunidades=["nombre", "paralizar"],
         rondas_max=5,
+    )
+
+
+def crear_otro():
+    """
+    Enemigo secreto — El Otro
+    Condición: todos los valores de psique dentro de un rango de 10 puntos.
+    Dificultad: 7, 3 rondas. Sus ataques no modifican psique: combate puro.
+    Reward: +2 Aliento del Umbral + opción de Fusionarte (ending secreto).
+    """
+    return Enemy(
+        nombre="El Otro",
+        id_enemigo="otro",
+        imagen="assets/enemy_otro.jpg",
+        vida=100,
+        dificultad=7,
+
+        texto_intro="""
+No te esperabas esto.
+
+El Otro.
+
+No es un enemigo.
+No es un aliado.
+Es lo que ocurre cuando
+todas las partes de vos
+están, por primera vez,
+en el mismo lugar al mismo tiempo.
+
+Perfectamente equilibrado.
+Igual de incómodo.
+
+Te mira.
+Sos vos.
+Y también es todo lo demás.
+
+
+[ ESPACIO para continuar ]
+""",
+
+        textos_ataque={
+            "default": {
+                "Guerrero":  "El Otro adopta tu postura.\nSin drama. Sin anticipación.\nEs simplemente tan fuerte como vos.",
+                "Hechicero": "El Otro levanta la mano.\nNo conjura nada nuevo.\nUsa exactamente lo que sabés vos.",
+                "Ladrón":    "El Otro ya estaba en tu posición.\nNo como amenaza.\nComo espejo.",
+                "_":         "El Otro avanza.\nCon la misma calma con que vos llegaste hasta acá.",
+            },
+            "ataque_pesado": {
+                "Guerrero":  "Golpea con tu fuerza máxima.\nLa que no sabías que tenías.\nLa que él sí sabía.",
+                "Hechicero": "Combina todos tus hechizos en un solo movimiento.\nSin costo.\nSin grieta.",
+                "Ladrón":    "Estaba en todos tus puntos ciegos al mismo tiempo.\nNo porque sea mejor.\nSino porque es la versión completa.",
+                "_":         "Un golpe que no tiene nombre.\nTuyo y no tuyo a la vez.",
+            },
+            "desesperado": (
+                "Dañado pero simétrico.\n"
+                "El Otro no entra en pánico.\n"
+                "No tiene pánico.\n"
+                "Solo la serenidad de lo que es completo."
+            ),
+        },
+
+        textos_derrota="""
+El Otro da un paso atrás.
+
+No cayó.
+No huyó.
+
+Simplemente...
+ya no está en tu camino.
+
+Sigue existiendo.
+En algún lugar sin nombre
+dentro de vos.
+
+Eso no va a cambiar.
+""",
+
+        textos_victoria="""
+El Otro no ganó nada con esto.
+
+Ya lo tenía todo.
+
+Lo que te falta...
+no se pierde cuando perdés una pelea.
+
+Solo se nota más.
+""",
+
+        texto_empate="""
+Ninguno pudo con el otro.
+
+Tenía sentido.
+
+En el equilibrio exacto...
+ninguna fuerza puede prevalecer.
+
+El Otro se hace a un lado.
+No porque hayas ganado.
+Sino porque el empate ya dijo todo.
+""",
+
+        psique_victoria_jugador={"lucidez": 15},
+        psique_derrota_jugador={"miedo": 8, "culpa": 5},
+    )
+
+
+def crear_hambre():
+    """
+    Enemigo secreto — El Hambre
+    Condición: furia (Guerrero) o apuñalar (Ladrón) usados más de 4 veces en la run.
+    Aparece SIN pantalla de presentación al inicio del combate.
+    Dificultad: 9, 3 rondas.
+    Reward si ganás: +20 HP máximo permanente hasta fin del run.
+    """
+    return Enemy(
+        nombre="El Hambre",
+        id_enemigo="hambre",
+        imagen="assets/enemy_hambre.jpg",
+        vida=130,
+        dificultad=9,
+
+        texto_intro="""
+Sin aviso.
+Sin introducción.
+Sin texto que lo anuncie.
+
+El Hambre ya estaba acá
+cuando llegaste.
+
+No tiene forma.
+Solo bordes.
+Solo la certeza
+de que consume
+sin pausa
+sin razón
+sin fin.
+
+No vino por vos.
+Vino porque lo llamaste.
+
+
+[ ESPACIO para continuar ]
+""",
+
+        textos_ataque={
+            "default": {
+                "Guerrero":  "No tiene técnica.\nTiene impulso.\nEl mismo que usaste vos.\nSolo más.",
+                "Hechicero": "No absorbe el hechizo.\nLo ignora.\nY avanza igual.",
+                "Ladrón":    "No estaba donde ibas.\nEstaba en todos lados.\nNo hay posición que lo evite.",
+                "_":         "Se mueve sin dirección.\nSin plan.\nSolo el movimiento del que no puede detenerse.",
+            },
+            "ataque_pesado": {
+                "Guerrero":  "Todo el peso del impulso acumulado.\nToda la violencia que invocaste.\nDevuelta de una vez.",
+                "Hechicero": "Una presión que no tiene nombre en ningún hechizo.\nAnterior a las palabras.",
+                "Ladrón":    "No hay ángulo.\nNo hay sombra.\nSolo el hambre que llenás cuando atacás.",
+                "_":         "El peso de todo lo que consumiste\nconvertido en un solo movimiento.",
+            },
+            "desesperado": (
+                "Herido, el Hambre se intensifica.\n"
+                "Daño lo vuelve más urgente.\n"
+                "No más débil.\n"
+                "Solo más hambriento."
+            ),
+        },
+
+        textos_derrota="""
+El Hambre no desaparece.
+
+No puede desaparecer.
+Pero retrocede.
+
+No porque lo hayas vencido.
+Sino porque, por ahora,
+está satisfecho.
+
+Con lo que hiciste.
+Con lo que costó.
+
+Eso es tuyo.
+""",
+
+        textos_victoria="""
+No te venció.
+
+El Hambre nunca vence.
+Solo acumula.
+
+Lo que acumuló de vos
+en estas rondas...
+ya forma parte de él.
+
+Y vos seguís adelante
+con un poco menos
+de lo que no sabías que tenías.
+""",
+
+        texto_empate="""
+Ninguno terminó lo que empezó.
+
+El Hambre acepta el empate
+porque para él todo es alimento.
+Incluso un empate.
+
+Especialmente un empate.
+""",
+
+        psique_victoria_jugador={"lucidez": 10, "violencia": 5},
+        psique_derrota_jugador={"miedo": 12, "violencia": 8},
+        inmunidades=["nombre"],
+    )
+
+
+def crear_doble(psique_heredada=None):
+    """
+    Enemigo secreto — El Doble (exclusivo de New Game+)
+    Condición: ng_plus.json presente.
+    Sus stats escalan con los valores de psique heredados.
+    Dificultad: 7 + modificador heredado.
+    """
+    modificador = 0
+    if psique_heredada:
+        max_val = max(psique_heredada.values()) if psique_heredada else 0
+        modificador = min(3, max_val // 30)
+
+    return Enemy(
+        nombre="El Doble",
+        id_enemigo="doble",
+        imagen="assets/enemy_doble.jpg",
+        vida=100 + modificador * 10,
+        dificultad=7 + modificador,
+
+        texto_intro="""
+Lo que dejaste atrás
+nunca se quedó quieto.
+
+El Doble.
+
+No es una copia.
+Es una acumulación.
+Todo lo que sentiste en el descenso anterior
+aprendió a moverse.
+
+Comparte fragmentos de tu historia.
+Los usa como argumentos.
+Como armas.
+
+No te conoce.
+Es vos que te conocés a vos mismo.
+
+
+[ ESPACIO para continuar ]
+""",
+
+        textos_ataque={
+            "default": {
+                "Guerrero":  "Usa tu fuerza de antes.\nLa que creías haber dejado atrás.\nMejorada por todo lo que aprendió.",
+                "Hechicero": "Recita tus propios hechizos.\nLos del run anterior.\nCon más precisión de la que los usaste vos.",
+                "Ladrón":    "Recuerda cada posición que elegiste.\nCada movimiento que funcionó.\nY los anticipa todos.",
+                "_":         "El Doble avanza con la memoria de lo que fuiste.\nContra lo que sos.",
+            },
+            "ataque_pesado": {
+                "Guerrero":  "El golpe más fuerte que diste la vez anterior.\nAhora viene hacia vos.",
+                "Hechicero": "El hechizo que usaste cuando más lo necesitabas.\nUsado contra vos cuando más lo necesitás.",
+                "Ladrón":    "La emboscada perfecta que ejecutaste.\nAhora ejecutada contra vos.",
+                "_":         "Un movimiento de tu historial.\nElegido específicamente para vos.",
+            },
+            "desesperado": (
+                "Dañado, el Doble se fragmenta.\n"
+                "Pero los fragmentos siguen siendo vos.\n"
+                "Y siguen recordando."
+            ),
+        },
+
+        textos_derrota="""
+El Doble se desintegra
+en los fragmentos de memoria
+que lo componían.
+
+Lo que quedó del run anterior
+ya pasó.
+
+Seguís.
+Con eso acumulado también.
+""",
+
+        textos_victoria="""
+El Doble tiene todo lo que vos tenías.
+
+Y usó todo lo que sabía.
+
+Lo que lo venció
+fue lo que no sabía:
+lo que cambiaste
+desde la última vez.
+
+Eso es tuyo.
+""",
+
+        texto_empate="""
+Empate con vos mismo.
+
+No hay forma más precisa
+de describir lo que quedaste.
+
+El Doble se hace a un lado.
+Lo que llevan en común
+pesa demasiado para seguir peleando.
+""",
+
+        psique_victoria_jugador={"lucidez": 12},
+        psique_derrota_jugador={"culpa": 10, "miedo": 8},
     )

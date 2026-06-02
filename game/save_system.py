@@ -9,9 +9,6 @@ def _ruta(slot):
     os.makedirs(SAVE_DIR, exist_ok=True)
     return os.path.join(SAVE_DIR, f"slot{slot}.json")
 
-# ─────────────────────────────────────────
-# GUARDAR PARTIDA
-# ─────────────────────────────────────────
 def guardar_partida(player, nivel_index, slot=0):
     data = {
         "nombre":     player.name,
@@ -26,13 +23,21 @@ def guardar_partida(player, nivel_index, slot=0):
         "energia_max": player.energia_max,
         "historial":      player.historial,
         "stats_combate":  player.stats_combate,
+        # Nuevos campos
+        "aliento":                   player.aliento,
+        "inventario":                player.inventario,
+        "llave_piedra":              player.llave_piedra,
+        "aliado_tipo":               player.aliado_tipo,
+        "viajero_activo":            player.viajero_activo,
+        "viajero_usado":             player.viajero_usado,
+        "fusionado_con_otro":        player.fusionado_con_otro,
+        "memorias_gastadas":         player.memorias_gastadas,
+        "ultimo_combate_perfecto":   player.ultimo_combate_perfecto,
+        "cofre_umbral_disponible":   player.cofre_umbral_disponible,
     }
     with open(_ruta(slot), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# ─────────────────────────────────────────
-# CARGAR PARTIDA
-# ─────────────────────────────────────────
 def cargar_partida(slot=0):
     ruta = _ruta(slot)
     if not os.path.exists(ruta):
@@ -43,10 +48,6 @@ def cargar_partida(slot=0):
     except (json.JSONDecodeError, OSError):
         return None
 
-# ─────────────────────────────────────────
-# RESUMEN DE TODOS LOS SLOTS
-# Devuelve lista de dicts con info rápida para el menú de carga
-# ─────────────────────────────────────────
 def listar_slots():
     slots = []
     for i in range(NUM_SLOTS):
@@ -63,23 +64,14 @@ def listar_slots():
             slots.append({"slot": i, "vacio": True})
     return slots
 
-# ─────────────────────────────────────────
-# EXISTE PARTIDA EN SLOT?
-# ─────────────────────────────────────────
 def existe_partida(slot=0):
     return os.path.exists(_ruta(slot))
 
-# ─────────────────────────────────────────
-# BORRAR PARTIDA
-# ─────────────────────────────────────────
 def borrar_partida(slot=0):
     ruta = _ruta(slot)
     if os.path.exists(ruta):
         os.remove(ruta)
 
-# ─────────────────────────────────────────
-# NEW GAME+ — guarda la psique del run completado
-# ─────────────────────────────────────────
 def guardar_ng_plus(psique):
     os.makedirs(SAVE_DIR, exist_ok=True)
     with open(NG_PLUS_FILE, "w", encoding="utf-8") as f:

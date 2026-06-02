@@ -13,6 +13,9 @@ class Level8:
 
         player.recuperar(vida=4, energia=8)
 
+        # Cofre de Piedra si tiene llave (del Level 7)
+        engine.ofrecer_cofre_piedra("assets/chest_stone.jpg")
+
         texto = f"""
 El río no tiene corriente.
 
@@ -97,6 +100,7 @@ El objeto también.
             player.registrar_decision("Hundiste deliberadamente lo que flotaba en el rio.")
             player.psique["violencia"] += 10
             player.psique["corrupcion"] += 8
+            player.ganar_aliento(1)  # Elección peligrosa
             engine.mostrar_nivel(
                 "assets/lvl8.jpg",
                 """
@@ -112,6 +116,8 @@ Mirándote desde abajo.
 
 Algunas cosas no se hunden.
 Solo se profundizan.
+
+[ +1 Aliento del Umbral ]
 """,
                 opciones=False
             )
