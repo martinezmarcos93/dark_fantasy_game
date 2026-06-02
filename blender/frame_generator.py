@@ -1,26 +1,16 @@
 """
-Descenso al Umbral — UI Frame Generator
-========================================
-Genera el marco ornamental de la interfaz en Blender 4.x.
-Resuelve todos los defectos de "LA ELEGIDA" (imagen AI de referencia):
-  - Alpha real en los paneles (no negro sólido)
-  - 4 calaveras simétricas y completas
-  - Divisor del panel derecho prominente
-  - HUD strip con altura suficiente
-  - Resolución exacta 1000×600
-  - Decoración de bordes consistente
+Descenso al Umbral — UI Frame Generator v2
+==========================================
+Blender 5.x compatible.
 
 USO:
     blender --background --python blender/frame_generator.py
-    O: abrir en Blender Text Editor → Alt+P (Run Script)
 
 SALIDA:
-    godot/assets/images/ui_frame.png  (1000×600 px, RGBA, fondo transparente)
-    El archivo se sobreescribe cada vez que se ejecuta.
+    godot/assets/images/ui_frame.png  (1000×600 px, RGBA)
 
 AJUSTE RÁPIDO:
-    Modificar la sección CONFIG y re-ejecutar.
-    Bajar RENDER_SAMPLES a 32 para iteraciones rápidas.
+    Modificar la sección CONFIG. RENDER_SAMPLES=32 para iteraciones rápidas.
 """
 
 import bpy
@@ -29,10 +19,9 @@ import math
 import os
 
 # ═══════════════════════════════════════════════════════════════
-# CONFIG — todos los parámetros en un solo lugar
+# CONFIG
 # ═══════════════════════════════════════════════════════════════
 
-# ── Salida ────────────────────────────────────────────────────
 OUTPUT_FILE = "ui_frame.png"
 try:
     _dir = os.path.dirname(os.path.realpath(__file__))
@@ -40,282 +29,224 @@ try:
         os.path.join(_dir, "..", "godot", "assets", "images", OUTPUT_FILE)
     )
 except NameError:
-    # Ejecutando desde Text Editor de Blender
     OUTPUT_PATH = bpy.path.abspath("//godot/assets/images/" + OUTPUT_FILE)
 
-# ── Render ────────────────────────────────────────────────────
 RENDER_W       = 1000
 RENDER_H       = 600
-RENDER_SAMPLES = 128   # bajar a 32-64 para test rápido
+RENDER_SAMPLES = 256   # 256 para render final; bajar a 32 para iterar rápido
 
-# ── Canvas ────────────────────────────────────────────────────
-# 1 unidad Blender = 100 px → canvas = 10.0 × 6.0 unidades
+# Canvas: 1 unidad = 100 px → 10 × 6 unidades
 W = 10.0
 H = 6.0
 
-# ── Borde exterior ────────────────────────────────────────────
-B = 0.42       # grosor del borde en todos los lados (42px)
+# Borde exterior
+B = 0.42
 
-# ── Panel izquierdo ───────────────────────────────────────────
-# Imagen del nivel/enemigo/NPC
-LP_W = 2.80    # ancho (280px — ~28% del total)
+# Panel izquierdo
+LP_W  = 2.80   # ancho imagen
+HUD_H = 0.90   # altura HUD strip
+HUD_SEP = 0.06 # separador imagen/HUD
 
-# Strip HUD debajo del panel imagen
-# Arregla el defecto de LA ELEGIDA: strip demasiado angosto
-HUD_H = 0.90   # altura (90px — suficiente para 2 barras + nombre + clase)
-HUD_SEP = 0.06 # línea separadora entre imagen y HUD (6px, visible)
+# Columna central
+COL_W = 0.68
 
-# ── Columna central (entre paneles) ───────────────────────────
-# Contiene el pentáculo arriba y un cráneo abajo
-COL_W = 0.68   # ancho (68px — suficiente para el pentáculo)
+# Panel derecho
+OPT_H  = 1.25  # altura área opciones
+DIV_H  = 0.22  # altura divisor derecho
 
-# ── Panel derecho ─────────────────────────────────────────────
-# Arriba: texto narrativo   Abajo: opciones/botones
-# Arregla el defecto: divisor más prominente y altura de opciones adecuada
-OPT_H   = 1.25  # altura del área de opciones (125px — más generosa)
-DIV_H   = 0.22  # altura del divisor prominente (22px — visible y con relieve)
+# Material bronce — más oscuro y con más contraste
+MAT_BASE  = (0.20, 0.10, 0.02, 1.0)
+MAT_METAL = 0.95
+MAT_ROUGH = 0.38
 
-# ── Material: bronce antiguo ──────────────────────────────────
-# Paleta: dorado oscuro con pátina marrón, muy metálico, rugosidad media
-MAT_BASE_COLOR  = (0.26, 0.14, 0.03, 1.0)  # bronce oscuro
-MAT_METALLIC    = 0.92
-MAT_ROUGHNESS   = 0.44
+# Material cuencas oculares
+MAT_VOID  = (0.008, 0.003, 0.003, 1.0)
 
-# Material para cuencas oculares de las calaveras
-MAT_VOID_COLOR  = (0.010, 0.005, 0.005, 1.0)  # casi negro
-MAT_VOID_ROUGH  = 0.95
+# Altura Z de cada elemento (jerarquía visual más pronunciada)
+Z_FRAME   = 0.16
+Z_RIDGE   = 0.07   # cresta sobre el marco
+Z_DIV     = 0.12   # divisor panel derecho
+Z_SKULL   = 0.09
+Z_PENT    = 0.18
+Z_BOSS    = 0.06   # medallón circular bajo cada calavera
 
-# ── Alturas Z (jerarquía visual) ─────────────────────────────
-# Los elementos más altos reciben más luz → más destaque
-Z_FRAME    = 0.12   # bordes del marco (base)
-Z_RIDGE    = 0.04   # cresta decorativa sobre los bordes (+Z_FRAME = 0.16)
-Z_DIVIDER  = 0.08   # el divisor del panel derecho (más alto que el marco base)
-Z_SKULL    = 0.10   # cuerpo de las calaveras
-Z_PENT     = 0.14   # pentagrama (lo más prominente)
+# Geometría cráneos — cuencas grandes = lectura instantánea de "calavera"
+SK_R      = 0.230
+SK_EYE_R  = 0.090
+SK_EYE_DX = 0.100
+SK_EYE_DY = 0.018
+SK_EYE_DZ = 0.54
 
-# ── Geometría calaveras ───────────────────────────────────────
-SKULL_R      = 0.195  # radio del cráneo
-SKULL_EYE_R  = 0.058  # radio de las cuencas oculares
-SKULL_EYE_DX = 0.082  # distancia horizontal entre ojos y centro
-SKULL_EYE_DY = 0.025  # posición vertical de los ojos respecto al centro del cráneo
-SKULL_EYE_DZ = 0.55   # cuánto sobresalen los ojos del cráneo (relativo a SKULL_R)
-
-# ── Geometría pentagrama ──────────────────────────────────────
-PENT_R_EXT = 0.24  # radio exterior (puntas)
-PENT_R_INT = 0.09  # radio interior (entrantes)
+# Geometría pentáculo — más grande
+PE_R_EXT  = 0.28
+PE_R_INT  = 0.10
 
 # ═══════════════════════════════════════════════════════════════
-# COORDENADAS DERIVADAS — no editar
+# COORDENADAS DERIVADAS
 # ═══════════════════════════════════════════════════════════════
 LP_X1 = B
-LP_X2 = B + LP_W                 # ~3.22
-
+LP_X2 = B + LP_W
 COL_X1 = LP_X2
-COL_X2 = LP_X2 + COL_W          # ~3.90
-COL_CX = (COL_X1 + COL_X2) / 2  # centro columna
-
+COL_X2 = LP_X2 + COL_W
+COL_CX = (COL_X1 + COL_X2) / 2.0
 RP_X1 = COL_X2
-RP_X2 = W - B                    # ~9.58
+RP_X2 = W - B
 
 BOT = B
-TOP = H - B                      # ~5.58
+TOP = H - B
 
 HUD_Y1    = BOT
-HUD_Y2    = BOT + HUD_H          # ~1.32
+HUD_Y2    = BOT + HUD_H
 HUDSEP_Y1 = HUD_Y2
-HUDSEP_Y2 = HUD_Y2 + HUD_SEP    # ~1.38
+HUDSEP_Y2 = HUD_Y2 + HUD_SEP
 IMG_Y1    = HUDSEP_Y2
 IMG_Y2    = TOP
 
-OPT_Y1    = BOT
-OPT_Y2    = BOT + OPT_H         # ~1.67
-DIV_Y1    = OPT_Y2
-DIV_Y2    = OPT_Y2 + DIV_H      # ~1.89
-TXT_Y1    = DIV_Y2
-TXT_Y2    = TOP
+OPT_Y1   = BOT
+OPT_Y2   = BOT + OPT_H
+DIV_Y1   = OPT_Y2
+DIV_Y2   = OPT_Y2 + DIV_H
+TXT_Y1   = DIV_Y2
+TXT_Y2   = TOP
 
-# Centro del cráneo del pentáculo (parte alta de la columna)
-PENT_CY = TOP - 0.36             # ~5.22
+PENT_CY = TOP - 0.38
 
 # Posiciones de las 5 calaveras
-# 4 esquinas + 1 centro-inferior en la columna
-# Las de esquina se centran en la zona del borde
-HALF_B = B * 0.55
-SKULL_POSITIONS = [
-    (LP_X1 - HALF_B + B * 0.5, BOT - HALF_B + B * 0.5),  # bottom-left
-    (RP_X2 + HALF_B - B * 0.5, BOT - HALF_B + B * 0.5),  # bottom-right
-    (LP_X1 - HALF_B + B * 0.5, TOP + HALF_B - B * 0.5),  # top-left
-    (RP_X2 + HALF_B - B * 0.5, TOP + HALF_B - B * 0.5),  # top-right
-    (COL_CX, BOT - HALF_B + B * 0.5),                     # center-bottom
+# Insetadas hacia adentro (B*0.82) para que el medallón entre completo
+# en el canvas y no se clipee (defecto de LA ELEGIDA).
+_ins = B * 0.82
+SKULL_POS = [
+    (_ins,        _ins),       # bottom-left
+    (W - _ins,    _ins),       # bottom-right
+    (_ins,        H - _ins),   # top-left
+    (W - _ins,    H - _ins),   # top-right
+    (COL_CX,      _ins),       # center-bottom (en la columna)
 ]
 
 
 # ═══════════════════════════════════════════════════════════════
-# FUNCIONES AUXILIARES
+# UTILIDADES
 # ═══════════════════════════════════════════════════════════════
 
 def limpiar_escena():
-    """Borra todos los objetos y datos huérfanos."""
-    bpy.ops.object.select_all(action='SELECT')
-    bpy.ops.object.delete()
-    for blk in [bpy.data.meshes, bpy.data.cameras,
-                bpy.data.lights, bpy.data.materials]:
-        for item in blk:
-            blk.remove(item)
+    bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
-def rect_mesh(name, x1, y1, x2, y2, z_height, z_base=0.0):
+def suavizar_mesh(mesh):
+    """Shade smooth directamente en el mesh — sin operadores de contexto."""
+    for poly in mesh.polygons:
+        poly.use_smooth = True
+    mesh.update()
+
+
+def caja(name, x1, y1, x2, y2, z_alto, z_bajo=0.0):
     """
-    Crea un rectángulo extruido como objeto 3D.
-    z_base: nivel Z del piso del objeto
-    z_height: cuánto se extruye hacia arriba
-    Retorna el objeto creado y linkeado a la escena activa.
+    Crea un prisma rectangular extruido.
+    Normal de la cara superior apunta en +Z (visible desde la cámara).
     """
     mesh = bpy.data.meshes.new(name)
     bm = bmesh.new()
 
-    # Cara inferior
-    v0 = bm.verts.new((x1, y1, z_base))
-    v1 = bm.verts.new((x2, y1, z_base))
-    v2 = bm.verts.new((x2, y2, z_base))
-    v3 = bm.verts.new((x1, y2, z_base))
-    face = bm.faces.new([v0, v1, v2, v3])
+    # Vértices en sentido antihorario visto desde arriba → normal +Z
+    v0 = bm.verts.new((x1, y1, z_bajo))
+    v1 = bm.verts.new((x1, y2, z_bajo))
+    v2 = bm.verts.new((x2, y2, z_bajo))
+    v3 = bm.verts.new((x2, y1, z_bajo))
+    bm.faces.new([v0, v1, v2, v3])
 
-    # Extruir en Z
-    res = bmesh.ops.extrude_face_region(bm, geom=[face])
-    top_verts = [v for v in res['geom'] if isinstance(v, bmesh.types.BMVert)]
-    bmesh.ops.translate(bm, verts=top_verts, vec=(0, 0, z_height))
+    # Extruir en +Z
+    res = bmesh.ops.extrude_face_region(bm, geom=bm.faces[:])
+    top = [v for v in res['geom'] if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, verts=top, vec=(0.0, 0.0, z_alto))
 
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     bm.to_mesh(mesh)
     bm.free()
-    mesh.update()
 
+    suavizar_mesh(mesh)
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return obj
 
 
-def cresta_borde(name, x1, y1, x2, y2, grosor=0.05):
-    """
-    Crea una cresta decorativa delgada sobre un borde.
-    Va centrada en el borde, ligeramente elevada.
-    Simula el relieve interior/exterior de un marco tallado.
-    """
-    # Inset horizontal: la cresta ocupa el centro del borde
-    margen = min((x2 - x1), (y2 - y1)) * 0.15
-    return rect_mesh(
-        name,
-        x1 + margen, y1 + margen,
-        x2 - margen, y2 - margen,
-        Z_RIDGE,
-        z_base=Z_FRAME
-    )
+def mat_bronce():
+    m = bpy.data.materials.new("Bronce")
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
 
-
-def crear_material_bronce():
-    mat = bpy.data.materials.new("Bronce_Umbral")
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
-    nodes.clear()
-
-    # Nodo Principled BSDF (compatible Blender 3.x y 4.x)
-    bsdf = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf.location = (0, 0)
-    bsdf.inputs["Base Color"].default_value = MAT_BASE_COLOR
-    bsdf.inputs["Metallic"].default_value   = MAT_METALLIC
-    bsdf.inputs["Roughness"].default_value  = MAT_ROUGHNESS
-    # "Specular" en Blender 3.x se llama "Specular IOR Level" en Blender 4.x
-    for key in ("Specular IOR Level", "Specular"):
-        if key in bsdf.inputs:
-            bsdf.inputs[key].default_value = 0.75
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    bsdf.inputs["Base Color"].default_value = MAT_BASE
+    bsdf.inputs["Metallic"].default_value   = MAT_METAL
+    bsdf.inputs["Roughness"].default_value  = MAT_ROUGH
+    for k in ("Specular IOR Level", "Specular"):
+        if k in bsdf.inputs:
+            bsdf.inputs[k].default_value = 0.75
             break
 
-    out = nodes.new("ShaderNodeOutputMaterial")
-    out.location = (300, 0)
-    links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
-    return mat
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+    return m
 
 
-def crear_material_oscuro():
-    mat = bpy.data.materials.new("Cuenca_Ocular")
-    mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    links = mat.node_tree.links
-    nodes.clear()
+def mat_void():
+    m = bpy.data.materials.new("Void")
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
 
-    bsdf = nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf.inputs["Base Color"].default_value = MAT_VOID_COLOR
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    bsdf.inputs["Base Color"].default_value = MAT_VOID
     bsdf.inputs["Metallic"].default_value   = 0.0
-    bsdf.inputs["Roughness"].default_value  = MAT_VOID_ROUGH
+    bsdf.inputs["Roughness"].default_value  = 0.95
 
-    out = nodes.new("ShaderNodeOutputMaterial")
-    out.location = (300, 0)
-    links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
-    return mat
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+    return m
 
 
-def asignar_mat(obj, mat):
+def asignar(obj, mat):
     obj.data.materials.clear()
     obj.data.materials.append(mat)
 
 
-def suavizar(obj):
-    """Shade smooth en el objeto."""
-    bpy.context.view_layer.objects.active = obj
-    bpy.ops.object.shade_smooth()
-
-
 # ═══════════════════════════════════════════════════════════════
-# CONSTRUCCIÓN DEL MARCO
+# MARCO
 # ═══════════════════════════════════════════════════════════════
 
-def construir_marco(mat_bronce):
+def construir_marco(mb):
     """
-    Crea las 7 piezas sólidas del marco.
-    Los paneles son AUSENCIA de geometría → transparentes en el render.
-
-    Jerarquía visual (de menos a más prominente):
-      Bordes exterior → Cresta de borde → Divisor → Calaveras → Pentáculo
+    7 piezas sólidas del marco. Los paneles = ausencia de geometría = alpha.
+    Las 4 crestas interiores dan la ilusión de tallado en capas.
     """
-    piezas = []
-
-    # ── Bordes principales (los 4 lados) ──────────────────────
-    # Full width/height para que las esquinas sean completas y simétricas
-    piezas += [
-        rect_mesh("Borde_Top",    0,    TOP, W, H,    Z_FRAME),
-        rect_mesh("Borde_Bot",    0,    0,   W, BOT,  Z_FRAME),
-        rect_mesh("Borde_Left",   0,    BOT, B, TOP,  Z_FRAME),
-        rect_mesh("Borde_Right",  RP_X2, BOT, W, TOP, Z_FRAME),
+    piezas = [
+        # Bordes principales
+        caja("Top",    0,     TOP,  W,    H,    Z_FRAME),
+        caja("Bot",    0,     0,    W,    BOT,  Z_FRAME),
+        caja("Left",   0,     BOT,  B,    TOP,  Z_FRAME),
+        caja("Right",  RP_X2, BOT,  W,    TOP,  Z_FRAME),
+        # Columna central
+        caja("Col",    COL_X1, BOT, COL_X2, TOP, Z_FRAME),
+        # Separador imagen/HUD (izquierda)
+        caja("HUDSep", LP_X1, HUDSEP_Y1, LP_X2, HUDSEP_Y2, Z_FRAME + 0.04),
+        # Divisor panel derecho (prominente, más alto → más iluminado)
+        caja("Div",    RP_X1, DIV_Y1, RP_X2, DIV_Y2, Z_FRAME + Z_DIV),
     ]
 
-    # ── Columna central (entre paneles) ───────────────────────
-    piezas.append(rect_mesh("Col_Central", COL_X1, BOT, COL_X2, TOP, Z_FRAME))
+    # Crestas interiores decorativas (simulan tallado en capas)
+    def cresta(name, x1, y1, x2, y2, margin_factor=0.20):
+        mx = min(x2 - x1, y2 - y1) * margin_factor
+        return caja(name, x1 + mx, y1 + mx, x2 - mx, y2 - mx, Z_RIDGE, z_bajo=Z_FRAME)
 
-    # ── Separador imagen/HUD (izquierda) ──────────────────────
-    # Delgado pero visible; corrige el defecto de LA ELEGIDA
-    piezas.append(rect_mesh("HUD_Sep", LP_X1, HUDSEP_Y1, LP_X2, HUDSEP_Y2, Z_FRAME + 0.04))
+    piezas += [
+        cresta("CTop",   0,     TOP,  W,    H),
+        cresta("CBot",   0,     0,    W,    BOT),
+        cresta("CLeft",  0,     BOT,  B,    TOP),
+        cresta("CRight", RP_X2, BOT,  W,    TOP),
+    ]
 
-    # ── Divisor del panel derecho (prominente) ────────────────
-    # Z más alto que el marco base = más iluminado = más visible
-    # Corrige el defecto: divisor de 2px invisible → ahora 22px con relieve
-    piezas.append(rect_mesh("Div_Derecho", RP_X1, DIV_Y1, RP_X2, DIV_Y2, Z_FRAME + Z_DIVIDER))
-
-    # ── Crestas decorativas (bordes) ─────────────────────────
-    # Simulan el tallado interior típico de marcos barrocos/góticos
-    for nombre, x1, y1, x2, y2 in [
-        ("Cresta_Top",   0, TOP, W, H),
-        ("Cresta_Bot",   0, 0,   W, BOT),
-        ("Cresta_Left",  0, BOT, B, TOP),
-        ("Cresta_Right", RP_X2, BOT, W, TOP),
-    ]:
-        piezas.append(cresta_borde(nombre, x1, y1, x2, y2))
-
-    # Asignar material a todas las piezas
     for p in piezas:
-        asignar_mat(p, mat_bronce)
-        suavizar(p)
-
+        asignar(p, mb)
     return piezas
 
 
@@ -323,69 +254,133 @@ def construir_marco(mat_bronce):
 # CALAVERAS
 # ═══════════════════════════════════════════════════════════════
 
-def crear_calavera(cx, cy, mat_bronce, mat_void, nombre_base="Skull"):
-    """
-    Calavera simplificada:
-    - Esfera principal (cráneo), ligeramente aplastada
-    - Dos esferas de cuenca ocular (material oscuro, ligeramente hundidas)
-    Posicionada en (cx, cy, Z_FRAME) sobre el marco.
-    """
-    objetos = []
-    z = Z_FRAME  # base sobre la que se apoya la calavera
-
-    # ── Cráneo ────────────────────────────────────────────────
-    bpy.ops.mesh.primitive_uv_sphere_add(
-        radius=SKULL_R,
-        location=(cx, cy, z + SKULL_R * 0.85),
-        segments=24,
-        ring_count=16
+def medallon(cx, cy, mb):
+    """Disco circular de bronce bajo cada calavera. Base ornamental."""
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=SK_R * 1.32, depth=Z_BOSS,
+        location=(cx, cy, Z_FRAME + Z_BOSS * 0.5),
+        vertices=44
     )
-    craneo = bpy.context.active_object
-    craneo.name = f"{nombre_base}_Craneo"
-    # Ligeramente achatado verticalmente (cráneo real ~0.85 en Y, 0.92 en Z)
-    craneo.scale = (1.0, 0.82, 0.90)
+    m = bpy.context.active_object
+    m.name = "Medallon"
+    asignar(m, mb)
+    return m
+
+
+def calavera(cx, cy, mb, mv, tag, z_base=Z_FRAME):
+    """
+    Cráneo en bajorrelieve, cara hacia la cámara (+Z).
+    Visto desde arriba se lee como una calavera frontal:
+      +Y = corona del cráneo, -Y = mandíbula.
+    Componentes:
+      - Bóveda craneal (domo)
+      - Mandíbula
+      - 2 cuencas oculares (oscuras, hundidas)
+      - Cavidad nasal (oscura, triángulo invertido)
+      - Hilera de dientes (nubs de bronce sobre franja oscura)
+    """
+    objs = []
+    zb = z_base
+    # Altura de la superficie donde se incrustan los rasgos oscuros
+    z_surf = zb + SK_R * 0.42
+
+    # ── Bóveda craneal: domo aplastado, más alto que ancho ────
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        radius=SK_R,
+        location=(cx, cy + SK_R * 0.10, zb + SK_R * 0.22),
+        segments=32, ring_count=20
+    )
+    cr = bpy.context.active_object
+    cr.name = f"Skull_{tag}_Boveda"
+    cr.scale = (0.90, 1.05, 0.48)   # ancho<alto, domo bajo
     bpy.ops.object.transform_apply(scale=True)
-    asignar_mat(craneo, mat_bronce)
-    suavizar(craneo)
-    objetos.append(craneo)
+    suavizar_mesh(cr.data)
+    asignar(cr, mb)
+    objs.append(cr)
 
-    # ── Cuencas oculares ──────────────────────────────────────
-    # Posicionadas hacia el frente (Y positivo en la esfera)
-    # y ligeramente hacia arriba del centro del cráneo
-    eye_z = z + SKULL_R * (0.85 + SKULL_EYE_DY)
-    eye_y_offset = SKULL_R * SKULL_EYE_DZ   # cuánto sobresalen hacia la cámara
+    # ── Mandíbula: esfera menor desplazada hacia -Y ───────────
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        radius=SK_R * 0.62,
+        location=(cx, cy - SK_R * 0.62, zb + SK_R * 0.18),
+        segments=24, ring_count=14
+    )
+    jaw = bpy.context.active_object
+    jaw.name = f"Skull_{tag}_Mand"
+    jaw.scale = (0.80, 0.78, 0.42)
+    bpy.ops.object.transform_apply(scale=True)
+    suavizar_mesh(jaw.data)
+    asignar(jaw, mb)
+    objs.append(jaw)
 
-    for lado, dx in [("L", -SKULL_EYE_DX), ("R", SKULL_EYE_DX)]:
+    # ── Cuencas oculares: oscuras, hundidas, simétricas ───────
+    for lado, dx in [("L", -SK_EYE_DX), ("R", SK_EYE_DX)]:
         bpy.ops.mesh.primitive_uv_sphere_add(
-            radius=SKULL_EYE_R,
-            location=(cx + dx, cy + eye_y_offset, eye_z),
-            segments=12,
-            ring_count=8
+            radius=SK_EYE_R,
+            location=(cx + dx, cy + SK_R * 0.22, z_surf),
+            segments=16, ring_count=10
         )
-        ojo = bpy.context.active_object
-        ojo.name = f"{nombre_base}_Ojo_{lado}"
-        # Ligeramente achatada como una cuenca oval
-        ojo.scale = (1.0, 0.7, 0.85)
+        oj = bpy.context.active_object
+        oj.name = f"Skull_{tag}_Cuenca{lado}"
+        oj.scale = (1.15, 0.95, 0.85)
         bpy.ops.object.transform_apply(scale=True)
-        asignar_mat(ojo, mat_void)
-        suavizar(ojo)
-        objetos.append(ojo)
+        suavizar_mesh(oj.data)
+        asignar(oj, mv)
+        objs.append(oj)
 
-    return objetos
+    # ── Cavidad nasal: triángulo invertido oscuro ─────────────
+    nasal = bpy.data.meshes.new(f"Skull_{tag}_Nasal")
+    bm = bmesh.new()
+    nw = SK_EYE_R * 0.62      # medio ancho arriba
+    nh = SK_EYE_R * 1.05      # alto
+    ny = cy - SK_R * 0.04     # centro vertical de la nariz
+    zt = z_surf + SK_R * 0.10 # sobresale un poco para verse
+    v_top_l = bm.verts.new((cx - nw, ny + nh * 0.5, zt))
+    v_top_r = bm.verts.new((cx + nw, ny + nh * 0.5, zt))
+    v_bot   = bm.verts.new((cx,      ny - nh * 0.5, zt))
+    bm.faces.new([v_top_l, v_top_r, v_bot])
+    res = bmesh.ops.extrude_face_region(bm, geom=bm.faces[:])
+    topv = [v for v in res['geom'] if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, verts=topv, vec=(0, 0, SK_R * 0.10))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.to_mesh(nasal)
+    bm.free()
+    suavizar_mesh(nasal)
+    no = bpy.data.objects.new(f"Skull_{tag}_Nasal", nasal)
+    bpy.context.collection.objects.link(no)
+    asignar(no, mv)
+    objs.append(no)
+
+    # ── Dientes: franja oscura + nubs de bronce ───────────────
+    teeth_y = cy - SK_R * 0.52
+    teeth_w = SK_R * 0.70
+    # Franja oscura (la boca)
+    boca = caja(f"Skull_{tag}_Boca",
+                cx - teeth_w * 0.5, teeth_y - SK_R * 0.10,
+                cx + teeth_w * 0.5, teeth_y + SK_R * 0.10,
+                SK_R * 0.12, z_bajo=zb)
+    asignar(boca, mv)
+    objs.append(boca)
+    # Dientes individuales (5 nubs de bronce sobre la boca)
+    n_dientes = 5
+    dw = teeth_w / (n_dientes + 1)
+    for i in range(n_dientes):
+        dx = cx - teeth_w * 0.5 + dw * (i + 0.5) + dw * 0.5
+        d = caja(f"Skull_{tag}_Diente{i}",
+                 dx - dw * 0.30, teeth_y - SK_R * 0.085,
+                 dx + dw * 0.30, teeth_y + SK_R * 0.085,
+                 SK_R * 0.22, z_bajo=zb)
+        asignar(d, mb)
+        objs.append(d)
+
+    return objs
 
 
-def crear_todas_las_calaveras(mat_bronce, mat_void):
-    """
-    5 calaveras: 4 esquinas simétricas + 1 en centro-inferior de la columna.
-    Corrige el defecto de LA ELEGIDA: bottom-right cortada, bottom-left ausente.
-    """
-    all_objs = []
+def construir_calaveras(mb, mv):
     nombres = ["BL", "BR", "TL", "TR", "CB"]
-
-    for i, (cx, cy) in enumerate(SKULL_POSITIONS):
-        objs = crear_calavera(cx, cy, mat_bronce, mat_void, f"Skull_{nombres[i]}")
-        all_objs.extend(objs)
-
+    all_objs = []
+    for nm, (cx, cy) in zip(nombres, SKULL_POS):
+        all_objs.append(medallon(cx, cy, mb))
+        all_objs.extend(calavera(cx, cy, mb, mv, nm, z_base=Z_FRAME + Z_BOSS))
     return all_objs
 
 
@@ -393,139 +388,109 @@ def crear_todas_las_calaveras(mat_bronce, mat_void):
 # PENTÁCULO
 # ═══════════════════════════════════════════════════════════════
 
-def crear_pentagrama(mat_bronce):
-    """
-    Pentagrama de 5 puntas en la parte superior de la columna central.
-    Creado a partir de 10 vértices (alternando exterior/interior) + centro.
-    Extruido en Z para dar relieve.
-    """
-    cx = COL_CX
-    cy = PENT_CY
-    z  = Z_FRAME
+def construir_pentagrama(mb):
+    """Estrella de 5 puntas + anillo ornamental."""
+    cx, cy = COL_CX, PENT_CY
+    z = Z_FRAME
 
-    # 10 vértices: 5 puntas externas + 5 entrantes
-    # Empieza desde arriba (ángulo π/2) y gira en sentido antihorario
-    verts_2d = []
+    # Estrella
+    pts = []
     for i in range(10):
-        r = PENT_R_EXT if i % 2 == 0 else PENT_R_INT
-        ang = math.pi / 2.0 + i * (math.pi / 5.0)
-        verts_2d.append((cx + r * math.cos(ang), cy + r * math.sin(ang)))
+        r = PE_R_EXT if i % 2 == 0 else PE_R_INT
+        a = math.pi / 2.0 + i * math.pi / 5.0
+        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
 
-    mesh = bpy.data.meshes.new("Pentagrama")
+    mesh = bpy.data.meshes.new("Pent")
     bm = bmesh.new()
-
-    # Vértice central (para triangulación)
     vc = bm.verts.new((cx, cy, z))
-    verts = [bm.verts.new((p[0], p[1], z)) for p in verts_2d]
-
-    # Triángulos en abanico desde el centro
+    vs = [bm.verts.new((p[0], p[1], z)) for p in pts]
     for i in range(10):
-        j = (i + 1) % 10
-        bm.faces.new([vc, verts[i], verts[j]])
+        bm.faces.new([vc, vs[i], vs[(i + 1) % 10]])
 
-    # Extruir en Z
     res = bmesh.ops.extrude_face_region(bm, geom=bm.faces[:])
-    top_v = [v for v in res['geom'] if isinstance(v, bmesh.types.BMVert)]
-    bmesh.ops.translate(bm, verts=top_v, vec=(0, 0, Z_PENT))
-
+    top = [v for v in res['geom'] if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, verts=top, vec=(0, 0, Z_PENT))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     bm.to_mesh(mesh)
     bm.free()
-    mesh.update()
+    suavizar_mesh(mesh)
 
-    obj = bpy.data.objects.new("Pentagrama", mesh)
-    bpy.context.collection.objects.link(obj)
-    asignar_mat(obj, mat_bronce)
-    suavizar(obj)
+    pent_obj = bpy.data.objects.new("Pentagrama", mesh)
+    bpy.context.collection.objects.link(pent_obj)
+    asignar(pent_obj, mb)
 
-    # Círculo ornamental alrededor del pentáculo
-    _crear_anillo_pentagrama(cx, cy, z, mat_bronce)
+    # Anillo alrededor del pentáculo
+    r_ext = PE_R_EXT * 1.44
+    r_int = PE_R_EXT * 1.20
+    segs  = 48
+    z_ring = Z_PENT * 0.55
 
-    return obj
+    ring_mesh = bpy.data.meshes.new("PentAnillo")
+    bm2 = bmesh.new()
+    inn, out = [], []
+    for i in range(segs):
+        a = 2 * math.pi * i / segs
+        ca, sa = math.cos(a), math.sin(a)
+        inn.append(bm2.verts.new((cx + r_int * ca, cy + r_int * sa, z)))
+        out.append(bm2.verts.new((cx + r_ext * ca, cy + r_ext * sa, z)))
+    bm2.verts.ensure_lookup_table()
+    for i in range(segs):
+        j = (i + 1) % segs
+        bm2.faces.new([out[i], out[j], inn[j], inn[i]])
 
+    res2 = bmesh.ops.extrude_face_region(bm2, geom=bm2.faces[:])
+    top2 = [v for v in res2['geom'] if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm2, verts=top2, vec=(0, 0, z_ring))
+    bmesh.ops.recalc_face_normals(bm2, faces=bm2.faces[:])
+    bm2.to_mesh(ring_mesh)
+    bm2.free()
+    suavizar_mesh(ring_mesh)
 
-def _crear_anillo_pentagrama(cx, cy, z, mat_bronce):
-    """Anillo circular alrededor del pentáculo — detalle ornamental."""
-    r_ext = PENT_R_EXT * 1.45
-    r_int = PENT_R_EXT * 1.20
-    segmentos = 32
-    grosor_z = Z_PENT * 0.5
+    ring_obj = bpy.data.objects.new("PentAnillo", ring_mesh)
+    bpy.context.collection.objects.link(ring_obj)
+    asignar(ring_obj, mb)
 
-    mesh = bpy.data.meshes.new("Pentagrama_Anillo")
-    bm = bmesh.new()
-
-    verts_bot = []
-    verts_top = []
-    for i in range(segmentos):
-        ang = 2 * math.pi * i / segmentos
-        for r, collection in [(r_ext, verts_bot), (r_int, verts_bot)]:
-            pass  # se reemplaza abajo
-
-    # Anillo: lista de vértices en aro
-    inner, outer = [], []
-    for i in range(segmentos):
-        ang = 2 * math.pi * i / segmentos
-        cos_a, sin_a = math.cos(ang), math.sin(ang)
-        inner.append(bm.verts.new((cx + r_int * cos_a, cy + r_int * sin_a, z)))
-        outer.append(bm.verts.new((cx + r_ext * cos_a, cy + r_ext * sin_a, z)))
-
-    bm.verts.ensure_lookup_table()
-
-    # Caras del anillo
-    for i in range(segmentos):
-        j = (i + 1) % segmentos
-        bm.faces.new([outer[i], outer[j], inner[j], inner[i]])
-
-    # Extruir
-    res = bmesh.ops.extrude_face_region(bm, geom=bm.faces[:])
-    top_v = [v for v in res['geom'] if isinstance(v, bmesh.types.BMVert)]
-    bmesh.ops.translate(bm, verts=top_v, vec=(0, 0, grosor_z))
-
-    bm.to_mesh(mesh)
-    bm.free()
-    mesh.update()
-
-    obj = bpy.data.objects.new("Pentagrama_Anillo", mesh)
-    bpy.context.collection.objects.link(obj)
-    asignar_mat(obj, mat_bronce)
-    suavizar(obj)
-    return obj
+    return [pent_obj, ring_obj]
 
 
 # ═══════════════════════════════════════════════════════════════
 # ILUMINACIÓN
 # ═══════════════════════════════════════════════════════════════
 
-def setup_iluminacion():
-    """
-    3-point lighting para realzar el bronce:
-    - Key (luz principal, upper-left, fuerte)
-    - Fill (relleno suave desde la derecha)
-    - World (ambient muy oscuro, calidez)
-    """
-    # Key light
-    bpy.ops.object.light_add(type='AREA', location=(W * 0.15, H * 1.6, 9.0))
-    key = bpy.context.active_object
-    key.name = "Key"
-    key.data.energy = 900.0
-    key.data.size   = 4.0
-    key.rotation_euler = (math.radians(-38), 0, math.radians(-18))
+def setup_luz():
+    # Key (upper-left, fuerte para highlights metálicos)
+    bpy.ops.object.light_add(type='AREA', location=(W * 0.10, H * 1.6, 10.0))
+    k = bpy.context.active_object
+    k.name = "Key"
+    k.data.energy = 1400.0
+    k.data.size   = 3.5
+    k.rotation_euler = (math.radians(-40), 0, math.radians(-22))
 
-    # Fill light
-    bpy.ops.object.light_add(type='AREA', location=(W * 0.92, H * 0.5, 7.0))
-    fill = bpy.context.active_object
-    fill.name = "Fill"
-    fill.data.energy = 280.0
-    fill.data.size   = 7.0
+    # Fill (derecha, suave)
+    bpy.ops.object.light_add(type='AREA', location=(W * 0.92, H * 0.5, 7.5))
+    f = bpy.context.active_object
+    f.name = "Fill"
+    f.data.energy = 380.0
+    f.data.size   = 8.0
 
-    # Rim light (desde abajo, resalta los bordes inferiores)
-    bpy.ops.object.light_add(type='AREA', location=(W * 0.5, -1.5, 5.0))
-    rim = bpy.context.active_object
-    rim.name = "Rim"
-    rim.data.energy = 140.0
-    rim.data.size   = 5.0
-    rim.rotation_euler = (math.radians(35), 0, 0)
+    # Rim (desde abajo, resalta aristas inferiores)
+    bpy.ops.object.light_add(type='AREA', location=(W * 0.5, -2.0, 4.5))
+    r = bpy.context.active_object
+    r.name = "Rim"
+    r.data.energy = 200.0
+    r.data.size   = 4.0
+    r.rotation_euler = (math.radians(42), 0, 0)
 
-    # World: ambient oscuro y cálido (no negro puro para evitar sombras duras)
+    # Spot extra sobre la columna central (ilumina pentáculo y cráneo CB)
+    bpy.ops.object.light_add(type='SPOT', location=(COL_CX, H * 0.5, 8.0))
+    sp = bpy.context.active_object
+    sp.name = "ColSpot"
+    sp.data.energy     = 600.0
+    sp.data.spot_size  = math.radians(30)
+    sp.data.spot_blend = 0.4
+    sp.rotation_euler  = (0.0, 0.0, 0.0)
+
+    # World ambient mínimo
     world = bpy.context.scene.world
     if world is None:
         world = bpy.data.worlds.new("World")
@@ -533,33 +498,34 @@ def setup_iluminacion():
     world.use_nodes = True
     bg = world.node_tree.nodes.get("Background")
     if bg:
-        bg.inputs["Color"].default_value    = (0.04, 0.025, 0.012, 1.0)
-        bg.inputs["Strength"].default_value = 0.6
+        bg.inputs["Color"].default_value    = (0.03, 0.018, 0.008, 1.0)
+        bg.inputs["Strength"].default_value = 0.40
 
 
 # ═══════════════════════════════════════════════════════════════
-# CÁMARA ORTOGRÁFICA
+# CÁMARA — fix crítico respecto a v1
 # ═══════════════════════════════════════════════════════════════
 
 def setup_camara():
     """
     Cámara ortográfica mirando hacia abajo (-Z).
-    ortho_scale = H = 6.0 → la cámara ve exactamente 6 unidades en vertical.
-    Con aspect 1000/600 = 5/3, en horizontal ve 10 unidades. Coincide con W.
-    El frame queda exactamente dentro del canvas sin recorte.
+
+    FIX vs v1: ortho_scale = W (no H).
+    En Blender con sensor_fit='HORIZONTAL', ortho_scale controla el ancho.
+    Para 1000×600 (aspect 5:3):
+      - Ancho visible = ortho_scale = W = 10 unidades  → [0, 10] ✓
+      - Alto visible  = W × (600/1000) = 6 unidades    → [0, 6]  ✓
+    Centrada en (W/2, H/2) = (5, 3) cubre exactamente el canvas del frame.
     """
-    cam_data = bpy.data.cameras.new("Camara_Frame")
-    cam_data.type       = 'ORTHO'
-    cam_data.ortho_scale = H   # 6.0 → vertical = H, horizontal = W automáticamente
+    cam_data = bpy.data.cameras.new("Cam")
+    cam_data.type        = 'ORTHO'
+    cam_data.ortho_scale = W              # FIX: W no H
+    cam_data.sensor_fit  = 'HORIZONTAL'  # FIX: explícito
 
-    cam_obj = bpy.data.objects.new("Camara_Frame", cam_data)
+    cam_obj = bpy.data.objects.new("Cam", cam_data)
     bpy.context.collection.objects.link(cam_obj)
-
-    # Posición: centrada sobre el canvas, elevada en Z
     cam_obj.location       = (W / 2.0, H / 2.0, 20.0)
-    # Rotación (0,0,0): la cámara local mira en -Z → apunta al canvas en z=0
-    cam_obj.rotation_euler = (0.0, 0.0, 0.0)
-
+    cam_obj.rotation_euler = (0.0, 0.0, 0.0)  # mira en -Z (recto hacia abajo)
     bpy.context.scene.camera = cam_obj
     return cam_obj
 
@@ -569,41 +535,19 @@ def setup_camara():
 # ═══════════════════════════════════════════════════════════════
 
 def setup_render():
-    scene = bpy.context.scene
-    scene.render.engine = 'CYCLES'
-
-    # Resolución exacta
-    scene.render.resolution_x          = RENDER_W
-    scene.render.resolution_y          = RENDER_H
-    scene.render.resolution_percentage = 100
-
-    # Fondo transparente — LOS PANELES SERÁN ALPHA, no negro sólido
-    # Esto resuelve el defecto crítico de LA ELEGIDA
-    scene.render.film_transparent = True
-
-    # Formato de salida: PNG con canal alpha
-    scene.render.image_settings.file_format  = 'PNG'
-    scene.render.image_settings.color_mode   = 'RGBA'
-    scene.render.image_settings.compression  = 15
-
-    # Cycles: CPU (compatible con headless sin GPU)
-    scene.cycles.device         = 'CPU'
-    scene.cycles.samples        = RENDER_SAMPLES
-    scene.cycles.use_denoising = True
-
-    scene.render.filepath = OUTPUT_PATH
-
-
-def renderizar():
-    print(f"\n[frame_generator] Renderizando → {OUTPUT_PATH}")
-    print(f"  Resolución: {RENDER_W}×{RENDER_H} px | Samples: {RENDER_SAMPLES}")
-
-    # Asegurar que existe el directorio de salida
-    out_dir = os.path.dirname(OUTPUT_PATH)
-    os.makedirs(out_dir, exist_ok=True)
-
-    bpy.ops.render.render(write_still=True)
-    print(f"[frame_generator] Listo. Archivo: {OUTPUT_PATH}")
+    sc = bpy.context.scene
+    sc.render.engine               = 'CYCLES'
+    sc.render.resolution_x         = RENDER_W
+    sc.render.resolution_y         = RENDER_H
+    sc.render.resolution_percentage = 100
+    sc.render.film_transparent     = True   # paneles = alpha, no negro
+    sc.render.image_settings.file_format = 'PNG'
+    sc.render.image_settings.color_mode  = 'RGBA'
+    sc.render.image_settings.compression = 15
+    sc.cycles.device      = 'CPU'
+    sc.cycles.samples     = RENDER_SAMPLES
+    sc.cycles.use_denoising = True
+    sc.render.filepath    = OUTPUT_PATH
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -611,39 +555,26 @@ def renderizar():
 # ═══════════════════════════════════════════════════════════════
 
 def main():
-    print("\n[frame_generator] Iniciando generación del marco...")
+    print("\n[frame_generator v2] Iniciando...")
 
     limpiar_escena()
 
-    # Materiales
-    mat_bronce = crear_material_bronce()
-    mat_void   = crear_material_oscuro()
+    mb = mat_bronce()
+    mv = mat_void()
 
-    # Geometría
-    construir_marco(mat_bronce)
-    crear_todas_las_calaveras(mat_bronce, mat_void)
-    crear_pentagrama(mat_bronce)
+    construir_marco(mb)
+    construir_calaveras(mb, mv)
+    construir_pentagrama(mb)
 
-    # Escena
-    setup_iluminacion()
+    setup_luz()
     setup_camara()
     setup_render()
 
-    # Render
-    renderizar()
-
-    print("""
-[frame_generator] Resultado:
-  ✓ Alpha real en paneles (no negro sólido como LA ELEGIDA)
-  ✓ 4 calaveras simétricas y completas en las esquinas
-  ✓ 1 calavera en el centro-inferior de la columna
-  ✓ Pentáculo con anillo ornamental en la columna superior
-  ✓ Divisor del panel derecho prominente (22px, con relieve)
-  ✓ HUD strip 90px — suficiente para nombre + clase + 2 barras
-  ✓ Resolución exacta 1000×600 px
-  ✓ Material bronce PBR (metallic=0.92, roughness=0.44)
-""")
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+    print(f"[frame_generator v2] Renderizando {RENDER_W}×{RENDER_H} @ {RENDER_SAMPLES} samples")
+    print(f"  Salida: {OUTPUT_PATH}")
+    bpy.ops.render.render(write_still=True)
+    print("[frame_generator v2] Listo.")
 
 
-if __name__ == "__main__":
-    main()
+main()

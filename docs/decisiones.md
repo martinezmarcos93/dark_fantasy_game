@@ -73,25 +73,35 @@ El juego actual usa ilustraciones 2D estáticas (35 imágenes `.jpg`). Se plante
 
 ---
 
-## ADR-004: UI frame — "LA ELEGIDA"
+## ADR-004: UI frame — regenerado en Blender (supera a "LA ELEGIDA")
 
 **Fecha:** 2026-06-02
 **Estado:** Aceptado
 
 **Contexto:**
-Se exploraron varios frames ornamentales para la UI del juego (estilo dorado/bronce, estilo nórdico, estilo steampunk). Se eligió uno.
+Se exploraron varios frames ornamentales (dorado/bronce, nórdico, steampunk).
+Se eligió el concepto de "LA ELEGIDA" (dorado/bronce con calaveras y pentáculo),
+pero su archivo AI tiene defectos técnicos que impiden usarlo en Godot.
 
-**Decisión:** Usar `docs/ui-reference/LA ELEGIDA.png` como marco visual de todas las pantallas de juego.
+**Decisión:** Conservar el *concepto* de LA ELEGIDA pero **regenerar el frame
+proceduralmente en Blender** (`blender/frame_generator.py`), produciendo
+`godot/assets/images/ui_frame.png` (1000×600, RGBA).
 
-**Motivos:**
-1. Estilo dorado/bronce con calaveras y pentáculo — coherente con la paleta oscura y la simbología del juego.
-2. El mockup `docs/ui-reference/mockup-ui-poblado.png` muestra exactamente cómo se ve el juego poblado dentro de este marco — no hay ambigüedad.
-3. Los tres frames alternativos (estilo nórdico/steampunk, "Rama: yota") fueron descartados por tener una estética menos coherente con el universo del Umbral.
+**Motivos (7 defectos de LA ELEGIDA que el script resuelve):**
+1. Paneles en negro sólido sin alpha → bloqueante en Godot. Fix: `film_transparent`.
+2. Calavera inferior derecha cortada por el canvas AI. Fix: geometría procedural.
+3. Calavera inferior izquierda ausente (asimetría). Fix: 5 calaveras por código.
+4. Divisor del panel derecho de 2px, invisible. Fix: 22px con relieve elevado.
+5. HUD strip de ~50px, insuficiente. Fix: 90px.
+6. Resolución ~640px escalada. Fix: render nativo 1000×600.
+7. Opciones duplicadas en el mockup por falta de jerarquía. Fix: divisor claro.
 
 **Consecuencias:**
-- `LA ELEGIDA.png` va como `TextureRect` en el `CanvasLayer` superior de `GameScreen.tscn`.
-- El layout (panel izquierdo imagen, panel derecho texto + opciones, strip inferior HUD) está fijado por este frame.
-- Cambiar el frame implicaría rediseñar el layout completo — decisión mayor que requiere nuevo ADR.
+- `ui_frame.png` va como `TextureRect` en el `CanvasLayer` superior de `GameScreen.tscn`.
+- El layout (panel imagen izq, texto+opciones der, HUD inferior) lo fija el script,
+  con todas las proporciones en la sección CONFIG (editable y reproducible).
+- LA ELEGIDA queda como referencia de diseño en `docs/ui-reference/`, no se usa.
+- Para ajustar el frame: editar CONFIG y re-ejecutar el script (no editar el PNG).
 
 ---
 
