@@ -1,82 +1,91 @@
 # Assets pendientes — Descenso al Umbral
 
-Imágenes a generar con Leonardo.ai para expansión del juego.
-Todas en ratio **4:3 horizontal** (referencia: 480×500px).
+Imágenes a generar para completar la cobertura visual del juego.
+Todas en ratio **4:3 horizontal**.
 
 ---
 
 ## Parámetros generales (aplicar a todos los prompts)
 
 ```
-Estilo base:   dark fantasy, oil painting, cinematic lighting
-Ratio:         4:3 horizontal
-Paleta:        negros, grises, ocres + un único color de acento frío
-NO incluir:    texto, UI, marcos, interfaces
-Referencia:    Elden Ring concept art, Dark Souls key art, Zdzislaw Beksinski
+Sufijo fijo: dark fantasy illustration, vermis style, occult medieval manuscript,
+             ink drawing, high detail, textured parchment, desaturated palette,
+             muted colors, grim atmosphere, symbolic composition, eerie, unsettling,
+             no modern elements
+Ratio: 4:3 horizontal
 ```
 
 ---
 
-## Enemigos nuevos
+## Assets pendientes (2 imágenes)
 
-| Archivo destino | Nombre | Prompt |
-|---|---|---|
-| `assets/enemy5.jpg` | El Eco | Figura humana translúcida hecha de fragmentos de voces suspendidas en el aire como cristal roto. Sin boca. Ojos que son dos agujeros negros. Fondo de caverna de obsidiana. Dark fantasy, oil painting. |
-| `assets/enemy6.jpg` | El Archivista | Ser anciano con cientos de brazos delgados, cada uno sosteniendo un libro o pergamino. Cubierto de texto escrito en su piel. Ciego. Rodeado de polvo y luz amarilla. Gothic horror, introspective. |
-| `assets/enemy7.jpg` | La Grieta Viviente | No tiene forma definida — es una fisura en la realidad con bordes de piedra que pulsan como una herida. Del interior emerge luz negra. Fondo de vacío absoluto. Cosmic horror, abstract. |
-| `assets/enemy8.jpg` | El Testigo | Figura encapuchada sin cuerpo visible, solo una máscara de muchos ojos superpuestos. Sentado como juez. Luz difusa fría. Psychological horror, dark fantasy. |
-| `assets/enemy_boss.jpg` | El Umbral Encarnado | Entidad que parece una puerta con forma humanoide. Mitad piedra, mitad oscuridad. Donde debería estar la cara hay otro umbral más pequeño. Boss final alternativo. Surreal dark fantasy. |
+Estas son las únicas imágenes que faltan para completar la cobertura visual de todas las mecánicas implementadas.
 
----
-
-## Imágenes de niveles nuevos
-
-| Archivo destino | Nombre | Prompt |
-|---|---|---|
-| `assets/lvl7.jpg` | La Sala del Juicio | Sala circular enorme y vacía con sillas de piedra para miles de jueces ausentes. Una silla en el centro iluminada. Arquitectura gótica decadente. Luz cenital de luna. |
-| `assets/lvl8.jpg` | El Río de Recuerdos | Río subterráneo de agua oscura que refleja imágenes del pasado como espejos. Orillas de ceniza. Luz azul fantasmal desde debajo del agua. Melancholic dark fantasy. |
-| `assets/lvl9.jpg` | La Biblioteca del Olvido | Biblioteca infinita que se pierde en la oscuridad. Libros en blanco. Escaleras en todas direcciones. Inspirado en Borges y Escher. Luz de velas aisladas. |
-| `assets/lvl10.jpg` | El Espejo Final | Sala con un único espejo gigante que ocupa toda una pared. El reflejo muestra un mundo diferente con luz cálida y gente feliz. Contraste total con la oscuridad de la sala. |
+| Archivo destino | Nombre | Prompt | Dónde se usa |
+|---|---|---|---|
+| `assets/chest_eco.jpg` | Cofre de Eco | A chest made of compressed echoes and crystallized sound, its surface etched with recursive wave patterns that repeat inward forever, the lock a spiral of frozen resonance, surrounded by faint reverberation lines in the air, the suggestion of past voices trapped inside seeking release, an object that rewards those who listened rather than those who struck `dark fantasy illustration, vermis style, occult medieval manuscript, ink drawing, high detail, textured parchment, desaturated palette, muted colors, grim atmosphere, symbolic composition, eerie, unsettling, no modern elements` | `ofrecer_cofre_eco()` — actualmente usa imagen del nivel como fondo |
+| `assets/key_stone.jpg` | Llave de Piedra | A single ancient stone key on bare ground, worn smooth by centuries of handling, carved from the same material as the walls around it, its teeth irregular as if grown rather than cut, a relic that opened something important for someone who no longer exists, the sense of an object passed from hand to hand through depths that should not have been reached `dark fantasy illustration, vermis style, occult medieval manuscript, ink drawing, high detail, textured parchment, desaturated palette, muted colors, grim atmosphere, symbolic composition, eerie, unsettling, no modern elements` | Al encontrar la llave de piedra en levels 1, 3 y 7 |
 
 ---
 
-## Pantallas de UI y menú
+## Estado de todos los assets del juego
 
-| Archivo destino | Nombre | Prompt |
+### ✅ Completados e integrados en el código
+
+| Archivo | Uso |
+|---|---|
+| `assets/lvl1.jpg` — `lvl10.jpg` | Imágenes de los 10 niveles |
+| `assets/enemy1.jpg` — `enemy8.jpg` | Los 8 enemigos regulares + El Eco/Archivista/Grieta/Testigo |
+| `assets/enemy_boss.jpg` | El Umbral Encarnado |
+| `assets/enemy_otro.jpg` | El Otro (enemigo secreto) |
+| `assets/enemy_hambre.jpg` | El Hambre (enemigo secreto) |
+| `assets/enemy_doble.jpg` | El Doble (enemigo secreto NG+) |
+| `assets/npc_viajero.jpg` | El Viajero Perdido (aliado) |
+| `assets/npc_voz.jpg` | La Voz del Umbral (aliado) |
+| `assets/chest_stone.jpg` | Cofre de Piedra |
+| `assets/chest_umbral.jpg` | Cofre del Umbral |
+| `assets/maze.jpg` | Fases de laberinto (levels 3, 7, 9) |
+| `assets/dead_end.jpg` | Callejones sin salida |
+| `assets/portrait_warrior.jpg` | Retrato clase Guerrero |
+| `assets/portrait_mage.jpg` | Retrato clase Hechicero |
+| `assets/portrait_rogue.jpg` | Retrato clase Ladrón |
+| `assets/death_warrior.jpg` | Pantalla de muerte Guerrero |
+| `assets/death_mage.jpg` | Pantalla de muerte Hechicero |
+| `assets/death_rogue.jpg` | Pantalla de muerte Ladrón |
+| `assets/menu.jpg` | Menú principal |
+| `assets/menu_alt.jpg` | Menú alternativo (créditos) |
+| `assets/game_over.jpg` | Fallback pantalla de muerte |
+| `assets/intro1.jpg` — `intro4.jpg` | Pantallas de introducción narrativa |
+| `assets/pentagram.jpg` | Icono de la ventana |
+
+### ⏳ Pendientes
+
+| Archivo | Uso | Prioridad |
 |---|---|---|
-| `assets/menu_alt.jpg` | Menú alternativo | Cueva con una silueta de espaldas mirando hacia una luz lejana. Composición desde atrás. Niebla. Atmósfera de decisión final. Para reemplazar el menú actual si se desea. |
-| `assets/game_over.jpg` | Pantalla Game Over | Penumbra con formas indefinidas, sin figura humana. Solo silencio visual. Sin texto. Fondo para superponerle el texto de muerte en pantalla. |
-| `assets/intro4.jpg` | Intro — pantalla 4 | La entrada de una cueva desde adentro mirando hacia afuera. La luz exterior es la única fuente de luz. Silueta del personaje ya adentro. |
+| `assets/chest_eco.jpg` | Cofre de Eco | Media — actualmente usa fondo del nivel |
+| `assets/key_stone.jpg` | Llave de Piedra al ser encontrada | Media — actualmente solo texto |
 
 ---
 
-## Retratos de personaje
-
-Para una futura pantalla de selección de clase con retrato visual.
-
-| Archivo destino | Clase | Prompt |
-|---|---|---|
-| `assets/portrait_warrior.jpg` | Guerrero | Busto de guerrero con armadura erosionada sin emblemas. Cara marcada, expresión de carga interna más que de fuerza. Luz lateral dura. Fondo oscuro. Realismo oscuro. |
-| `assets/portrait_mage.jpg` | Hechicero | Figura encapuchada, rostro parcialmente visible. Ojos con luz interior azul/violeta tenue. Manos con runas casi apagadas. Expresión de conocimiento pesado. Dark fantasy. |
-| `assets/portrait_rogue.jpg` | Ladrón | Rostro con mitad en sombra y mitad iluminada. Mirada lateral, evaluativa. Sin armas visibles. La tensión entre lo que oculta y lo que muestra define la imagen. Atmosférico. |
-
----
-
-## Música pendiente de renombrar
+## Nota sobre la música
 
 Los archivos en `music/` tienen nombres ilegibles (`. (N).mp3`).
-Renombrarlos así activa el sistema de música por nivel ya implementado:
+Renombrarlos activa el sistema de música por nivel ya implementado en `ui.py`:
 
-| Nombre actual | Nombre destino | Uso |
-|---|---|---|
-| `. (9).mp3` | `menu.mp3` | Menú principal |
-| `. (10).mp3` | `nivel_0.mp3` | Nivel 1 — La Cueva del Origen |
-| `. (11).mp3` | `nivel_1.mp3` | Nivel 2 — El Espejo de las Formas |
-| `. (12).mp3` | `nivel_2.mp3` | Nivel 3 — El Ritual de la Entrega |
-| `. (13).mp3` | `nivel_3.mp3` | Nivel 4 — El Rey de las Sombras |
-| `. (14).mp3` | `nivel_4.mp3` | Nivel 5 — Las Moradas de los Muertos |
-| `. (15).mp3` | `nivel_5.mp3` | Nivel 6 — El Umbral Final |
-| `. (16).mp3` | `combate.mp3` | Reservado para música de combate (futuro) |
-| Resto | — | Libres para nuevos niveles o ambient |
+| Nombre destino | Uso |
+|---|---|
+| `menu.mp3` | Menú principal |
+| `nivel_0.mp3` | Nivel 1 — La Cueva del Origen |
+| `nivel_1.mp3` | Nivel 2 — El Espejo de las Formas |
+| `nivel_2.mp3` | Nivel 3 — El Ritual de la Entrega |
+| `nivel_3.mp3` | Nivel 4 — El Rey de las Sombras |
+| `nivel_4.mp3` | Nivel 5 — Las Moradas de los Muertos |
+| `nivel_5.mp3` | Nivel 6 — El Umbral Final |
+| `nivel_6.mp3` | Nivel 7 — La Sala del Juicio |
+| `nivel_7.mp3` | Nivel 8 — El Río de Recuerdos |
+| `nivel_8.mp3` | Nivel 9 — La Biblioteca del Olvido |
+| `nivel_9.mp3` | Nivel 10 — El Espejo Final |
+| `boss.mp3` | Combate El Umbral Encarnado (ya buscado por el código) |
+| `ambiente.mp3` | Pantallas de muerte y créditos |
 
-> El código busca `nivel_N.mp3` automáticamente. Sin renombrar, sigue usando aleatorio.
+> El código busca `nivel_N.mp3` automáticamente. Sin renombrar, usa aleatorio.
