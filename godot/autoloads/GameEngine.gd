@@ -52,6 +52,8 @@ func combate_narrativo(enemy: Enemy) -> String:
 		player.modificar_psique(enemy.psique_victoria_jugador)
 		return "vivo"
 	enemy.dificultad = max(1, roundi(enemy.dificultad * dificultad_global))
+	# Transición al combate: fundir a negro; la intro del combate funde desde negro.
+	await pantalla.fundir_a_negro()
 	return await CombatSystem.combate_completo(enemy, player, pantalla)
 
 
@@ -556,6 +558,10 @@ func jugar() -> void:
 	while player.alive and current_level_index < niveles.size():
 		huyo_este_nivel = false  # Reset por nivel
 
+		# Transición: fundir a negro entre niveles; el primer mostrar_nivel
+		# del nivel funde desde negro al mostrar el nuevo contenido.
+		await pantalla.fundir_a_negro()
+
 		var nivel: BaseLevel = niveles[current_level_index]
 		var resultado: String = await nivel.jugar(player, self)
 
@@ -849,6 +855,11 @@ func _mostrar_estadisticas() -> void:
 	await mostrar_nivel("res://assets/images/lvl6.jpg", texto, [])
 
 
+func _rep(ch: String, n: int) -> String:
+	# String.repeat(0) lanza error en Godot — guardar el caso vacío.
+	return ch.repeat(n) if n > 0 else ""
+
+
 func _mostrar_resumen_psique() -> void:
 	var p: Dictionary = player.psique
 	var nombres := {
@@ -860,10 +871,10 @@ func _mostrar_resumen_psique() -> void:
 		var val: int = p[clave]
 		var llenas: int = int(val / 10.0)
 		var vacias: int = 10 - llenas
-		var barra := "█".repeat(llenas) + "░".repeat(vacias)
+		var barra := _rep("█", llenas) + _rep("░", vacias)
 		barras += "%-12s [%s] %3d/100\n" % [nombres[clave], barra, val]
 
-	var aliento_barra := "●".repeat(player.aliento) + "○".repeat(10 - player.aliento)
+	var aliento_barra := _rep("●", player.aliento) + _rep("○", 10 - player.aliento)
 	var nombres_inv: Array = []
 	for i in player.inventario:
 		nombres_inv.append(Player.NOMBRES_ITEMS.get(i, i))
