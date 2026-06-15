@@ -45,4 +45,9 @@ func _demo() -> void:
 	]
 	var r: String = reacciones[idx] if idx >= 0 and idx < reacciones.size() else "…"
 	await _gs.mostrar_pantalla("res://assets/images/lvl1.jpg", r, [])
+
+	# ── DEMO DE COMBATE (Fase 3) ──────────────────────────────
+	var enemy := EnemyFactory.crear_guardian()
+	var resultado: String = await CombatSystem.combate_completo(enemy, p, _gs)
+	print("[demo] Resultado del combate: ", resultado)
 	print("[demo] Fin del demo.")
