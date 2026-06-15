@@ -7,10 +7,21 @@ var player: Player = null
 var modo_lectura: bool = false
 var dificultad_global: float = 1.0
 var huyo_este_nivel: bool = false
+var niveles: Array = []        # BaseLevel × 10 (cargados por cargar_niveles)
+var save_slot: int = 0
 
 ## GameScreen que conduce el juego (la UI persistente). La setea Main al arrancar.
 ## Ver ADR-007: los niveles son scripts que conducen esta pantalla vía async.
 var pantalla = null
+
+# Imágenes de fondo por nivel (port de _LEVEL_IMGS de game_engine.py)
+const LEVEL_IMGS := [
+	"res://assets/images/lvl1.jpg", "res://assets/images/lvl2.jpg",
+	"res://assets/images/lvl3.jpg", "res://assets/images/lvl4.jpg",
+	"res://assets/images/lvl5.jpg", "res://assets/images/lvl6.jpg",
+	"res://assets/images/lvl7.jpg", "res://assets/images/lvl8.jpg",
+	"res://assets/images/lvl9.jpg", "res://assets/images/lvl10.jpg",
+]
 
 
 # ─────────────────────────────────────────
@@ -62,6 +73,105 @@ func ofrecer_cofre_eco(_imagen_path: String = "") -> void:
 	await _dar_item(img, item, texto_cofre)
 
 
+func ofrecer_cofre_piedra(_imagen_path: String = "") -> void:
+	# Cofre de Piedra: requiere llave de piedra.
+	if not player.llave_piedra:
+		return
+	player.llave_piedra = false
+	var img := "res://assets/images/chest_stone.jpg"
+	var item: String = Player.TIER_BASICO.pick_random()
+	var texto_cofre := (
+		"Cofre de Piedra.\n\n"
+		+ "La llave encaja en silencio.\nAlgo guardado durante mucho tiempo.\n\n"
+		+ "Contenido: %s\n" % Player.NOMBRES_ITEMS.get(item, item)
+	)
+	await _dar_item(img, item, texto_cofre)
+
+
+func ofrecer_cofre_umbral(_imagen_path: String = "") -> void:
+	# Cofre del Umbral: requiere ≥5 aliento y cofre disponible.
+	if not player.cofre_umbral_disponible:
+		return
+	if player.aliento < 5:
+		return
+	player.cofre_umbral_disponible = false
+	player.gastar_aliento(5)
+	var img := "res://assets/images/chest_umbral.jpg"
+	var item: String = Player.TIER_ALTO.pick_random()
+	var texto_cofre := (
+		"Cofre del Umbral.\n\n"
+		+ "El Aliento que acumulaste abre esto.\n"
+		+ "No cualquiera llega con tanto peso.\n\n"
+		+ "Contenido: %s\n" % Player.NOMBRES_ITEMS.get(item, item)
+		+ "[ −5 Aliento del Umbral ]\n"
+	)
+	# Fragmento del ending actual como bonus narrativo
+	var ending_preview := determinar_final()
+	texto_cofre += "\n— El cofre también muestra un fragmento de tu destino —\n%s…\n" % ending_preview.substr(0, 300)
+	await _dar_item(img, item, texto_cofre)
+
+
+func encuentro_voz_umbral(imagen_path: String) -> void:
+	# La Voz del Umbral — aliado de información. Level 5, lucidez ≥ 30.
+	if player.psique["lucidez"] < 30:
+		return
+	if player.aliado_tipo != "":
+		return
+	player.aliado_tipo = "voz"
+	player.modificar_psique({"culpa": 10})
+	var ending_texto := determinar_final()
+	var psique: Dictionary = player.psique
+	var dominante := _stat_dominante(psique)
+	var nombres_psique := {
+		"violencia": "Violencia", "miedo": "Miedo", "culpa": "Culpa",
+		"lucidez": "Lucidez", "corrupcion": "Corrupción",
+	}
+	var texto := (
+		"La voz que siempre estuvo ahí.\n"
+		+ "Ahora elige responder.\n\n"
+		+ "— Tu destino proyectado —\n\n"
+		+ "%s\n\n" % ending_texto
+		+ "El factor dominante: %s (%d/100).\n\n" % [nombres_psique.get(dominante, dominante), psique[dominante]]
+		+ "Eso dice hacia dónde vas.\n"
+		+ "Si querés otro destino, ya sabés qué cambiar.\n\n"
+		+ "[ Culpa +10 por saber tu destino ]\n"
+	)
+	await mostrar_nivel(imagen_path, texto, [])
+
+
+func ofrecer_fusion_con_otro(imagen_path: String) -> void:
+	# Tras derrotar a El Otro, ofrecer fusionarse (ending secreto).
+	player.ganar_aliento(2)
+	var texto := (
+		"El Otro está derrotado.\n\n"
+		+ "Pero no del todo.\n\n"
+		+ "Todavía está ahí. En el límite.\n"
+		+ "Y ofrece algo que ningún enemigo ofreció:\n\n"
+		+ "Fusionarte con él.\n\n"
+		+ "No desaparecerías.\n"
+		+ "Serías más completo.\n"
+		+ "Y también menos singular.\n\n"
+		+ "[ +2 Aliento del Umbral ]\n"
+	)
+	var idx: int = await mostrar_nivel(
+		imagen_path, texto, ["Fusionarte con El Otro", "Alejarte"]
+	)
+	if idx == 0:
+		player.fusionado_con_otro = true
+		player.registrar_decision("Te fusionaste con El Otro. La dualidad terminó.")
+		await mostrar_nivel(
+			imagen_path,
+			"\nNo hay dos voces ahora.\nSolo una.\nMás silenciosa.\nMás completa.\n",
+			[]
+		)
+	else:
+		await mostrar_nivel(
+			imagen_path,
+			"\nTe alejás.\nEl Otro se queda donde estaba.\nSiempre estuvo ahí.\n",
+			[]
+		)
+
+
 func _dar_item(img_path: String, item_id: String, texto_cofre: String) -> void:
 	if player.inventario.size() < 3:
 		player.agregar_item(item_id)
@@ -93,11 +203,38 @@ func iniciar() -> void:
 	while true:
 		var accion: String = await mostrar_menu()
 		match accion:
-			"nueva", "lectura":
-				modo_lectura = (accion == "lectura")
+			"nueva":
+				var slot: int = await _elegir_slot("nueva")
+				if slot < 0:
+					continue
+				save_slot = slot
+				SaveSystem.borrar_partida(slot)
+				current_level_index = 0
+				modo_lectura = false
 				await mostrar_intro()
 				await crear_personaje()
-				await _jugar_demo()
+				cargar_niveles()
+				await jugar()
+			"cargar":
+				var slot: int = await _elegir_slot("cargar")
+				if slot < 0:
+					continue
+				save_slot = slot
+				if cargar_juego(slot):
+					cargar_niveles()
+					await jugar()
+			"lectura":
+				var slot: int = await _elegir_slot("nueva")
+				if slot < 0:
+					continue
+				save_slot = slot
+				modo_lectura = true
+				SaveSystem.borrar_partida(slot)
+				current_level_index = 0
+				await mostrar_intro()
+				await crear_personaje()
+				cargar_niveles()
+				await jugar()
 				modo_lectura = false
 			"creditos":
 				await mostrar_creditos()
@@ -119,14 +256,23 @@ Los que regresan... ya no son los mismos.
 
 ¿Quién sos vos para intentarlo?
 """
-	# NOTA: "Continuar" (cargar partida) se agrega al integrar SaveSystem.
-	var opciones := ["Nueva partida", "Modo Lectura  [sin combate]", "Créditos", "Salir"]
+	var hay_guardado := SaveSystem.existe_partida()
+	var opciones := ["Nueva partida"]
+	if hay_guardado:
+		opciones.append("Continuar")
+	opciones.append("Modo Lectura  [sin combate]")
+	opciones.append("Créditos")
+	opciones.append("Salir")
+
 	var idx: int = await mostrar_nivel("res://assets/images/menu_alt.jpg", texto, opciones)
-	match idx:
-		0: return "nueva"
-		1: return "lectura"
-		2: return "creditos"
-		_: return "salir"
+
+	var mapa := ["nueva"]
+	if hay_guardado:
+		mapa.append("cargar")
+	mapa.append("lectura")
+	mapa.append("creditos")
+	mapa.append("salir")
+	return mapa[idx] if idx >= 0 and idx < mapa.size() else "salir"
 
 
 func mostrar_intro() -> void:
@@ -259,9 +405,47 @@ Elegí tu senda:
 	player = Player.new()
 	player.inicializar(nombre, clase)
 	player.level = 1
-	# NOTA: herencia NG+ (cargar_ng_plus) se aplica al integrar SaveSystem.
+
+	var psique_previa := SaveSystem.cargar_ng_plus()
+	if not psique_previa.is_empty():
+		await _aplicar_herencia_ng_plus(psique_previa)
 
 	await _elegir_dificultad()
+
+
+func _aplicar_herencia_ng_plus(psique_previa: Dictionary) -> void:
+	var herencia := {}
+	for k in psique_previa:
+		var v: int = int(psique_previa[k])
+		if v > 0:
+			herencia[k] = int(v * 0.20)
+	# Filtrar las que quedaron en 0 tras el *0.20
+	var herencia_real := {}
+	for k in herencia:
+		if herencia[k] > 0:
+			herencia_real[k] = herencia[k]
+	if herencia_real.is_empty():
+		return
+
+	player.modificar_psique(herencia_real)
+
+	var lineas := ""
+	for k in herencia_real:
+		lineas += "  %-12s +%d\n" % [k, herencia_real[k]]
+	var texto := """
+Algo persistió.
+
+No es un recuerdo exacto.
+Es una marca.
+Lo que el Umbral te dejó
+antes de que empezara este descenso.
+
+%s
+
+Empezás con eso.
+Ya era tuyo de antes.
+""" % lineas
+	await mostrar_nivel("res://assets/images/lvl1.jpg", texto, [])
 
 
 func _retrato_path(clase: String) -> String:
@@ -358,13 +542,362 @@ func mostrar_creditos() -> void:
 		await mostrar_nivel("res://assets/images/menu.jpg", b, [])
 
 
-## PLACEHOLDER: corre Level1. Se reemplaza por el loop completo jugar()
-## (recorre Level1..Level10, _entre_niveles, guardado) en la tarea de engine.
-func _jugar_demo() -> void:
-	current_level_index = 0
-	huyo_este_nivel = false
-	var level1: BaseLevel = load("res://scripts/levels/level1.gd").new()
-	await level1.jugar(player, self)
+# ═══════════════════════════════════════════════════════════════
+# LOOP PRINCIPAL DE NIVELES — port de game_engine.jugar()/cargar_niveles()
+# ═══════════════════════════════════════════════════════════════
+func cargar_niveles() -> void:
+	niveles = []
+	for i in range(1, 11):
+		var script: GDScript = load("res://scripts/levels/level%d.gd" % i)
+		niveles.append(script.new())
+
+
+func jugar() -> void:
+	while player.alive and current_level_index < niveles.size():
+		huyo_este_nivel = false  # Reset por nivel
+
+		var nivel: BaseLevel = niveles[current_level_index]
+		var resultado: String = await nivel.jugar(player, self)
+
+		if resultado == "muerte":
+			player.morir("Fallaste en la prueba.")
+			break
+
+		elif resultado == "continuar":
+			# Bonus por no haber huido
+			if not huyo_este_nivel:
+				player.ganar_aliento(1)
+
+			await _mostrar_resumen_psique()
+			await _entre_niveles()  # Gestión de inventario y descanso
+
+			current_level_index += 1
+			player.level = current_level_index + 1
+			SaveSystem.guardar_partida(player, current_level_index, save_slot)
+
+		else:
+			break
+
+	await final_juego()
+
+
+# ─────────────────────────────────────────
+# GESTIÓN ENTRE NIVELES — port de _entre_niveles()
+# ─────────────────────────────────────────
+func _entre_niveles() -> void:
+	var img_path: String = LEVEL_IMGS[min(current_level_index, LEVEL_IMGS.size() - 1)]
+
+	while true:
+		var ids: Array = []
+		var labels: Array = []
+
+		if player.aliento >= 2:
+			ids.append("descanso")
+			labels.append("Descanso  [−2 Aliento → +10 HP]  (HP: %d/%d)" % [player.vida, player.vida_max])
+
+		for item in player.inventario:
+			if item in Player.ITEMS_ENTRE_COMBATES:
+				ids.append("usar_%s" % item)
+				labels.append("Usar: %s" % Player.NOMBRES_ITEMS.get(item, item))
+
+		ids.append("continuar")
+		labels.append("Continuar al siguiente nivel")
+
+		var nombres: Array = []
+		for i in player.inventario:
+			nombres.append(Player.NOMBRES_ITEMS.get(i, i))
+		var inv_txt: String = ", ".join(nombres) if not nombres.is_empty() else "—"
+
+		var texto := (
+			"\n— Entre niveles —\n\n"
+			+ "Aliento del Umbral: %d/10\n" % player.aliento
+			+ "Inventario: %s\n" % inv_txt
+			+ "HP: %d/%d   %s: %d/%d\n\n" % [player.vida, player.vida_max, player.energia_nombre, player.energia, player.energia_max]
+			+ "¿Hacés algo antes de continuar?\n"
+		)
+
+		var idx: int = await mostrar_nivel(img_path, texto, labels)
+		var id_elegido: String = ids[idx] if idx >= 0 and idx < ids.size() else "continuar"
+
+		if id_elegido == "continuar":
+			break
+		elif id_elegido == "descanso":
+			player.gastar_aliento(2)
+			player.recuperar(10)
+			await mostrar_nivel(
+				img_path,
+				"\nDescansás un momento. El peso se alivia apenas.\n[ −2 Aliento   +10 HP ]\n",
+				[]
+			)
+		elif id_elegido.begins_with("usar_"):
+			var item_id: String = id_elegido.substr(5)
+			await _aplicar_item(item_id, img_path)
+
+
+func _aplicar_item(item_id: String, img_path: String) -> void:
+	var consumible: bool = item_id in Player.ITEMS_CONSUMIBLES
+	var texto := ""
+
+	if item_id == "antorcha":
+		player.modificar_psique({"miedo": -10, "lucidez": 5})
+		texto = "La Antorcha arde. La luz revela demasiado.\n[ Miedo −10   Lucidez +5 ]"
+
+	elif item_id == "sal":
+		player.modificar_psique({"corrupcion": -15, "culpa": 8})
+		texto = "La Sal Consagrada purifica. El precio es moral.\n[ Corrupción −15   Culpa +8 ]\n(consumida)"
+
+	elif item_id == "vendas":
+		player.recuperar(25)
+		texto = "Las Vendas Viejas. Algo tan simple como sobrevivir.\n[ HP +25 ]\n(consumidas)"
+
+	elif item_id == "espejo":
+		var dominante := _stat_dominante(player.psique)
+		var val: int = player.psique[dominante]
+		var nombres_p := {
+			"violencia": "Violencia", "miedo": "Miedo", "culpa": "Culpa",
+			"lucidez": "Lucidez", "corrupcion": "Corrupción",
+		}
+		player.modificar_psique({"miedo": 5})
+		texto = (
+			"El Fragmento de Espejo muestra lo que sos.\n\n"
+			+ "Psique dominante: %s (%d/100)\n\n" % [nombres_p.get(dominante, dominante), val]
+			+ "Saber tiene un precio.\n[ Miedo +5 ]\n(consumido)"
+		)
+
+	elif item_id == "sangre":
+		player.modificar_psique({"culpa": 5})
+		player.recuperar(15)
+		texto = "Sangre Seca. Funciona. El cuerpo no pregunta de dónde viene.\n[ HP +15   Culpa +5 ]"
+		consumible = false  # Reutilizable — no se quita del inventario
+
+	elif item_id == "mapa":
+		var prox := current_level_index + 1
+		var usos_violentos := (player.contar_usos_accion("furia") + player.contar_usos_accion("apuñalar"))
+		var tiene_secreto: bool = (
+			prox in [3, 4]
+			or (prox in [5, 8] and usos_violentos > 4)
+		)
+		var texto_mapa := ""
+		if tiene_secreto:
+			texto_mapa = "El mapa susurra: hay algo que no debería estar en el siguiente nivel."
+		else:
+			texto_mapa = "El mapa dice: el camino parece despejado."
+		texto = "Mapa Roto — %s\n(consumido)" % texto_mapa
+
+	elif item_id == "elixir":
+		if player.historial.is_empty():
+			await mostrar_nivel(img_path, "El Elixir del Olvido no tiene nada que borrar.\nTu historial está vacío.", [])
+			return
+		var entries: Array = player.historial
+		var labels_mem: Array = []
+		for e in entries:
+			labels_mem.append("Olvidar: %s…" % e.substr(0, 50) if e.length() > 50 else "Olvidar: %s" % e)
+		labels_mem.append("Cancelar")
+		var elec: int = await mostrar_nivel(
+			img_path,
+			"El Elixir del Olvido. Elegí qué borrar:\n[ Lucidez −10 ]\n",
+			labels_mem
+		)
+		if elec >= 0 and elec < entries.size():
+			player.gastar_memoria(elec)
+			player.modificar_psique({"lucidez": -10})
+			var t := "Un recuerdo se disuelve. El Elixir se consume.\n[ Lucidez −10 ]\n(consumido)"
+			if player.historial.is_empty():
+				t += "\n\nNo recordás nada de lo que hiciste.\nEso también dice algo."
+			await mostrar_nivel(img_path, t, [])
+		return
+	else:
+		return
+
+	await mostrar_nivel(img_path, texto, [])
+	if consumible:
+		player.quitar_item(item_id)
+
+
+# ─────────────────────────────────────────
+# SLOTS Y CARGA — port de _elegir_slot()/cargar_juego()
+# ─────────────────────────────────────────
+func _elegir_slot(modo: String = "cargar") -> int:
+	var slots := SaveSystem.listar_slots()
+
+	if modo == "cargar":
+		var labels: Array = []
+		var ids: Array = []
+		for s in slots:
+			if not s["vacio"]:
+				labels.append("Slot %d  — %s (%s)  Nivel %d" % [s["slot"] + 1, s["nombre"], s["clase"], s["nivel"]])
+				ids.append(s["slot"])
+		if ids.is_empty():
+			return -1
+		var idx: int = await mostrar_nivel("res://assets/images/lvl1.jpg", "\n¿Qué partida querés cargar?\n", labels)
+		return ids[idx] if idx >= 0 and idx < ids.size() else ids[0]
+	else:
+		var labels: Array = []
+		for s in slots:
+			if s["vacio"]:
+				labels.append("Slot %d  [libre]" % [s["slot"] + 1])
+			else:
+				labels.append("Slot %d  — %s (%s)  [sobreescribir]" % [s["slot"] + 1, s["nombre"], s["clase"]])
+		var idx: int = await mostrar_nivel("res://assets/images/lvl1.jpg", "\n¿En qué slot guardás la nueva partida?\n", labels)
+		return idx if idx >= 0 and idx < labels.size() else 0
+
+
+func cargar_juego(slot: int = 0) -> bool:
+	player = Player.new()
+	if not SaveSystem.cargar_en_player(player, slot):
+		return false
+	var data := SaveSystem.cargar_partida(slot)
+	current_level_index = data.get("nivel_actual", 0)
+	return true
+
+
+# ─────────────────────────────────────────
+# PANTALLA DE MUERTE — port de pantalla_muerte()
+# ─────────────────────────────────────────
+func pantalla_muerte() -> void:
+	var clase: String = player.clase
+	var nivel: int = current_level_index
+	var nom: String = player.name_jugador
+
+	var imagenes := {
+		"Guerrero":  "res://assets/images/death_warrior.jpg",
+		"Hechicero": "res://assets/images/death_mage.jpg",
+		"Ladrón":    "res://assets/images/death_rogue.jpg",
+	}
+	var imagen_path: String = imagenes.get(clase, "res://assets/images/game_over.jpg")
+	AudioManager.reproducir("ambiente")
+
+	var textos_guerrero := [
+		"%s.\n\nLa piedra no distingue entre los valientes y los demás.\nSolo entre lo que resiste... y lo que cede.\n\nCediste.\n\nEl Umbral absorbió tu fuerza.\nAhora es suya.\n" % nom,
+		"%s.\n\nPeleaste contra vos mismo.\nY perdiste.\n\nNo hay vergüenza en eso.\nSolo hay silencio.\n\nEl reflejo sigue ahí.\nCon tu cara.\nCon tu fuerza.\nSin vos.\n" % nom,
+		"%s.\n\nEl Sacerdote no te mató.\nTomó algo.\n\nY sin eso...\nel cuerpo siguió un rato más.\nPero vos ya no estabas adentro.\n" % nom,
+		"%s.\n\nLa Sombra Soberana te conocía\nmejor de lo que te conocías vos.\n\nCada derrota que alguna vez tuviste\nya estaba en ella.\n\nAhora también estás vos.\n" % nom,
+	]
+	var textos_hechicero := [
+		"%s.\n\nLa piedra no tiene memoria.\nTenías razón.\n\nPero tampoco tiene piedad.\n\nTu hechizo volvió.\nY fue más honesto que vos.\n" % nom,
+		"%s.\n\nEl conocimiento que usaste contra el Reflejo\nera tuyo.\n\nY él te lo devolvió\nmultiplicado por todo lo que sabías.\n\nMoriste de tu propia comprensión.\n" % nom,
+		"%s.\n\nIntentaste nombrarlo.\nFallaste.\n\nLo que no puede ser nombrado\ntampoco puede ser detenido.\n\nSe llevó algo tuyo.\nEl nombre que más importaba.\nEl tuyo.\n" % nom,
+		"%s.\n\nHabía demasiadas historias en la Sombra.\nNo podías contenerlas todas.\n\nUna mente que lo intenta igual\nse rompe igual.\n\nLa tuya resistió hasta el final.\nEso es suficiente.\nO debería serlo.\n" % nom,
+	]
+	var textos_ladron := [
+		"%s.\n\nSiempre hay alguien que te ve\naunque no quieras ser visto.\n\nEl Guardián no tenía ojos.\nPero te encontró igual.\n\nAlgunas cosas no se pueden esquivar.\nSolo se pueden recibir.\n" % nom,
+		"%s.\n\nIntentaste desaparecer.\nEl Reflejo sabía adónde ibas\nantes de que lo supieras vos.\n\nPorque eras predecible.\nNo por tus movimientos.\nPor tus miedos.\n" % nom,
+		"%s.\n\nTe vaciaste de intención.\nCasi lo lograste.\n\nPero quedó un rastro.\nPequeño.\nSuficiente.\n\nEl Sacerdote marcó ese rastro.\nY lo que está marcado\nno puede ocultarse más.\n" % nom,
+		"%s.\n\nLe diste algo tuyo como señuelo.\nLa Sombra no lo aceptó.\n\nFue por vos directamente.\n\nPorque ya te tenía adentro\ndesde antes de que empezara la pelea.\n" % nom,
+	]
+
+	var textos := {
+		"Guerrero": textos_guerrero,
+		"Hechicero": textos_hechicero,
+		"Ladrón": textos_ladron,
+	}
+	var lista: Array = textos.get(clase, textos_guerrero)
+	var idx: int = min(nivel, lista.size() - 1)
+	await mostrar_nivel(imagen_path, lista[idx], [])
+
+
+# ─────────────────────────────────────────
+# FINAL DEL JUEGO — port de final_juego()
+# ─────────────────────────────────────────
+func final_juego() -> void:
+	if not player.alive:
+		await pantalla_muerte()
+		SaveSystem.borrar_partida(save_slot)
+		return
+
+	await _mostrar_estadisticas()
+	await _mostrar_historial()
+
+	var ending := determinar_final()
+	var texto := "\n%s.\n\nTu destino:\n\n%s\n" % [player.name_jugador, ending]
+	await mostrar_nivel("res://assets/images/lvl6.jpg", texto, [])
+	SaveSystem.guardar_ng_plus(player.psique)
+	SaveSystem.borrar_partida(save_slot)
+
+
+func _mostrar_estadisticas() -> void:
+	var sc: Dictionary = player.stats_combate
+	var total_rondas: int = sc["rondas_ganadas"] + sc["rondas_perdidas"]
+	var winrate: int = int(float(sc["rondas_ganadas"]) / total_rondas * 100) if total_rondas > 0 else 0
+
+	var linea_accion := "Acción más usada:   —"
+	if not sc["acciones"].is_empty():
+		var accion_top := ""
+		var veces_top := -1
+		for a in sc["acciones"]:
+			if sc["acciones"][a] > veces_top:
+				veces_top = sc["acciones"][a]
+				accion_top = a
+		linea_accion = "Acción más usada:   %s  (%d veces)" % [accion_top, veces_top]
+
+	var mem_txt := ""
+	if player.memorias_gastadas > 0:
+		mem_txt = "Memorias borradas:  %d\n" % player.memorias_gastadas
+
+	var texto := (
+		"\n— Lo que dejaste en el camino —\n\n\n"
+		+ "Daño infligido:     %d\n" % sc["daño_infligido"]
+		+ "Daño recibido:      %d\n" % sc["daño_recibido"]
+		+ "Rondas ganadas:     %d / %d  (%d%%)\n" % [sc["rondas_ganadas"], total_rondas, winrate]
+		+ "Golpes críticos:    %d\n" % sc["criticos"]
+		+ "%s\n" % linea_accion
+		+ "Aliento acumulado:  %d/10\n" % player.aliento
+		+ "%s\n" % mem_txt
+		+ "Estos números no mienten.\n"
+		+ "Aunque vos sí lo hayas hecho.\n\n"
+	)
+	await mostrar_nivel("res://assets/images/lvl6.jpg", texto, [])
+
+
+func _mostrar_resumen_psique() -> void:
+	var p: Dictionary = player.psique
+	var nombres := {
+		"violencia": "Violencia", "miedo": "Miedo", "culpa": "Culpa",
+		"lucidez": "Lucidez", "corrupcion": "Corrupción",
+	}
+	var barras := ""
+	for clave in nombres:
+		var val: int = p[clave]
+		var llenas: int = int(val / 10.0)
+		var vacias: int = 10 - llenas
+		var barra := "█".repeat(llenas) + "░".repeat(vacias)
+		barras += "%-12s [%s] %3d/100\n" % [nombres[clave], barra, val]
+
+	var aliento_barra := "●".repeat(player.aliento) + "○".repeat(10 - player.aliento)
+	var nombres_inv: Array = []
+	for i in player.inventario:
+		nombres_inv.append(Player.NOMBRES_ITEMS.get(i, i))
+	var inv_txt: String = ", ".join(nombres_inv) if not nombres_inv.is_empty() else "—"
+
+	var texto := (
+		"\n— Estado psicológico —\n\n\n"
+		+ "%s\n" % barras
+		+ "Aliento del Umbral  [%s] %d/10\n" % [aliento_barra, player.aliento]
+		+ "Inventario: %s\n\n" % inv_txt
+		+ "Lo que sentís va dejando marca.\n\n"
+	)
+	var img: String = LEVEL_IMGS[min(current_level_index, LEVEL_IMGS.size() - 1)]
+	await mostrar_nivel(img, texto, [])
+
+
+func _mostrar_historial() -> void:
+	if player.historial.is_empty():
+		if player.memorias_gastadas > 0:
+			await mostrar_nivel(
+				"res://assets/images/lvl6.jpg",
+				"\nNo recordás nada de lo que hiciste.\nEso también dice algo.\n",
+				[]
+			)
+		return
+	var lineas: Array = []
+	for d in player.historial:
+		lineas.append("— %s" % d)
+	var texto := (
+		"\nLo que hiciste no desaparece.\nSolo se acumula.\n\n"
+		+ "%s\n\n" % "\n".join(lineas)
+		+ "Eso sos.\nTodo eso junto.\n"
+	)
+	await mostrar_nivel("res://assets/images/lvl6.jpg", texto, [])
 
 
 # ─────────────────────────────────────────
