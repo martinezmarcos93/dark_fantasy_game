@@ -36,6 +36,16 @@ const NOMBRES_ITEMS := {
 	"mapa": "Mapa Roto", "elixir": "Elixir del Olvido",
 }
 
+# Clasificación de ítems (port de player.py)
+const ITEMS_ENTRE_COMBATES := ["antorcha", "sal", "vendas", "espejo", "sangre", "mapa", "elixir"]
+const ITEMS_CONSUMIBLES    := ["sal", "vendas", "espejo", "tinta", "eco_piedra", "mapa", "elixir"]
+const ITEMS_DE_COMBATE     := ["tinta", "eco_piedra"]
+
+# Tiers de cofres
+const TIER_BASICO := ["vendas", "antorcha", "sangre"]
+const TIER_MEDIO  := ["espejo", "mapa"]
+const TIER_ALTO   := ["tinta", "eco_piedra"]
+
 # ─────────────────────────────────────────
 # PROPIEDADES
 # ─────────────────────────────────────────
