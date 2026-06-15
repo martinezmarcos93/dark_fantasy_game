@@ -56,6 +56,7 @@ var _hud_nombre: Label
 var _hp_bar: ProgressBar
 var _en_bar: ProgressBar
 var _ali_bar: ProgressBar
+var _flash: ColorRect
 
 var _typing := false
 var _type_speed := 50.0   # caracteres por segundo
@@ -118,6 +119,14 @@ func _construir_ui() -> void:
 	_opciones_box.size     = OPT_RECT.size - Vector2(PAD * 2, PAD * 2)
 	_opciones_box.add_theme_constant_override("separation", 4)
 	add_child(_opciones_box)
+
+	# Flash de daño: rojo sobre la imagen del nivel, invisible por defecto
+	_flash = ColorRect.new()
+	_flash.color = Color(0.82, 0.12, 0.12, 0.0)
+	_flash.position = IMG_RECT.position
+	_flash.size     = IMG_RECT.size
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_flash)
 
 	# HUD (encima del marco)
 	_construir_hud()
@@ -186,6 +195,16 @@ func actualizar_hud(player: Resource) -> void:
 	_en_bar.value      = player.energia
 	_ali_bar.max_value = 10
 	_ali_bar.value     = player.aliento
+
+
+## Flash rojo breve sobre la imagen — feedback de daño recibido.
+## Equivale a ui.flash_daño() del Pygame. No bloquea el flujo.
+func flash_daño() -> void:
+	if _flash == null:
+		return
+	var tw := create_tween()
+	_flash.color.a = 0.5
+	tw.tween_property(_flash, "color:a", 0.0, 0.25)
 
 
 # ═══════════════════════════════════════════════════════════════
