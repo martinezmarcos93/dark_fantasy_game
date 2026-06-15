@@ -4,12 +4,14 @@ extends Resource
 ## Port directo de CombatState en combat_system.py.
 ## Se crea al inicio de cada pelea y se descarta al terminar.
 
+## Port fiel de combat_system.HECHIZOS. Las claves coinciden con el Python
+## (costo_energia, descripcion) porque acciones_disponibles() las usa.
 const HECHIZOS := [
-	{"id": "fuego",      "nombre": "Palabra de Fuego",       "efecto": "daño_alto",  "costo": 15, "inmune": []},
-	{"id": "velo",       "nombre": "Velo de Sombra",         "efecto": "defensa",    "costo": 10, "inmune": []},
-	{"id": "resonancia", "nombre": "Resonancia Mental",       "efecto": "ventaja",    "costo": 10, "inmune": []},
-	{"id": "nombre",     "nombre": "Nombre Verdadero",        "efecto": "paralizar",  "costo": 20, "inmune": ["sacerdote"]},
-	{"id": "abismo",     "nombre": "Fragmento del Abismo",    "efecto": "nuclear",    "costo": 40, "inmune": []},
+	{"id": "fuego",      "nombre": "Palabra de Fuego",     "descripcion": "Daño directo alto",          "efecto": "daño_alto", "costo_energia": 15, "inmune": []},
+	{"id": "velo",       "nombre": "Velo de Sombra",       "descripcion": "Reduce daño esta ronda",     "efecto": "defensa",   "costo_energia": 10, "inmune": []},
+	{"id": "resonancia", "nombre": "Resonancia Mental",    "descripcion": "Ventaja en siguiente tirada","efecto": "ventaja",   "costo_energia": 10, "inmune": []},
+	{"id": "nombre",     "nombre": "Nombre Verdadero",     "descripcion": "Paraliza al enemigo una ronda","efecto": "paralizar","costo_energia": 20, "inmune": ["sacerdote"]},
+	{"id": "abismo",     "nombre": "Fragmento del Abismo", "descripcion": "Daño masivo — te daña también","efecto": "nuclear", "costo_energia": 40, "inmune": []},
 ]
 
 var ronda_actual: int = 1
