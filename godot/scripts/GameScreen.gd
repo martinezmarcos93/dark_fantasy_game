@@ -40,6 +40,16 @@ const COL_ALI   := Color(0.72, 0.58, 0.20)
 
 const RUTA_FRAME := "res://assets/images/ui_frame.png"
 const RUTA_FONT  := "res://assets/fonts/Goth.ttf"
+const RUTA_SHADER_PSIQUE := "res://shaders/psique_overlay.gdshader"
+
+# Colores del filtro psíquico — port exacto de _COLORES en ui.py (RGB 0-255).
+const PSIQUE_COLORES := {
+	"violencia":  Color8(180, 20, 20),
+	"miedo":      Color8(20, 20, 80),
+	"culpa":      Color8(60, 40, 20),
+	"lucidez":    Color8(20, 80, 60),
+	"corrupcion": Color8(60, 0, 80),
+}
 
 # ─────────────────────────────────────────
 # ESTADO
@@ -57,6 +67,7 @@ var _hp_bar: ProgressBar
 var _en_bar: ProgressBar
 var _ali_bar: ProgressBar
 var _flash: ColorRect
+var _psique_mat: ShaderMaterial
 
 var _typing := false
 var _type_speed := 50.0   # caracteres por segundo
@@ -89,6 +100,10 @@ func _construir_ui() -> void:
 	_level_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_level_img.clip_contents = true
 	_level_img.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Filtro psíquico vía shader (Fase 5): tinte + aberración + vignette.
+	_psique_mat = ShaderMaterial.new()
+	_psique_mat.shader = load(RUTA_SHADER_PSIQUE)
+	_level_img.material = _psique_mat
 	add_child(_level_img)
 
 	# Marco ornamental (encima de la imagen, ignora mouse)
@@ -195,6 +210,31 @@ func actualizar_hud(player: Resource) -> void:
 	_en_bar.value      = player.energia
 	_ali_bar.max_value = 10
 	_ali_bar.value     = player.aliento
+	actualizar_psique(player)
+
+
+## Ajusta el shader psíquico según la psique dominante del jugador.
+## Port de la lógica de ui._aplicar_filtro_psique() (mismo color y curva de alpha).
+func actualizar_psique(player: Resource) -> void:
+	if player == null or _psique_mat == null:
+		return
+	var dominante := ""
+	var maxv := -1
+	for k in player.psique:
+		if player.psique[k] > maxv:
+			maxv = player.psique[k]
+			dominante = k
+	var intensidad: int = min(maxv, 100)
+
+	# Misma curva que el Pygame: alpha 0→90/255 para intensidad 20→100.
+	var a := 0.0
+	if intensidad >= 20:
+		a = (intensidad - 20) / 80.0 * (90.0 / 255.0)
+
+	var col: Color = PSIQUE_COLORES.get(dominante, Color.BLACK)
+	_psique_mat.set_shader_parameter("psique_color", Vector3(col.r, col.g, col.b))
+	_psique_mat.set_shader_parameter("intensidad", a)
+	_psique_mat.set_shader_parameter("aberracion", a)
 
 
 ## Pide el nombre del jugador con un campo de texto. Port de ui.pedir_nombre().
@@ -231,6 +271,42 @@ func flash_daño() -> void:
 	var tw := create_tween()
 	_flash.color.a = 0.5
 	tw.tween_property(_flash, "color:a", 0.0, 0.25)
+
+
+## Cartel central "Esto tendrá repercusión / en tu futuro." con fade.
+## Port de ui.mostrar_cartel_psique(); se muestra al cerrar combate.
+func mostrar_cartel_psique() -> void:
+	var w := 400.0
+	var h := 82.0
+	var panel := Panel.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color8(12, 8, 4, 215)
+	sb.border_color = Color8(110, 75, 20)
+	sb.set_border_width_all(1)
+	panel.add_theme_stylebox_override("panel", sb)
+	panel.size = Vector2(w, h)
+	panel.position = Vector2((1000.0 - w) / 2.0, (600.0 - h) / 2.0)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.modulate.a = 0.0
+	add_child(panel)
+
+	var lbl := Label.new()
+	lbl.text = "Esto tendrá repercusión\nen tu futuro."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_override("font", _font)
+	lbl.add_theme_font_size_override("font_size", 20)
+	lbl.add_theme_color_override("font_color", Color8(190, 150, 40))
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(lbl)
+
+	var tw := create_tween()
+	tw.tween_property(panel, "modulate:a", 1.0, 0.33)   # fade in
+	tw.tween_interval(1.5)                               # estable
+	tw.tween_property(panel, "modulate:a", 0.0, 0.33)   # fade out
+	await tw.finished
+	panel.queue_free()
 
 
 # ═══════════════════════════════════════════════════════════════
