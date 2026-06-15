@@ -8,43 +8,9 @@ func _init() -> void:
 	nombre = "La Biblioteca del Olvido"
 
 
-func _traducir_vocales(p: String) -> String:
-	var mapa := {"a": "á", "e": "ë", "i": "ï", "o": "ø", "u": "ù"}
-	var out := ""
-	for ch in p:
-		out += mapa.get(ch, ch)
-	return out
-
-
-func distorsionar_texto(texto: String, player: Player) -> String:
-	var psique: Dictionary = player.psique
-
-	if psique["miedo"] > 25:
-		texto = texto.to_lower()
-		var lineas: Array = []
-		for l in texto.split("\n"):
-			if l.strip_edges() != "":
-				lineas.append("  ".join(l.split(" ", false)))
-			else:
-				lineas.append(l)
-		texto = "\n".join(lineas)
-
-	if psique["corrupcion"] > 35:
-		var lineas: Array = []
-		for linea in texto.split("\n"):
-			var palabras := linea.split(" ")
-			var nueva: Array = []
-			for i in range(palabras.size()):
-				var p: String = palabras[i]
-				if p.length() > 4 and i % 2 == 0:
-					p = _traducir_vocales(p)
-				nueva.append(p)
-			lineas.append(" ".join(nueva))
-		texto = "\n".join(lineas)
-
-	if psique["lucidez"] > 35:
-		texto = "[[ " + texto.strip_edges() + " ]]"
-
+## La distorsión visual del texto la hace ahora GameScreen vía RichTextEffect
+## según la psique (ver GameScreen._aplicar_distorsion_bbcode). Pasa el texto tal cual.
+func distorsionar_texto(texto: String, _player: Player) -> String:
 	return texto
 
 
