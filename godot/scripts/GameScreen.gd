@@ -68,6 +68,7 @@ var _en_bar: ProgressBar
 var _ali_bar: ProgressBar
 var _flash: ColorRect
 var _psique_mat: ShaderMaterial
+var _trans: ColorRect   # fundido a negro para transiciones (encima de todo)
 
 var _typing := false
 var _type_speed := 50.0   # caracteres por segundo
@@ -146,6 +147,17 @@ func _construir_ui() -> void:
 	# HUD (encima del marco)
 	_construir_hud()
 
+	# Capa de transición: ColorRect negro en un CanvasLayer por encima de TODO
+	# (incluido el marco), para fundidos entre niveles y combates.
+	var trans_layer := CanvasLayer.new()
+	trans_layer.layer = 10
+	add_child(trans_layer)
+	_trans = ColorRect.new()
+	_trans.color = Color(0, 0, 0, 0)
+	_trans.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_trans.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	trans_layer.add_child(_trans)
+
 
 func _construir_hud() -> void:
 	var hud := VBoxContainer.new()
@@ -193,10 +205,31 @@ func mostrar_pantalla(imagen: String, texto: String, opciones: Array = []) -> in
 		_level_img.texture = load(imagen)
 	_set_texto(texto)
 	_construir_opciones(opciones)
+	# Si venimos de un fundido a negro, revelar el nuevo contenido.
+	if _trans != null and _trans.color.a > 0.0:
+		await fundir_desde_negro()
 	_esperando = true
 	var idx: int = await _eleccion
 	_esperando = false
 	return idx
+
+
+## Fundido a negro (transición de salida). Cubre toda la pantalla.
+func fundir_a_negro(dur := 0.4) -> void:
+	if _trans == null or _trans.color.a >= 0.99:
+		return
+	var tw := create_tween()
+	tw.tween_property(_trans, "color:a", 1.0, dur)
+	await tw.finished
+
+
+## Fundido desde negro (transición de entrada).
+func fundir_desde_negro(dur := 0.4) -> void:
+	if _trans == null or _trans.color.a <= 0.01:
+		return
+	var tw := create_tween()
+	tw.tween_property(_trans, "color:a", 0.0, dur)
+	await tw.finished
 
 
 ## Actualiza el HUD desde el Player.
