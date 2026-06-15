@@ -82,6 +82,291 @@ func _dar_item(img_path: String, item_id: String, texto_cofre: String) -> void:
 			)
 
 
+# ═══════════════════════════════════════════════════════════════
+# ARRANQUE — Menú → Intro → Creación de personaje
+# Port de game_engine.iniciar() / crear_personaje() y de menu.py / intro.py.
+# NOTA: guardado/carga (slots), NG+ y el loop completo de niveles quedan
+# para la tarea de "completar el engine". Acá: nueva partida / lectura /
+# créditos / salir, encadenando hasta Level1.
+# ═══════════════════════════════════════════════════════════════
+func iniciar() -> void:
+	while true:
+		var accion: String = await mostrar_menu()
+		match accion:
+			"nueva", "lectura":
+				modo_lectura = (accion == "lectura")
+				await mostrar_intro()
+				await crear_personaje()
+				await _jugar_demo()
+				modo_lectura = false
+			"creditos":
+				await mostrar_creditos()
+			"salir":
+				get_tree().quit()
+				return
+
+
+func mostrar_menu() -> String:
+	AudioManager.reproducir("menu")
+	var texto := """
+Descenso al Umbral
+
+
+El mundo se consume en silencio.
+Los que descienden no regresan.
+Los que regresan... ya no son los mismos.
+
+
+¿Quién sos vos para intentarlo?
+"""
+	# NOTA: "Continuar" (cargar partida) se agrega al integrar SaveSystem.
+	var opciones := ["Nueva partida", "Modo Lectura  [sin combate]", "Créditos", "Salir"]
+	var idx: int = await mostrar_nivel("res://assets/images/menu_alt.jpg", texto, opciones)
+	match idx:
+		0: return "nueva"
+		1: return "lectura"
+		2: return "creditos"
+		_: return "salir"
+
+
+func mostrar_intro() -> void:
+	var pantallas := [
+		["res://assets/images/intro1.jpg", """
+Yerma no murió.
+
+Solo olvidó para qué servía
+estar viva.
+
+Los dioses se fueron sin aviso.
+Sin guerra.
+Sin profecía.
+Un día sostenían el orden.
+Al siguiente, no estaban.
+
+El mundo siguió girando por inercia.
+
+Vos naciste en esa inercia.
+
+
+[ ESPACIO para continuar ]
+"""],
+		["res://assets/images/intro2.jpg", """
+Existe un lugar debajo de todo.
+
+No en los mapas.
+No en los libros sagrados
+que quedaron.
+
+Solo en los sueños de los que
+están a punto de perder algo.
+
+Lo llaman el Umbral.
+
+Dicen que es una cueva.
+Dicen que es una mente.
+
+Dicen que es lo mismo.
+
+
+[ ESPACIO para continuar ]
+"""],
+		["res://assets/images/intro3.jpg", """
+Hace tres noches
+escuchaste algo.
+
+No con los oídos.
+Desde adentro.
+
+Una palabra sin sonido.
+Una dirección sin nombre.
+
+Esta mañana te encontraste
+caminando hacia las afueras.
+
+Sin provisiones.
+Sin plan.
+
+Como si una parte de vos
+ya hubiera decidido
+antes que vos.
+
+
+[ ESPACIO para continuar ]
+"""],
+		["res://assets/images/lvl1.jpg", """
+La entrada está frente a vos.
+
+Piedra antigua.
+Oscuridad total.
+
+El aire que sale de ahí
+no huele a tierra ni a muerte.
+
+Huele a algo que no tiene
+nombre todavía.
+
+Podés darte vuelta.
+Nadie te obliga.
+
+Pero ya sabés
+que no vas a hacerlo.
+
+
+[ ESPACIO para continuar ]
+"""],
+		["res://assets/images/intro4.jpg", """
+Entrás.
+
+El sonido del mundo de afuera
+desaparece antes de que hagas
+tres pasos.
+
+No es silencio.
+Es ausencia de todo lo que
+usabas para orientarte.
+
+Aquí no hay arriba ni abajo.
+Solo profundidad.
+
+Y algo que te conoce
+desde antes de que llegaras.
+
+
+[ ESPACIO para comenzar ]
+"""],
+	]
+	for p in pantallas:
+		await mostrar_nivel(p[0], p[1], [])
+
+
+func crear_personaje() -> void:
+	var texto_clase := """
+=== CREACIÓN DE PERSONAJE ===
+
+
+Elegí tu senda:
+"""
+	var idx: int = await mostrar_nivel(
+		"res://assets/images/lvl1.jpg", texto_clase,
+		["Guerrero", "Hechicero", "Ladrón"]
+	)
+	var clases := ["Guerrero", "Hechicero", "Ladrón"]
+	var clase: String = clases[idx] if idx >= 0 and idx < clases.size() else "Errante"
+
+	await _mostrar_retrato_clase(clase)
+
+	var nombre: String = await pantalla.pedir_nombre(clase)
+	player = Player.new()
+	player.inicializar(nombre, clase)
+	player.level = 1
+	# NOTA: herencia NG+ (cargar_ng_plus) se aplica al integrar SaveSystem.
+
+	await _elegir_dificultad()
+
+
+func _retrato_path(clase: String) -> String:
+	match clase:
+		"Guerrero":  return "res://assets/images/portrait_warrior.jpg"
+		"Hechicero": return "res://assets/images/portrait_mage.jpg"
+		"Ladrón":    return "res://assets/images/portrait_rogue.jpg"
+	return "res://assets/images/lvl1.jpg"
+
+
+func _mostrar_retrato_clase(clase: String) -> void:
+	var descripciones := {
+		"Guerrero": """
+La senda del Guerrero.
+
+Fuerza como primera respuesta.
+Resistencia como segunda.
+
+Stamina: 40
+Recurso más bajo — cada acción especial cuesta.
+Golpe Cargado y Furia Ciega son devastadores,
+pero no infinitos.
+
+Dos Defenders seguidos desbloquean
+el Contraataque Total.
+
+La fuerza no es solo del cuerpo.
+""",
+		"Hechicero": """
+La senda del Hechicero.
+
+Conocimiento como arma.
+La mente como campo de batalla.
+
+Magia: 100
+El recurso más alto — pero cada hechizo se usa
+una sola vez por combate.
+
+Los hechizos más poderosos se desbloquean
+a medida que descends.
+Nombre Verdadero en nivel 3.
+Fragmento del Abismo en nivel 4.
+
+Saber tiene un precio.
+""",
+		"Ladrón": """
+La senda del Ladrón.
+
+Posición como ventaja.
+La paciencia como táctica.
+
+Ingenio: 70
+Observar primero habilita ataques devastadores.
+Sin setup, solo opciones básicas.
+
+Sin Ingenio: Improvisar como última salida.
+El resultado es incierto.
+
+No todo se puede planear.
+""",
+	}
+	var texto: String = descripciones.get(clase, "Clase desconocida.")
+	await mostrar_nivel(_retrato_path(clase), texto, [])
+
+
+func _elegir_dificultad() -> void:
+	var texto := """
+¿Qué tan profundo querés descender?
+
+La dificultad afecta el daño enemigo y las tiradas de combate.
+La narrativa y los finales son siempre los mismos.
+"""
+	var opciones := [
+		"Umbral Suave  [enemigos más fáciles]",
+		"Umbral Normal  [experiencia diseñada]",
+		"Umbral Profundo  [enemigos más duros]",
+	]
+	var idx: int = await mostrar_nivel("res://assets/images/lvl1.jpg", texto, opciones)
+	match idx:
+		0: dificultad_global = 0.7
+		2: dificultad_global = 1.4
+		_: dificultad_global = 1.0
+
+
+func mostrar_creditos() -> void:
+	var bloques := [
+		"[center]Descenso al Umbral[/center]",
+		"[center]Desarrollo y diseño\nMarcos Martínez[/center]",
+		"[center]Inspirado en\nDark Souls  ·  Elden Ring\nPsicología Junguiana\nFilosofía esotérica[/center]",
+		"[center]\"El dungeon no es un lugar.\nEs una proyección.\"[/center]",
+		"[center][ ESPACIO para volver ][/center]",
+	]
+	for b in bloques:
+		await mostrar_nivel("res://assets/images/menu.jpg", b, [])
+
+
+## PLACEHOLDER: corre Level1. Se reemplaza por el loop completo jugar()
+## (recorre Level1..Level10, _entre_niveles, guardado) en la tarea de engine.
+func _jugar_demo() -> void:
+	current_level_index = 0
+	huyo_este_nivel = false
+	var level1: BaseLevel = load("res://scripts/levels/level1.gd").new()
+	await level1.jugar(player, self)
+
+
 # ─────────────────────────────────────────
 # SISTEMA DE FINALES
 # Port directo de game_engine.determinar_final()
