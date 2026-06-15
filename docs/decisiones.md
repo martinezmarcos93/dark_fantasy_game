@@ -108,7 +108,7 @@ proceduralmente en Blender** (`blender/frame_generator.py`), produciendo
 ## ADR-005: Estructura de escenas — una por nivel, heredando de base
 
 **Fecha:** 2026-06-02
-**Estado:** Aceptado
+**Estado:** ~~Aceptado~~ **Superado por ADR-007 (2026-06-14)**
 
 **Contexto:**
 Los 10 niveles de Python tienen una estructura uniforme: `fase_laberinto()`, `fase_combate()`, `fase_psicologica()`. Se necesita una equivalencia en Godot.
@@ -144,3 +144,33 @@ Existe un plugin MCP para integrar Godot con asistentes de IA directamente. Un p
 **Consecuencias:**
 - Ninguna extensión de IA se instala en el editor de Godot.
 - El workflow es: Claude escribe código → se pega en el editor → se verifica headless o en el editor manualmente.
+
+---
+
+## ADR-007: Niveles como scripts que conducen una GameScreen única (supera ADR-005)
+
+**Fecha:** 2026-06-14
+**Estado:** Aceptado
+
+**Contexto:**
+ADR-005 planeaba una escena `.tscn` por nivel heredando de `Level.tscn`. Al portar
+la Fase 3 (combate) quedó claro que la `GameScreen` es una UI persistente que se
+*conduce* con llamadas `async` (`await mostrar_pantalla(...)`), igual que ya lo hace
+`CombatSystem.combate_completo`. Revisando `levelN.py`, los niveles son **lógica
+narrativa pura**: no aportan ningún nodo visual propio — todos usan la misma pantalla.
+
+**Decisión:** Cada nivel es un **script** (`scripts/levels/base_level.gd` +
+`level1.gd`…`level10.gd`), no una escena. `GameEngine` (Autoload) es el director:
+mantiene la `GameScreen` y recorre los niveles llamando `await nivel.jugar(player, engine)`.
+
+**Motivos:**
+1. Una `.tscn` por nivel serían 11 escenas casi vacías envolviendo un script — complejidad sin beneficio.
+2. Las `.tscn` conflictúan feo en merges; los `.gd` son texto plano, fáciles de revisar y mergear.
+3. La `GameScreen` ya es una sola Un­idad conducida por `async`; cambiar de escena por nivel rompería ese flujo y el `await` del combate.
+4. Mapea 1:1 con el Python: cada `LevelN.py` → `LevelN.gd` que sobreescribe `fase_combate`/`fase_psicologica`/`fase_laberinto`.
+
+**Consecuencias:**
+- No se crean `scenes/levels/*.tscn`. La carpeta `scenes/levels/` queda sin uso.
+- `base_level.gd` define `jugar()` (combate → psicológica) y deja `fase_laberinto()` vacío por defecto (lo usan los niveles 3, 7, 9).
+- `GameEngine` gana `mostrar_nivel()`, `combate_narrativo()` y los cofres, conduciendo la `GameScreen`.
+- `mostrar_nivel()` devuelve el índice 0-based de la opción (la versión Python devolvía el string "1".."N"); los ports de nivel comparan por índice.
