@@ -197,6 +197,32 @@ func actualizar_hud(player: Resource) -> void:
 	_ali_bar.value     = player.aliento
 
 
+## Pide el nombre del jugador con un campo de texto. Port de ui.pedir_nombre().
+## ENTER confirma; vacío → "Errante".
+func pedir_nombre(clase: String) -> String:
+	var texto := "\nHas elegido la senda del %s.\n\n\nAntes de descender...\n¿Cómo te llaman?\n" % clase
+	_set_texto(texto)
+	_skip_typing()
+	_construir_opciones([])  # limpiar botones previos
+
+	var le := LineEdit.new()
+	le.position = OPT_RECT.position + Vector2(PAD, PAD)
+	le.custom_minimum_size = Vector2(OPT_RECT.size.x - PAD * 2, 38)
+	le.size = le.custom_minimum_size
+	le.placeholder_text = "Escribí tu nombre y presioná ENTER"
+	le.add_theme_font_override("font", _font)
+	le.add_theme_font_size_override("font_size", 20)
+	le.add_theme_color_override("font_color", COL_HOVER)
+	le.add_theme_color_override("font_placeholder_color", COL_TEXT)
+	add_child(le)
+	le.grab_focus()
+
+	var nombre: String = await le.text_submitted
+	le.queue_free()
+	nombre = nombre.strip_edges()
+	return nombre if nombre != "" else "Errante"
+
+
 ## Flash rojo breve sobre la imagen — feedback de daño recibido.
 ## Equivale a ui.flash_daño() del Pygame. No bloquea el flujo.
 func flash_daño() -> void:
