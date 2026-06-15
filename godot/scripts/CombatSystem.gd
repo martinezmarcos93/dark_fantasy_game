@@ -700,6 +700,6 @@ static func combate_completo(enemy: Enemy, player: Player, pantalla) -> String:
 	pantalla.actualizar_hud(player)
 	await pantalla.mostrar_pantalla(enemy.imagen, texto_final, [])
 
-	# NOTA: el Python llama ui.mostrar_cartel_psique() acá (tinte de psique).
-	# Se difiere a Fase 5 (shader psique_overlay). No afecta la lógica de combate.
+	# Cartel "Esto tendrá repercusión en tu futuro." (Fase 5).
+	await pantalla.mostrar_cartel_psique()
 	return "vivo"
