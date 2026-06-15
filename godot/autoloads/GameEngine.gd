@@ -3,10 +3,14 @@ extends Node
 ## Port de game_engine.py. Registrado como Autoload.
 
 var current_level_index: int = 0
-var player: Resource = null
+var player: Player = null
 var modo_lectura: bool = false
 var dificultad_global: float = 1.0
 var huyo_este_nivel: bool = false
+
+## GameScreen que conduce el juego (la UI persistente). La setea Main al arrancar.
+## Ver ADR-007: los niveles son scripts que conducen esta pantalla vía async.
+var pantalla = null
 
 
 # ─────────────────────────────────────────
@@ -16,9 +20,66 @@ func ir_a_escena(ruta: String) -> void:
 	get_tree().change_scene_to_file(ruta)
 
 
-func ir_a_nivel(indice: int) -> void:
-	current_level_index = indice
-	ir_a_escena("res://scenes/levels/Level%d.tscn" % (indice + 1))
+# ─────────────────────────────────────────
+# PANTALLA (conduce la GameScreen única)
+# Port de game_engine.mostrar_nivel(). Devuelve el índice 0-based de la
+# opción elegida, o -1 si no había opciones (pantalla narrativa).
+# (El Python devolvía el string "1".."N"; acá usamos índice — ver ADR-007.)
+# ─────────────────────────────────────────
+func mostrar_nivel(imagen: String, texto: String, opciones: Array = []) -> int:
+	pantalla.actualizar_hud(player)
+	return await pantalla.mostrar_pantalla(imagen, texto, opciones)
+
+
+# ─────────────────────────────────────────
+# COMBATE NARRATIVO
+# Port de game_engine.combate_narrativo().
+# ─────────────────────────────────────────
+func combate_narrativo(enemy: Enemy) -> String:
+	if modo_lectura:
+		await mostrar_nivel(enemy.imagen, enemy.texto_intro, [])
+		player.modificar_psique(enemy.psique_victoria_jugador)
+		return "vivo"
+	enemy.dificultad = max(1, roundi(enemy.dificultad * dificultad_global))
+	return await CombatSystem.combate_completo(enemy, player, pantalla)
+
+
+# ─────────────────────────────────────────
+# COFRES
+# Port de game_engine.ofrecer_cofre_*() y _dar_item().
+# ─────────────────────────────────────────
+func ofrecer_cofre_eco(_imagen_path: String = "") -> void:
+	# Cofre de Eco: solo si el último combate fue perfecto (3/3 rondas).
+	if not player.ultimo_combate_perfecto:
+		return
+	var img := "res://assets/images/chest_eco.jpg"
+	var item: String = Player.TIER_MEDIO.pick_random()
+	var texto_cofre := (
+		"Cofre de Eco.\n\n"
+		+ "Ganaste cada ronda.\nEl cofre lo sabe.\n\n"
+		+ "Contenido: %s\n" % Player.NOMBRES_ITEMS.get(item, item)
+	)
+	await _dar_item(img, item, texto_cofre)
+
+
+func _dar_item(img_path: String, item_id: String, texto_cofre: String) -> void:
+	if player.inventario.size() < 3:
+		player.agregar_item(item_id)
+		await mostrar_nivel(img_path, texto_cofre + "\n[ Ítem añadido al inventario ]", [])
+	else:
+		await mostrar_nivel(img_path, texto_cofre + "\n— Inventario lleno. Elegí qué soltar —", [])
+		var labels: Array = []
+		for i in player.inventario:
+			labels.append("Soltar: %s" % Player.NOMBRES_ITEMS.get(i, i))
+		labels.append("Dejar el cofre cerrado")
+		var idx: int = await mostrar_nivel(img_path, "", labels)
+		if idx >= 0 and idx < player.inventario.size():
+			player.inventario[idx] = item_id
+			await mostrar_nivel(
+				img_path,
+				"Intercambiaste. Ahora llevás: %s." % Player.NOMBRES_ITEMS.get(item_id, item_id),
+				[]
+			)
 
 
 # ─────────────────────────────────────────
