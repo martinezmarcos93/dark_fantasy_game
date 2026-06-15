@@ -69,6 +69,8 @@ var _ali_bar: ProgressBar
 var _flash: ColorRect
 var _psique_mat: ShaderMaterial
 var _trans: ColorRect   # fundido a negro para transiciones (encima de todo)
+var _dist_on: bool = false    # distorsión de texto activa (psique alta)
+var _dist_stat: String = ""   # stat dominante que define el efecto
 
 var _typing := false
 var _type_speed := 50.0   # caracteres por segundo
@@ -269,6 +271,11 @@ func actualizar_psique(player: Resource) -> void:
 	_psique_mat.set_shader_parameter("intensidad", a)
 	_psique_mat.set_shader_parameter("aberracion", a)
 
+	# Distorsión del texto narrativo: se activa con psique profunda (>=40).
+	# Reemplaza el mangling de caracteres de los niveles (ui distorsionar_texto).
+	_dist_on = intensidad >= 40
+	_dist_stat = dominante
+
 
 ## Pide el nombre del jugador con un campo de texto. Port de ui.pedir_nombre().
 ## ENTER confirma; vacío → "Errante".
@@ -346,10 +353,25 @@ func mostrar_cartel_psique() -> void:
 # TEXTO (typewriter)
 # ═══════════════════════════════════════════════════════════════
 func _set_texto(t: String) -> void:
-	_texto.text = t
+	_texto.text = _aplicar_distorsion_bbcode(t)
 	_texto.visible_characters = 0
 	_char_prog = 0.0
 	_typing = true
+
+
+## Envuelve el texto en un efecto RichText según la psique dominante.
+## Reemplaza el mangling de caracteres del Pygame (distorsionar_texto) por
+## un RichTextEffect — más orgánico y sin chocar con el bbcode.
+func _aplicar_distorsion_bbcode(t: String) -> String:
+	if not _dist_on:
+		return t
+	match _dist_stat:
+		"miedo", "violencia":
+			return "[shake rate=18.0 level=6 connected=1]%s[/shake]" % t
+		"corrupcion", "culpa":
+			return "[wave amp=20.0 freq=4.0 connected=1]%s[/wave]" % t
+		_:
+			return t  # lucidez u otros: el texto permanece claro
 
 
 func _skip_typing() -> void:
