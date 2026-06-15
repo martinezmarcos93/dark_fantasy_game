@@ -109,6 +109,9 @@ func _construir_ui() -> void:
 	_level_img.material = _psique_mat
 	add_child(_level_img)
 
+	# Polvo de ambiente (Fase 5): GPUParticles2D dentro de la imagen (clip).
+	_construir_polvo()
+
 	# Marco ornamental (encima de la imagen, ignora mouse)
 	_frame = TextureRect.new()
 	_frame.texture = load(RUTA_FRAME)
@@ -159,6 +162,47 @@ func _construir_ui() -> void:
 	_trans.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_trans.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	trans_layer.add_child(_trans)
+
+
+## Polvo flotante en el panel de imagen. Como hijo de _level_img, queda
+## recortado a su rect (clip_contents) y no tapa el resto de la UI.
+func _construir_polvo() -> void:
+	var polvo := GPUParticles2D.new()
+	polvo.amount = 22
+	polvo.lifetime = 7.0
+	polvo.preprocess = 4.0
+	polvo.local_coords = true
+	polvo.texture = _crear_textura_polvo()
+	polvo.position = IMG_RECT.size / 2.0
+
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(IMG_RECT.size.x / 2.0, IMG_RECT.size.y / 2.0, 0.0)
+	pm.direction = Vector3(0.0, -1.0, 0.0)
+	pm.spread = 35.0
+	pm.gravity = Vector3(0.0, -3.0, 0.0)      # deriva lenta hacia arriba
+	pm.initial_velocity_min = 2.0
+	pm.initial_velocity_max = 9.0
+	pm.scale_min = 0.2
+	pm.scale_max = 0.6
+	pm.color = Color(0.85, 0.82, 0.70, 0.22)  # polvo tenue, cálido
+	polvo.process_material = pm
+
+	_level_img.add_child(polvo)
+
+
+func _crear_textura_polvo() -> Texture2D:
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 1))
+	grad.set_color(1, Color(1, 1, 1, 0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = grad
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 16
+	tex.height = 16
+	return tex
 
 
 func _construir_hud() -> void:
