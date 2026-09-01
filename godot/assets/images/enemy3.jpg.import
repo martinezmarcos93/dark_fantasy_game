@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://js076vi184qb"
-valid=false
+uid="uid://ixp0wefnb34p"
+path="res://.godot/imported/enemy3.jpg-90af64b59940c00466583e3dd30f0523.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/images/enemy3.jpg"
+dest_files=["res://.godot/imported/enemy3.jpg-90af64b59940c00466583e3dd30f0523.ctex"]
 
 [params]
 

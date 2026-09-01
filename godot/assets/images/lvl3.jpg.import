@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bhuj8mn5cnoc0"
-valid=false
+uid="uid://ciupdyyurkvpo"
+path="res://.godot/imported/lvl3.jpg-27c2edabe1b1a60dcce750fca5ba0aa6.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/images/lvl3.jpg"
+dest_files=["res://.godot/imported/lvl3.jpg-27c2edabe1b1a60dcce750fca5ba0aa6.ctex"]
 
 [params]
 
