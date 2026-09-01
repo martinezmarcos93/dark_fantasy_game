@@ -174,3 +174,48 @@ mantiene la `GameScreen` y recorre los niveles llamando `await nivel.jugar(playe
 - `base_level.gd` define `jugar()` (combate → psicológica) y deja `fase_laberinto()` vacío por defecto (lo usan los niveles 3, 7, 9).
 - `GameEngine` gana `mostrar_nivel()`, `combate_narrativo()` y los cofres, conduciendo la `GameScreen`.
 - `mostrar_nivel()` devuelve el índice 0-based de la opción (la versión Python devolvía el string "1".."N"); los ports de nivel comparan por índice.
+
+---
+
+## ADR-008: UI frame — arte generado, medido por alpha (supera ADR-004)
+
+**Fecha:** 2026-09-01
+**Estado:** Aceptado
+
+**Contexto:**
+ADR-004 resolvía los defectos de "LA ELEGIDA" regenerando el marco por código
+en Blender. Funcionó, pero el resultado era geométrico y austero: cinco
+calaveras, un pentáculo y molduras rectas. El juego es fantasía oscura densa;
+el marco se quedaba corto contra las 35 ilustraciones.
+
+Apareció un marco nuevo (imagen generada) con el mismo layout de cuatro huecos
+pero mucho más trabajado: velas, cadenas, estandartes, segadores, gemas, y
+—clave— los rótulos HP / ENERGÍA / ALIENTO y el engaste de cada barra ya
+pintados en el arte.
+
+**Decisión:** Adoptarlo como `godot/assets/images/ui_frame.png` (1600×960) y
+derivar el layout **midiendo el PNG**, no al revés.
+
+**Motivos:**
+1. Los siete defectos que ADR-004 enumeraba no están: los huecos tienen alpha 0
+   real, no hay recortes ni asimetrías, el divisor derecho es ancho y legible.
+2. Las medidas no se estiman a ojo. Se detectan las regiones `alpha=0` por
+   componentes conexas (erosión para separar las unidas por hilos finos, luego
+   refinado de cada borde), así que los rects del código calzan con el hueco
+   real. Reproducible: mismo procedimiento ante cualquier marco futuro.
+3. Canvas 1600×960 (5:3 exacto): el PNG mide 1619×971, se reescala una vez a
+   una resolución redonda y se dibuja ~1:1, sin resampleo en cada frame.
+   De paso el texto narrativo pasa de 568×369 a 850×465.
+
+**Consecuencias:**
+- `blender/frame_generator.py` queda **sin uso**. Se conserva como registro del
+  camino anterior; para ajustar el marco ya no se edita su CONFIG.
+- Las constantes de layout de `GameScreen.gd` dejan de derivar de unidades
+  Blender y pasan a ser medidas del PNG.
+- **Las barras van debajo del marco**, no encima: el arte ya trae el rótulo y
+  el engaste de cada ranura, así que el código solo pinta el relleno y el
+  ornamento del hueco lo recorta. Mismo criterio para el flash de daño.
+- **Nombre y clase pasan a ser pie de la imagen.** El marco anterior tenía un
+  strip de texto para el HUD; este no reserva ninguno. El medallón circular
+  inferior izquierdo queda libre para un retrato de clase más adelante.
+- `HUD_RECT` desaparece; entran `BAR_HP`, `BAR_EN`, `BAR_ALI`.
