@@ -18,3 +18,6 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Material de trabajo ajeno al juego (venv, transcripciones de referencia)
+src/
