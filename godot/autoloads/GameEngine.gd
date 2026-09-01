@@ -246,6 +246,7 @@ func iniciar() -> void:
 
 
 func mostrar_menu() -> String:
+	AudioManager.ambientar_nivel(-1)  # fuera de los niveles: el relevo no vuelve a nivel_N
 	AudioManager.reproducir("menu")
 	var texto := """
 Descenso al Umbral
@@ -561,6 +562,9 @@ func jugar() -> void:
 		# Transición: fundir a negro entre niveles; el primer mostrar_nivel
 		# del nivel funde desde negro al mostrar el nuevo contenido.
 		await pantalla.fundir_a_negro()
+
+		# Música del nivel: no corta la pista en curso, releva al terminarla.
+		AudioManager.ambientar_nivel(current_level_index)
 
 		var nivel: BaseLevel = niveles[current_level_index]
 		var resultado: String = await nivel.jugar(player, self)
