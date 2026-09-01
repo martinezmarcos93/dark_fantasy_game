@@ -12,3 +12,6 @@ export/
 # OS
 .DS_Store
 Thumbs.db
+
+# Capturas de tools/preview.tscn
+preview_ui.png
