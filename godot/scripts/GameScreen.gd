@@ -4,8 +4,8 @@ extends Control
 ## Construye la UI por código para que las zonas de contenido coincidan
 ## EXACTAMENTE con los huecos transparentes de ui_frame.png.
 ##
-## Las coordenadas derivan de blender/frame_generator.py (canvas 10×6 unidades
-## = 1000×600 px). Blender mide Y desde abajo; Godot desde arriba → se invierte.
+## Las coordenadas se midieron sobre el propio PNG detectando sus regiones
+## alpha=0 (ver docs/decisiones.md, ADR-008). Canvas 1600×960.
 ##
 ## API principal (async):
 ##   var idx = await game_screen.mostrar_pantalla(imagen, texto, opciones)
@@ -13,19 +13,28 @@ extends Control
 
 # ─────────────────────────────────────────
 # RECTÁNGULOS DE CONTENIDO (px, sistema Godot top-down)
-# Derivados de frame_generator.py. 1 unidad Blender = 100 px.
-# godot_y = 600 - (blender_y * 100)
+# Medidos sobre los huecos alpha=0 de ui_frame.png a 1600×960.
 # ─────────────────────────────────────────
-const PAD := 14  # padding interno para que el contenido no toque el marco
+const PAD := 18  # padding interno para que el contenido no toque el marco
 
 # Panel izquierdo — imagen del nivel/enemigo
-const IMG_RECT  := Rect2(42, 42, 280, 420)
-# Strip HUD inferior izquierdo
-const HUD_RECT  := Rect2(42, 468, 280, 90)
+const IMG_RECT  := Rect2(110, 96, 407, 611)
 # Panel derecho superior — texto narrativo
-const TEXT_RECT := Rect2(390, 42, 568, 369)
+const TEXT_RECT := Rect2(680, 90, 850, 465)
 # Panel derecho inferior — opciones
-const OPT_RECT  := Rect2(390, 433, 568, 125)
+const OPT_RECT  := Rect2(680, 627, 850, 239)
+
+# Ranuras de las barras: el marco ya trae dibujados los rótulos HP / ENERGÍA /
+# ALIENTO y el engaste de cada ranura, así que el código solo pinta el relleno
+# y lo mete DEBAJO del marco — el borde ornamental del hueco lo recorta.
+const BAR_HP  := Rect2(305, 769, 218, 20)
+const BAR_EN  := Rect2(306, 816, 217, 19)
+const BAR_ALI := Rect2(306, 863, 217, 20)
+
+# Tipografía — escalada al canvas nuevo.
+const FS_TEXTO  := 27
+const FS_OPCION := 25
+const FS_NOMBRE := 21
 
 # ─────────────────────────────────────────
 # PALETA (heredada de ui.py)
@@ -112,7 +121,19 @@ func _construir_ui() -> void:
 	# Polvo de ambiente (Fase 5): GPUParticles2D dentro de la imagen (clip).
 	_construir_polvo()
 
-	# Marco ornamental (encima de la imagen, ignora mouse)
+	# Flash de daño: rojo sobre la imagen del nivel, invisible por defecto.
+	# Va antes del marco para que el ornamento lo recorte igual que a la imagen.
+	_flash = ColorRect.new()
+	_flash.color = Color(0.82, 0.12, 0.12, 0.0)
+	_flash.position = IMG_RECT.position
+	_flash.size     = IMG_RECT.size
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_flash)
+
+	# Barras del HUD: también debajo del marco, dentro de sus ranuras.
+	_construir_hud()
+
+	# Marco ornamental (encima de imagen, flash y barras; ignora mouse)
 	_frame = TextureRect.new()
 	_frame.texture = load(RUTA_FRAME)
 	_frame.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -129,7 +150,7 @@ func _construir_ui() -> void:
 	_texto.scroll_active  = true
 	_texto.fit_content    = false
 	_texto.add_theme_font_override("normal_font", _font)
-	_texto.add_theme_font_size_override("normal_font_size", 22)
+	_texto.add_theme_font_size_override("normal_font_size", FS_TEXTO)
 	_texto.add_theme_color_override("default_color", COL_TEXT)
 	_texto.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_texto)
@@ -138,19 +159,12 @@ func _construir_ui() -> void:
 	_opciones_box = VBoxContainer.new()
 	_opciones_box.position = OPT_RECT.position + Vector2(PAD, PAD)
 	_opciones_box.size     = OPT_RECT.size - Vector2(PAD * 2, PAD * 2)
-	_opciones_box.add_theme_constant_override("separation", 4)
+	_opciones_box.add_theme_constant_override("separation", 8)
 	add_child(_opciones_box)
 
-	# Flash de daño: rojo sobre la imagen del nivel, invisible por defecto
-	_flash = ColorRect.new()
-	_flash.color = Color(0.82, 0.12, 0.12, 0.0)
-	_flash.position = IMG_RECT.position
-	_flash.size     = IMG_RECT.size
-	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_flash)
-
-	# HUD (encima del marco)
-	_construir_hud()
+	# Nombre y clase: el marco nuevo no reserva un rótulo para ellos, así que
+	# van como pie de la imagen, encima del ornamento y con contorno.
+	_construir_nombre()
 
 	# Capa de transición: ColorRect negro en un CanvasLayer por encima de TODO
 	# (incluido el marco), para fundidos entre niveles y combates.
@@ -206,38 +220,49 @@ func _crear_textura_polvo() -> Texture2D:
 
 
 func _construir_hud() -> void:
-	var hud := VBoxContainer.new()
-	hud.position = HUD_RECT.position + Vector2(PAD, PAD - 6)
-	hud.size     = HUD_RECT.size - Vector2(PAD * 2, PAD * 2)
-	hud.add_theme_constant_override("separation", 2)
-	add_child(hud)
-
-	_hud_nombre = Label.new()
-	_hud_nombre.add_theme_font_override("font", _font)
-	_hud_nombre.add_theme_font_size_override("font_size", 16)
-	_hud_nombre.add_theme_color_override("font_color", COL_TEXT)
-	_hud_nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hud.add_child(_hud_nombre)
-
-	_hp_bar  = _crear_barra(hud, COL_HP)
-	_en_bar  = _crear_barra(hud, COL_EN)
-	_ali_bar = _crear_barra(hud, COL_ALI)
+	_hp_bar  = _crear_barra(BAR_HP,  COL_HP)
+	_en_bar  = _crear_barra(BAR_EN,  COL_EN)
+	_ali_bar = _crear_barra(BAR_ALI, COL_ALI)
 
 
-func _crear_barra(parent: Node, color: Color) -> ProgressBar:
+## Relleno de una ranura del marco. Sin fondo ni borde propios: el engaste
+## ya está pintado en ui_frame.png y esto se ve por el hueco transparente.
+func _crear_barra(rect: Rect2, color: Color) -> ProgressBar:
 	var bar := ProgressBar.new()
-	bar.custom_minimum_size = Vector2(0, 14)
+	bar.position = rect.position
+	bar.size     = rect.size
 	bar.show_percentage = false
-	var sb_bg := StyleBoxFlat.new()
-	sb_bg.bg_color = Color(0.08, 0.08, 0.08)
-	sb_bg.set_border_width_all(1)
-	sb_bg.border_color = Color(0.3, 0.3, 0.3)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	bar.add_theme_stylebox_override("background", StyleBoxEmpty.new())
+
 	var sb_fill := StyleBoxFlat.new()
 	sb_fill.bg_color = color
-	bar.add_theme_stylebox_override("background", sb_bg)
+	# Extremos redondeados para seguir la forma de píldora de la ranura.
+	sb_fill.set_corner_radius_all(int(rect.size.y / 2.0))
+	# Brillo interno tenue: la barra plana se veía muerta contra el bronce.
+	sb_fill.border_color = color.lightened(0.35)
+	sb_fill.set_border_width_all(1)
 	bar.add_theme_stylebox_override("fill", sb_fill)
-	parent.add_child(bar)
+
+	add_child(bar)
 	return bar
+
+
+## Pie de la imagen con nombre y clase, con contorno para que se lea sobre
+## cualquier ilustración.
+func _construir_nombre() -> void:
+	_hud_nombre = Label.new()
+	_hud_nombre.position = Vector2(IMG_RECT.position.x, IMG_RECT.end.y - 50)
+	_hud_nombre.size     = Vector2(IMG_RECT.size.x, 36)
+	_hud_nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hud_nombre.add_theme_font_override("font", _font)
+	_hud_nombre.add_theme_font_size_override("font_size", FS_NOMBRE)
+	_hud_nombre.add_theme_color_override("font_color", Color8(198, 160, 60))
+	_hud_nombre.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	_hud_nombre.add_theme_constant_override("outline_size", 6)
+	_hud_nombre.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_hud_nombre)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -331,11 +356,11 @@ func pedir_nombre(clase: String) -> String:
 
 	var le := LineEdit.new()
 	le.position = OPT_RECT.position + Vector2(PAD, PAD)
-	le.custom_minimum_size = Vector2(OPT_RECT.size.x - PAD * 2, 38)
+	le.custom_minimum_size = Vector2(OPT_RECT.size.x - PAD * 2, 46)
 	le.size = le.custom_minimum_size
 	le.placeholder_text = "Escribí tu nombre y presioná ENTER"
 	le.add_theme_font_override("font", _font)
-	le.add_theme_font_size_override("font_size", 20)
+	le.add_theme_font_size_override("font_size", FS_OPCION)
 	le.add_theme_color_override("font_color", COL_HOVER)
 	le.add_theme_color_override("font_placeholder_color", COL_TEXT)
 	add_child(le)
@@ -360,8 +385,8 @@ func flash_daño() -> void:
 ## Cartel central "Esto tendrá repercusión / en tu futuro." con fade.
 ## Port de ui.mostrar_cartel_psique(); se muestra al cerrar combate.
 func mostrar_cartel_psique() -> void:
-	var w := 400.0
-	var h := 82.0
+	var w := 520.0
+	var h := 104.0
 	var panel := Panel.new()
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color8(12, 8, 4, 215)
@@ -369,7 +394,7 @@ func mostrar_cartel_psique() -> void:
 	sb.set_border_width_all(1)
 	panel.add_theme_stylebox_override("panel", sb)
 	panel.size = Vector2(w, h)
-	panel.position = Vector2((1000.0 - w) / 2.0, (600.0 - h) / 2.0)
+	panel.position = (size - Vector2(w, h)) / 2.0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.modulate.a = 0.0
 	add_child(panel)
@@ -380,7 +405,7 @@ func mostrar_cartel_psique() -> void:
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	lbl.add_theme_font_override("font", _font)
-	lbl.add_theme_font_size_override("font_size", 20)
+	lbl.add_theme_font_size_override("font_size", 25)
 	lbl.add_theme_color_override("font_color", Color8(190, 150, 40))
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(lbl)
@@ -449,7 +474,7 @@ func _construir_opciones(opciones: Array) -> void:
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.flat = true
 		btn.add_theme_font_override("font", _font)
-		btn.add_theme_font_size_override("font_size", 20)
+		btn.add_theme_font_size_override("font_size", FS_OPCION)
 		btn.add_theme_color_override("font_color", COL_BTN)
 		btn.add_theme_color_override("font_hover_color", COL_HOVER)
 		btn.add_theme_color_override("font_focus_color", COL_HOVER)
